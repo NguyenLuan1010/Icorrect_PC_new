@@ -1,16 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/presenters/login_presenter.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/views/screens/auth/register_screen.dart';
+import 'package:icorrect_pc/src/views/widgets/homework_widget.dart';
 
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../data_source/local/app_shared_preferences_keys.dart';
+import '../../../data_source/local/app_shared_references.dart';
 import '../../../utils/Navigations.dart';
 import '../../../utils/define_object.dart';
+import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
 import '../../dialogs/message_alert.dart';
 import '../../widgets/input_field_custom.dart';
+import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 
 class LoginWidget extends StatefulWidget {
@@ -23,6 +30,7 @@ class LoginWidget extends StatefulWidget {
 class _LoginState extends State<LoginWidget> implements LoginViewContract {
   CircleLoading? _loading;
   late AuthWidgetProvider _provider;
+  LoginPresenter? _loginPresenter;
 
   final _txtEmailController = TextEditingController();
   final _txtPasswordController = TextEditingController();
@@ -32,6 +40,7 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   void initState() {
     super.initState();
     _loading = CircleLoading();
+    _loginPresenter = LoginPresenter(this);
     _provider = Provider.of<AuthWidgetProvider>(context, listen: false);
   }
 
@@ -44,59 +53,16 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraint) {
-      if (constraint.maxWidth < SizeScreen.MINIMUM_WiDTH_1.size) {
-        return _buildLoginFormMobile();
-      } else {
-        return _buildLoginFormDesktop();
-      }
-    });
+    return _buildLoginForm();
   }
 
-  Widget _buildLoginFormMobile() {
+  Widget _buildLoginForm() {
+    double w = MediaQuery.of(context).size.width / 2;
+    double h = MediaQuery.of(context).size.height / 1.8;
     return Center(
       child: Container(
-        width: 700,
-        height: 400,
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-        margin: const EdgeInsets.only(bottom: 100),
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: AppColors.gray),
-            borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildEmailField(),
-            const SizedBox(height: 15),
-            _buildPasswordField(),
-            const SizedBox(height: 15),
-            _buildLinkText(),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                _loading?.show(context);
-                _onPressLogin();
-              },
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.purple),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Sign In")),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginFormDesktop() {
-    return Center(
-      child: Container(
-        width: 700,
-        height: 400,
+        width: w,
+        height: h,
         padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 30),
         margin: const EdgeInsets.only(bottom: 100),
         decoration: BoxDecoration(
@@ -111,19 +77,22 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
             const SizedBox(height: 15),
             _buildLinkText(),
             const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                _loading?.show(context);
-                _onPressLogin();
-              },
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.purple),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Sign In")),
+            SizedBox(
+              width: w / 3,
+              child: ElevatedButton(
+                onPressed: () {
+                  _loading?.show(context);
+                  _onPressLogin();
+                },
+                style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppColors.purple),
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13)))),
+                child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: Text("Sign In", style: TextStyle(fontSize: 17))),
+              ),
             )
           ],
         ),
@@ -251,6 +220,7 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
 
   @override
   void onLoginComplete() {
+    _loading?.hide();
     Navigations.instance().goToMainWidget(context);
   }
 

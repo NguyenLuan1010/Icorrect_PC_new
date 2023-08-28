@@ -1,13 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:icorrect_pc/src/models/homework_models/submited_model.dart';
 
-
-HomeWorkModel homeworkModelFromJson(String str) => HomeWorkModel.fromJson(json.decode(str));
+HomeWorkModel homeworkModelFromJson(String str) =>
+    HomeWorkModel.fromJson(json.decode(str));
 String homeworkModelToJson(HomeWorkModel data) => json.encode(data.toJson());
 
 class HomeWorkModel {
-  int _id = 0;
+  int? _id;
   String? _name;
   String? _type;
   String? _test;
@@ -20,9 +21,8 @@ class HomeWorkModel {
   String? _createdAt;
   String? _updatedAt;
   int? _activityId;
-  dynamic _tips;
+  String? _tips;
   int? _cost;
-  dynamic _bankClone;
   int? _sendEmail;
   String? _uuid;
   dynamic _activityBankMyBank;
@@ -52,49 +52,49 @@ class HomeWorkModel {
   int? _questionIndex;
 
   HomeWorkModel(
-      {required int id,
-        String? name,
-        String? type,
-        String? test,
-        String? startDate,
-        String? startTime,
-        String? endTime,
-        String? endDate,
-        String? giaotrinhId,
-        int? status,
-        String? createdAt,
-        String? updatedAt,
-        int? activityId,
-        dynamic tips,
-        int? cost,
-        dynamic bankClone,
-        int? sendEmail,
-        String? uuid,
-        dynamic activityBankMyBank,
-        int? packageId,
-        String? dateTimeRelease,
-        String? dateTimeEnd,
-        int? question,
-        String? start,
-        String? end,
-        int? completeStatus,
-        SubmittedDateModel? submitedDateModel,
-        String? orderId,
-        String? aiResponseLink,
-        int? haveAiReponse,
-        String? aiScore,
-        int? aiOrder,
-        String? testId,
-        int? testOption,
-        String? className,
-        int? classId,
-        int? bank,
-        String? bankName,
-        int? bankType,
-        String? bankDistributeCode,
-        int? isTested,
-        String? activityType,
-        int? questionIndex}) {
+      {int? id,
+      String? name,
+      String? type,
+      String? test,
+      String? startDate,
+      String? startTime,
+      String? endTime,
+      String? endDate,
+      String? giaotrinhId,
+      int? status,
+      String? createdAt,
+      String? updatedAt,
+      int? activityId,
+      String? tips,
+      int? cost,
+      dynamic bankClone,
+      int? sendEmail,
+      String? uuid,
+      dynamic activityBankMyBank,
+      int? packageId,
+      String? dateTimeRelease,
+      String? dateTimeEnd,
+      int? question,
+      String? start,
+      String? end,
+      int? completeStatus,
+      SubmittedDateModel? submitedDateModel,
+      String? orderId,
+      String? aiResponseLink,
+      int? haveAiReponse,
+      String? aiScore,
+      int? aiOrder,
+      String? testId,
+      int? testOption,
+      String? className,
+      int? classId,
+      int? bank,
+      String? bankName,
+      int? bankType,
+      String? bankDistributeCode,
+      int? isTested,
+      String? activityType,
+      int? questionIndex}) {
     _id = id;
     _name = name;
     _type = type;
@@ -110,7 +110,6 @@ class HomeWorkModel {
     _activityId = activityId;
     _tips = tips;
     _cost = cost;
-    _bankClone = bankClone;
     _sendEmail = sendEmail;
     _uuid = uuid;
     _activityBankMyBank = activityBankMyBank;
@@ -140,7 +139,7 @@ class HomeWorkModel {
     _questionIndex = questionIndex;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get name => _name ?? "";
   set name(String name) => _name = name;
@@ -166,12 +165,10 @@ class HomeWorkModel {
   set updatedAt(String updatedAt) => _updatedAt = updatedAt;
   int get activityId => _activityId ?? 0;
   set activityId(int activityId) => _activityId = activityId;
-  dynamic get tips => _tips;
-  set tips(dynamic tips) => _tips = tips;
+  String get tips => _tips ?? "";
+  set tips(String tips) => _tips = tips;
   int get cost => _cost ?? 0;
   set cost(int cost) => _cost = cost;
-  dynamic get bankClone => _bankClone;
-  set bankClone(dynamic bankClone) => _bankClone = bankClone;
   int get sendEmail => _sendEmail ?? 0;
   set sendEmail(int sendEmail) => _sendEmail = sendEmail;
   String get uuid => _uuid ?? "";
@@ -194,8 +191,10 @@ class HomeWorkModel {
   set end(String end) => _end = end;
   int get completeStatus => _completeStatus ?? 0;
   set completeStatus(int completeStatus) => _completeStatus = completeStatus;
-  SubmittedDateModel get submittedDateModel => _submittedDateModel ?? SubmittedDateModel();
-  set submittedDate(SubmittedDateModel submittedDateModel) => _submittedDateModel = submittedDateModel;
+  SubmittedDateModel get submittedDateModel =>
+      _submittedDateModel ?? SubmittedDateModel();
+  set submittedDate(SubmittedDateModel submittedDateModel) =>
+      _submittedDateModel = submittedDateModel;
   String get orderId => _orderId ?? "";
   set orderId(String orderId) => _orderId = orderId;
   String get aiResponseLink => _aiResponseLink ?? "";
@@ -218,7 +217,7 @@ class HomeWorkModel {
   set bank(int bank) => _bank = bank;
   String get bankName => _bankName ?? "";
   set bankName(String bankName) => _bankName = bankName;
-  int get bankType => _bankType ?? 0;
+  int get bankType => _bankType ?? 0;  
   set bankType(int bankType) => _bankType = bankType;
   String get bankDistributeCode => _bankDistributeCode ?? "";
   set bankDistributeCode(String bankDistributeCode) =>
@@ -229,6 +228,20 @@ class HomeWorkModel {
   set activityType(String activityType) => _activityType = activityType;
   int get questionIndex => _questionIndex ?? 0;
   set questionIndex(int questionIndex) => _questionIndex = questionIndex;
+
+  bool hasTeacherResponse() {
+    if (kDebugMode) {
+      print('DEBUG: _orderId: ${_orderId.toString()}');
+    }
+    return _orderId != '0' && _orderId!.isNotEmpty;
+  }
+
+  bool canReanswer() {
+    if (_aiOrder != 0 || _orderId != '0' || _type != 'homework') {
+      return false;
+    }
+    return true;
+  }
 
   HomeWorkModel.fromJson(Map<String, dynamic> json) {
     _id = json['id'];
@@ -246,7 +259,6 @@ class HomeWorkModel {
     _activityId = json['activity_id'];
     _tips = json['tips'];
     _cost = json['cost'];
-    _bankClone = json['bank_clone'];
     _sendEmail = json['send_email'];
     _uuid = json['uuid'];
     _activityBankMyBank = json['activity_bank_my_bank'];
@@ -257,7 +269,7 @@ class HomeWorkModel {
     _start = json['start'];
     _end = json['end'];
     _completeStatus = json['complete_status'];
-    if(json['submited_date'].toString() != '') {
+    if (json['submited_date'].toString() != '') {
       _submittedDateModel = json['submited_date'] != null
           ? SubmittedDateModel.fromJson(json['submited_date'])
           : null;
@@ -300,7 +312,6 @@ class HomeWorkModel {
     data['activity_id'] = _activityId;
     data['tips'] = _tips;
     data['cost'] = _cost;
-    data['bank_clone'] = _bankClone;
     data['send_email'] = _sendEmail;
     data['uuid'] = _uuid;
     data['activity_bank_my_bank'] = _activityBankMyBank;

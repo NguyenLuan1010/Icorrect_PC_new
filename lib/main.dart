@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
+import 'package:icorrect_pc/src/views/screens/auth/login_screen.dart';
+import 'package:icorrect_pc/src/views/screens/auth_screen_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 

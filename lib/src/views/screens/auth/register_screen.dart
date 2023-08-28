@@ -37,89 +37,76 @@ class _RegisterWidgetState extends State<RegisterWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: ((context, constraints) {
-      if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
-        return _buildRegisterFormMobile();
-      } else {
-        return _buildRegisterFormDesktop();
-      }
-    }));
+    return _buildRegisterFormMobile();
   }
 
   Widget _buildRegisterFormMobile() {
-    return Center(
-      child: Container(
-        width: 700,
-        height: 450,
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-        margin: const EdgeInsets.only(bottom: 100),
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: AppColors.gray),
-            borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildEmailField(),
-            const SizedBox(height: 15),
-            _buildPasswordField(),
-            const SizedBox(height: 15),
-            _buildConfirmPasswordField(),
-            const SizedBox(height: 15),
-            _buildLinkText(),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.purple),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Register")),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRegisterFormDesktop() {
-    return Center(
-      child: Container(
-        width: 700,
-        height: 450,
-        padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 30),
-        margin: const EdgeInsets.only(bottom: 100),
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: AppColors.gray),
-            borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildEmailField(),
-            const SizedBox(height: 15),
-            _buildPasswordField(),
-            const SizedBox(height: 15),
-            _buildConfirmPasswordField(),
-            const SizedBox(height: 15),
-            _buildLinkText(),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.purple),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Register")),
-            )
-          ],
-        ),
-      ),
-    );
+    double w = MediaQuery.of(context).size.width / 2;
+    double h = MediaQuery.of(context).size.height / 1.8;
+    return Align(
+        alignment: Alignment.center,
+        child: Container(
+          width: w,
+          height: h,
+          margin: const EdgeInsets.only(bottom: 100),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              border: Border.all(width: 1, color: AppColors.gray),
+              borderRadius: BorderRadius.circular(10)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: () {
+                  _provider.setCurrentScreen(const LoginWidget());
+                },
+                child: const Icon(
+                  Icons.keyboard_backspace_sharp,
+                  color: AppColors.defaultPurpleColor,
+                  size: 25,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _buildEmailField(),
+                    const SizedBox(height: 15),
+                    _buildPasswordField(),
+                    const SizedBox(height: 15),
+                    _buildConfirmPasswordField(),
+                    const SizedBox(height: 15),
+                    _buildLinkText(),
+                    const SizedBox(height: 40),
+                    SizedBox(
+                      width: w / 3,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          
+                        },
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                AppColors.purple),
+                            shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(13)))),
+                        child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: Text(
+                              "Register",
+                              style: TextStyle(fontSize: 17),
+                            )),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildEmailField() {

@@ -4,7 +4,7 @@ SyllabusModel syllabusModelFromJson(String str) => SyllabusModel.fromJson(json.d
 String syllabusModelToJson(SyllabusModel data) => json.encode(data.toJson());
 
 class SyllabusModel {
-  int _id = 0;
+  int? _id = 0;
   String? _name;
   String? _slug;
   String? _mota;
@@ -19,7 +19,7 @@ class SyllabusModel {
   String? _startDate;
 
   SyllabusModel(
-      {required int id,
+      {int? id,
         String? name,
         String? slug,
         String? mota,
@@ -47,7 +47,7 @@ class SyllabusModel {
     _startDate = startDate;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get name => _name ?? "";
   set name(String name) => _name = name;

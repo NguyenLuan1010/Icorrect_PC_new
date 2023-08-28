@@ -4,7 +4,7 @@ HomeWorkStatusModel homeworkStatusModelFromJson(String str) => HomeWorkStatusMod
 String homeworkStatusModelToJson(HomeWorkStatusModel data) => json.encode(data.toJson());
 
 class HomeWorkStatusModel {
-  int _id = 0;
+  int? _id = 0;
   String? _name;
 
   HomeWorkStatusModel(
@@ -14,7 +14,7 @@ class HomeWorkStatusModel {
     _name = name;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get name => _name ?? "";
   set name(String name) => _name = name;

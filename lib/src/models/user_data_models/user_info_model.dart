@@ -4,7 +4,7 @@ UserInfoModel userInfoModelFromJson(String str) => UserInfoModel.fromJson(json.d
 String userInfoModelToJson(UserInfoModel data) => json.encode(data.toJson());
 
 class UserInfoModel {
-  int _id = 0;
+  int? _id = 0;
   String? _userName;
   String? _email;
   String? _code;
@@ -20,7 +20,7 @@ class UserInfoModel {
   String? _experimentStatus;
 
   UserInfoModel(
-      {required int id,
+      {int? id,
       String? userName,
       String? email,
       String? code,
@@ -50,7 +50,7 @@ class UserInfoModel {
     experimentStatus = experimentStatus;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get userName => _userName ?? "";
   set userName(String userName) => _userName = userName;

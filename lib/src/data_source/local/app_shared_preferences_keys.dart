@@ -7,4 +7,6 @@ enum AppSharedKeys {
   listClassFilter,
   listStatusFilter,
   saveTime,
+  secretkey,
+  logApiUrl
 }

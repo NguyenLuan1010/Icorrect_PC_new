@@ -1,14 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/main.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_info_model.dart';
+import 'package:icorrect_pc/src/presenters/auth_presenter.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
+import 'package:icorrect_pc/src/views/screens/auth_screen_manager.dart';
+import 'package:icorrect_pc/src/views/screens/main_screen_manager.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../data_source/local/app_shared_preferences_keys.dart';
 import '../../../data_source/local/app_shared_references.dart';
 import '../../../utils/navigations.dart';
+import '../../dialogs/message_alert.dart';
+import '../home/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,11 +25,45 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
+  AuthPresenter? _authPresenter;
+
   @override
   void initState() {
-    _checkUserCookies();
+    _authPresenter = AuthPresenter(this);
+    _getAppConfigInfo();
     super.initState();
+  }
+
+  void _getAppConfigInfo() async {
+    String appConfigInfo =
+        await AppSharedPref.instance().getString(key: AppSharedKeys.secretkey);
+    if (appConfigInfo.isEmpty) {
+      _authPresenter!.getAppConfigInfo();
+    } else {
+      _autoLogin();
+    }
+  }
+
+  void _autoLogin() async {
+    String token = await Utils.instance().getAccessToken();
+    Timer(const Duration(milliseconds: 2000), () async {
+      if (token.isNotEmpty) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const MainWidget(),
+          ),
+          ModalRoute.withName('/'),
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const AuthWidget(),
+          ),
+          ModalRoute.withName('/'),
+        );
+      }
+    });
   }
 
   @override
@@ -57,29 +99,17 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future _checkUserCookies() async {
-    int daysSaveCookie = 25;
-    UserDataModel? user =
-        await Utils.instance().getCurrentUser() ?? UserDataModel();
-    String saveTime = await Utils.instance().getCookiesTime() ?? '';
+  @override
+  void onGetAppConfigInfoFail(String message) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog.alertDialog(context, message);
+        });
+  }
 
-    if (user != null && saveTime.isNotEmpty) {
-      DateTime today = DateTime.now();
-      DateTime savedTime = DateTime.parse(saveTime);
-      Duration timeRange = today.difference(savedTime);
-      if (timeRange.inDays >= daysSaveCookie) {
-        Utils.instance().clearCurrentUser();
-      }
-    }
-
-    String token = await Utils.instance().getAccessToken();
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (user == null || user.userInfoModel.email.isEmpty && token.isEmpty) {
-        Navigations.instance().goToAuthWidget(context);
-      } else {
-        Navigations.instance().goToMainWidget(context);
-      }
-    });
+  @override
+  void onGetAppConfigInfoSuccess() {
+    _autoLogin();
   }
 }

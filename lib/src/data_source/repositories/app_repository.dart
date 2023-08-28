@@ -22,25 +22,25 @@ class AppRepository {
       headers['Authorization'] = 'Bearer $token';
     }
 
-    if (method == RequestMethod.GET) {
+    if (method == RequestMethod.get) {
       return http.get(Uri.parse(url), headers: headers);
     }
 
-    if (method == RequestMethod.POST) {
+    if (method == RequestMethod.post) {
       return http.post(Uri.parse(url),
           headers: headers, body: body, encoding: encoding);
     }
 
-    if (method == RequestMethod.PUT) {
+    if (method == RequestMethod.put) {
       return http.put(Uri.parse(url),
           headers: headers, body: body, encoding: encoding);
     }
-    if (method == RequestMethod.PATCH) {
+    if (method == RequestMethod.patch) {
       return http.patch(Uri.parse(url),
           headers: headers, body: body, encoding: encoding);
     }
 
-    if (method == RequestMethod.DELETE) {
+    if (method == RequestMethod.delete) {
       return http.delete(Uri.parse(url),
           headers: headers, body: body, encoding: encoding);
     }
@@ -50,7 +50,7 @@ class AppRepository {
 
   Future<http.StreamedResponse> pushFileWAV(
       String url, Map<String, String> formData, List<File> files) async {
-    var request = http.MultipartRequest(RequestMethod.POST, Uri.parse(url));
+    var request = http.MultipartRequest(RequestMethod.post, Uri.parse(url));
 
     String accessToken = await Utils.instance().getAccessToken() ?? '';
     request.headers.addAll({

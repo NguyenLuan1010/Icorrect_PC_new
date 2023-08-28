@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
 import '../data_source/local/app_shared_references.dart';
 import '../models/homework_models/homework_model.dart';
+import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import 'define_object.dart';
 
@@ -51,55 +52,84 @@ class Utils {
     return os;
   }
 
-  String getPartOfTest(int option) {
+  String getPartOfTestWithString(String option) {
     switch (option) {
-      case 1:
+      case 'part1':
         return 'I';
-      case 2:
+      case 'part2':
         return 'II';
-      case 3:
+      case "part3":
         return 'III';
-      case 4:
+      case "part23":
         return 'II&III';
-      case 5:
+      case 'full':
         return 'FULL';
-      case 6:
+      case "part12":
         return 'I&II';
       default:
         return 'NULL';
     }
   }
 
-  Map<String, dynamic> getHomeWorkStatus(HomeWorkModel homeWorkModel) {
-    switch (homeWorkModel.completeStatus) {
-      case 1:
-        return {
-          'title': 'Submitted',
-          'color': const Color.fromARGB(255, 45, 117, 243)
-        };
-      case 2:
+    Map<String, dynamic> getHomeWorkStatus(ActivitiesModel homeWorkModel) {
+    if (null == homeWorkModel.activityAnswer) {
+      //TODO: Check time end so voi time hien tai
+      //Can server tra ve time hien tai - de thong nhat, do phai check timezone
+      //End time > time hien tai ==> out of date
+      //End time < time hien tai ==> Not Complete
+      return {
+        'title': 'Not Completed',
+        'color': const Color.fromARGB(255, 237, 179, 3)
+      };
+    } else {
+      if (homeWorkModel.activityAnswer!.aiOrder != 0 ||
+          homeWorkModel.activityAnswer!.orderId != 0) {
         return {
           'title': 'Corrected',
           'color': const Color.fromARGB(255, 12, 201, 110)
         };
-      case 0:
-        return {
-          'title': 'Not Completed',
-          'color': const Color.fromARGB(255, 237, 179, 3)
-        };
-      case -1:
-        return {'title': 'Late', 'color': Colors.orange};
-      case -2:
-        return {'title': 'Out of date', 'color': Colors.red};
-      default:
-        return {};
+      } else {
+        if (homeWorkModel.activityAnswer!.late == 0) {
+          return {
+            'title': 'Submitted',
+            'color': const Color.fromARGB(255, 45, 117, 243)
+          };
+        }
+
+        if (homeWorkModel.activityAnswer!.late == 1) {
+          return {
+            'title': 'Late',
+            'color': Colors.orange,
+          };
+        }
+
+        if (homeWorkModel.activityEndTime.isNotEmpty) {
+          DateTime endTime = DateTime.parse(homeWorkModel.activityEndTime);
+          DateTime createTime =
+              DateTime.parse(homeWorkModel.activityAnswer!.createdAt);
+          if (endTime.compareTo(createTime) < 0) {
+            return {
+              'title': 'Out of date',
+              'color': Colors.red,
+            };
+          }
+        }
+      }
+
+      return {}; //Error
     }
   }
 
-  String haveAiResponse(HomeWorkModel homeWorkModel) {
-    return (homeWorkModel.haveAiReponse == Status.TRUE.get)
-        ? '& AI Scored'
-        : '';
+   String haveAiResponse(ActivitiesModel homeWorkModel) {
+    if (null != homeWorkModel.activityAnswer) {
+      if (homeWorkModel.activityAnswer!.aiOrder != 0) {
+        return "& AI Scored";
+      } else {
+        return '';
+      }
+    } else {
+      return '';
+    }
   }
 
   int getFilterStatus(String status) {
@@ -171,4 +201,25 @@ class Utils {
     }
     return UserDataModel.fromJson(userMap);
   }
+
+  String convertFileName(String nameFile) {
+    String letter = '/';
+    String newLetter = '-';
+    if (nameFile.contains(letter)) {
+      nameFile = nameFile.replaceAll(letter, newLetter);
+    }
+
+    return nameFile;
+  }
+
+   String reConvertFileName(String nameFile) {
+    String letter = '-';
+    String newLetter = '/';
+    if (nameFile.contains(letter)) {
+      nameFile = nameFile.replaceAll(letter, newLetter);
+    }
+
+    return nameFile;
+  }
+
 }

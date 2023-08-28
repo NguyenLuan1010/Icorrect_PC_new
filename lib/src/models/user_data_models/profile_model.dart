@@ -4,12 +4,13 @@ import 'package:icorrect_pc/src/models/user_data_models/wallet_model.dart';
 
 import 'country_model.dart';
 
+
 ProfileModel profileModelFromJson(String str) => ProfileModel.fromJson(json.decode(str));
 String profileModelToJson(ProfileModel data) => json.encode(data.toJson());
 
 class ProfileModel {
-  int _id = 0;
-  int _userId = 0;
+  int? _id = 0;
+  int? _userId = 0;
   String? _phone;
   int? _countryCode;
   String? _gender;
@@ -32,8 +33,8 @@ class ProfileModel {
   CountryModel? _country;
 
   ProfileModel(
-      {required int id,
-        required int userId,
+      {int? id,
+        int? userId,
         String? phone,
         int? countryCode,
         String? gender,
@@ -54,8 +55,8 @@ class ProfileModel {
         int? monthlyVip,
         WalletModel? wallet,
         CountryModel? country}) {
-    _id = id;
-    _userId = userId;
+    _id = id ?? 0;
+    _userId = userId ?? 0;
     _phone = phone ?? "";
     _countryCode = countryCode ?? 0;
     _gender = gender ?? "";
@@ -78,9 +79,9 @@ class ProfileModel {
     _country = country;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
-  int get userId => _userId;
+  int get userId => _userId ?? 0;
   set userId(int userId) => _userId = userId;
   String get phone => _phone ?? "";
   set phone(String phone) => _phone = phone;
@@ -128,7 +129,7 @@ class ProfileModel {
     _userId = json['user_id'];
     _phone = json['phone'];
     _countryCode = json['country_code'];
-    _gender = json['gender'];
+    _gender = json['gender'].toString();
     _displayName = json['display_name'];
     _birthday = json['birthday'];
     _avatar = json['avatar'];

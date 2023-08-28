@@ -1,17 +1,20 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/repositories/auth_repository.dart';
 import '../data_source/repositories/homework_repository.dart';
 import '../models/homework_models/class_model.dart';
 import '../models/homework_models/homework_model.dart';
+import '../models/homework_models/new_api_135/activities_model.dart';
+import '../models/homework_models/new_api_135/new_class_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import '../utils/utils.dart';
 
 abstract class HomeWorkViewContract {
   void onGetListHomeworkComplete(
-      List<HomeWorkModel> homeworks, List<ClassModel> classes);
+      List<ActivitiesModel> homeworks, List<NewClassModel> classes);
   void onGetListHomeworkError(String message);
   void onLogoutComplete();
   void onLogoutError(String message);
@@ -33,10 +36,6 @@ class HomeWorkPresenter {
 
     UserDataModel? currentUser = await Utils.instance().getCurrentUser();
     if (currentUser == null) {
-      if (kDebugMode) {
-        print(
-            "HomeCubit/getLessons: loading current user's information error!");
-      }
       _view!.onGetListHomeworkError("Loading list homework error");
       return;
     }
@@ -44,37 +43,66 @@ class HomeWorkPresenter {
     _view!.onUpdateCurrentUserInfo(currentUser);
 
     String email = currentUser.userInfoModel.email;
+    String status = Status.allHomework.get.toString();
 
-    _homeWorkRepository!.getHomeWorks(email).then((value) async {
+    _homeWorkRepository!.getHomeWorks(email, status).then((value) async {
       Map<String, dynamic> dataMap = jsonDecode(value);
+      if (kDebugMode) {
+        print(jsonEncode(dataMap).toString());
+      }
       if (dataMap['error_code'] == 200) {
-        List<HomeWorkModel> homeworks =
-            await _generateListHomeWork(dataMap['result']);
-        List<ClassModel> classes = await _generateListClass(dataMap['classes']);
+        List<NewClassModel> classes =
+            await _generateListNewClass(dataMap['data']);
+        List<ActivitiesModel> homeworks = await _generateListHomeWork(classes);
         _view!.onGetListHomeworkComplete(homeworks, classes);
       } else {
         _view!.onGetListHomeworkError(
             "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}");
       }
     }).catchError(
+      // ignore: invalid_return_type_for_catch_error
       (onError) => _view!.onGetListHomeworkError(onError.toString()),
     );
   }
 
-  Future<List<HomeWorkModel>> _generateListHomeWork(List<dynamic> data) async {
-    List<HomeWorkModel> temp = [];
+  Future<List<NewClassModel>> _generateListNewClass(List<dynamic> data) async {
+    List<NewClassModel> temp = [];
     for (int i = 0; i < data.length; i++) {
-      HomeWorkModel item = HomeWorkModel.fromJson(data[i]);
+      NewClassModel item = NewClassModel.fromJson(data[i]);
       temp.add(item);
     }
     return temp;
   }
 
-  Future<List<ClassModel>> _generateListClass(List<dynamic> data) async {
-    List<ClassModel> temp = [];
+  List<ActivitiesModel> filterActivities(
+      int classSelectedId, List<ActivitiesModel> activities, String status) {
+    List<ActivitiesModel> activitiesFilter = [];
+
+    if (classSelectedId == 0 && status == "All") {
+      return activities;
+    }
+
+    for (ActivitiesModel activity in activities) {
+      Map<String, dynamic> activityStatus =
+          Utils.instance().getHomeWorkStatus(activity);
+      if (activityStatus['title'] == status &&
+          activity.classId == classSelectedId) {
+        activitiesFilter.add(activity);
+      } else if (classSelectedId == 0 && activityStatus['title'] == status) {
+        activitiesFilter.add(activity);
+      } else if (activity.classId == classSelectedId && status == "All") {
+        activitiesFilter.add(activity);
+      }
+    }
+    return activitiesFilter;
+  }
+
+  Future<List<ActivitiesModel>> _generateListHomeWork(
+      List<NewClassModel> data) async {
+    List<ActivitiesModel> temp = [];
     for (int i = 0; i < data.length; i++) {
-      ClassModel item = ClassModel.fromJson(data[i]);
-      temp.add(item);
+      NewClassModel classModel = data[i];
+      temp.addAll(classModel.activities);
     }
     return temp;
   }
@@ -83,15 +111,6 @@ class HomeWorkPresenter {
     assert(_view != null && _authRepository != null);
 
     _authRepository!.logout().then((value) async {
-      // //Delete access token
-      // cubit.deleteAccessToken();
-      //
-      // //Delete Filter
-      // cubit.deleteFilter();
-      //
-      // //Goto Login Screen
-      // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => const Login()));
       Map<String, dynamic> dataMap = jsonDecode(value);
       if (dataMap['error_code'] == 200) {
         //Delete access token
@@ -105,6 +124,9 @@ class HomeWorkPresenter {
         _view!.onLogoutError(
             "Logout error: ${dataMap['error_code']}${dataMap['status']}");
       }
-    }).catchError((onError) => _view!.onLogoutError(onError.toString()));
+    }).catchError(
+      // ignore: invalid_return_type_for_catch_error
+      (onError) => _view!.onLogoutError(onError.toString()),
+    );
   }
 }

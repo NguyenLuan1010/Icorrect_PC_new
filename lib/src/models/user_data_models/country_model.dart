@@ -4,7 +4,7 @@ CountryModel countryModelFromJson(String str) => CountryModel.fromJson(json.deco
 String countryModelToJson(CountryModel data) => json.encode(data.toJson());
 
 class CountryModel {
-  int _id = 0;
+  int? _id = 0;
   String? _iso;
   String? _name;
   String? _nicename;
@@ -13,7 +13,7 @@ class CountryModel {
   int? _phonecode;
 
   CountryModel(
-      {required int id,
+      {int? id,
         String? iso,
         String? name,
         String? nicename,
@@ -29,7 +29,7 @@ class CountryModel {
     _phonecode = phonecode;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get iso => _iso ?? "";
   set iso(String iso) => _iso = iso;

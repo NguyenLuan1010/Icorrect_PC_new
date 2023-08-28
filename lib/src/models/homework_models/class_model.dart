@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:icorrect_pc/src/models/homework_models/syllabus_model.dart';
 
+
 ClassModel classModelFromJson(String str) => ClassModel.fromJson(json.decode(str));
 String classModelToJson(ClassModel data) => json.encode(data.toJson());
 
 class ClassModel {
-  int _id = 0;
+  int? _id = 0;
   String? _name;
   int? _centerId;
   String? _createdAt;
@@ -24,7 +25,7 @@ class ClassModel {
   String? _distributeCode;
 
   ClassModel(
-      {required int id,
+      { int? id,
         String? name,
         int? centerId,
         String? createdAt,
@@ -58,7 +59,7 @@ class ClassModel {
     _distributeCode = distributeCode;
   }
 
-  int get id => _id;
+  int get id => _id ?? 0;
   set id(int id) => _id = id;
   String get name => _name ?? "";
   set name(String name) => _name = name;

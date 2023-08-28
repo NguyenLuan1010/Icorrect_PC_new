@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:core';
 
-import 'profile_model.dart';
-import 'user_info_model.dart';
+import 'package:icorrect_pc/src/models/user_data_models/profile_model.dart';
+import 'package:icorrect_pc/src/models/user_data_models/user_info_model.dart';
 
-UserDataModel userDataModelFromJson(String str) =>
-    UserDataModel.fromJson(json.decode(str));
+
+
+UserDataModel userDataModelFromJson(String str) => UserDataModel.fromJson(json.decode(str));
 String userDataModelToJson(UserDataModel data) => json.encode(data.toJson());
 
 class UserDataModel {
@@ -20,7 +21,7 @@ class UserDataModel {
     int? showConversation,
     int? conversationMessage,
     int? fistDeposit,
-  }) {
+}) {
     _userInfoModel = userInfoModel;
     _profileModel = profileModel;
     _notify = notify;
@@ -31,7 +32,7 @@ class UserDataModel {
     _showConversation = showConversation;
     _conversationMessage = conversationMessage;
     _fistDeposit = fistDeposit;
-  }
+}
 
   UserInfoModel? _userInfoModel;
   ProfileModel? _profileModel;
@@ -70,8 +71,7 @@ class UserDataModel {
       );
 
   UserInfoModel get userInfoModel => _userInfoModel ?? UserInfoModel(id: 0);
-  ProfileModel get profileModel =>
-      _profileModel ?? ProfileModel(id: 0, userId: 0);
+  ProfileModel get profileModel => _profileModel ?? ProfileModel(id: 0, userId: 0);
   int get notify => _notify ?? 0;
   bool get showDosmesticTranfer => _showDosmesticTranfer ?? false;
   bool get showDistributor => _showDistributor ?? false;
@@ -82,11 +82,8 @@ class UserDataModel {
   int get fistDeposit => _fistDeposit ?? 0;
 
   UserDataModel.fromJson(dynamic json) {
-    _userInfoModel = json['user_info'] != null
-        ? UserInfoModel.fromJson(json['user_info'])
-        : null;
-    _profileModel =
-        json['profile'] != null ? ProfileModel.fromJson(json['profile']) : null;
+    _userInfoModel = json['user_info'] != null ? UserInfoModel.fromJson(json['user_info']) : null;
+    _profileModel = json['profile'] != null ? ProfileModel.fromJson(json['profile']) : null;
     _notify = json['notify'];
     _showDosmesticTranfer = json['show_dosmestic_tranfer'];
     _showDistributor = json['show_distributor'];
@@ -96,6 +93,7 @@ class UserDataModel {
     _conversationMessage = json['conversation_message'];
     _fistDeposit = json['fist_deposit'];
   }
+
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
