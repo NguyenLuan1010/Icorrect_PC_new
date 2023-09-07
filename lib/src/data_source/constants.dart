@@ -268,6 +268,19 @@ class CustomSize {
 }
 
 class CustomTextStyle {
+
+  static const TextStyle textBoldWhite_20 = TextStyle(
+    color: AppColors.defaultWhiteColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_20,
+  );
+
+  static const TextStyle textBoldBlack_20 = TextStyle(
+    color: AppColors.defaultBlackColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_20,
+  );
+
   static const TextStyle appbarContent = TextStyle(
     color: AppColors.defaultPurpleColor,
     fontWeight: FontWeight.w800,

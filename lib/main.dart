@@ -14,7 +14,20 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   if (Platform.isWindows) {
-    WindowManager.instance.setMinimumSize(const Size(700, 800));
+    // WindowManager.instance.setMinimumSize(const Size(700, 800));
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1080, 720),
+      minimumSize: Size(1080, 720),
+      center: true,
+      skipTaskbar: true,
+      windowButtonVisibility: true,
+      titleBarStyle: TitleBarStyle.normal,
+      backgroundColor: Colors.transparent,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
   runApp(const MyApp());
 }
