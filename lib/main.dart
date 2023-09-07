@@ -22,12 +22,14 @@ Future<void> main() async {
       skipTaskbar: true,
       windowButtonVisibility: true,
       titleBarStyle: TitleBarStyle.normal,
-      backgroundColor: Colors.transparent,
     );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    windowManager.waitUntilReadyToShow(
+      windowOptions,
+      () async {
+        await windowManager.show();
+        await windowManager.focus();
+      },
+    );
   }
   runApp(const MyApp());
 }

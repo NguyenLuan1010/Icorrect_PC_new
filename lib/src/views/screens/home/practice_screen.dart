@@ -128,23 +128,29 @@ class _PracticeScreenState extends State<PracticeScreen> {
                                 child: ListView(
                                   children: [
                                     _buildPartItem(
-                                        title: 'Part I',
-                                        content: 'Part 1 data'),
+                                      title: 'Part I',
+                                      content: 'Part 1 data',
+                                    ),
                                     _buildPartItem(
-                                        title: 'Part II',
-                                        content: 'Part 1 data'),
+                                      title: 'Part II',
+                                      content: 'Part 1 data',
+                                    ),
                                     _buildPartItem(
-                                        title: 'Part III',
-                                        content: 'Part 1 data'),
+                                      title: 'Part III',
+                                      content: 'Part 1 data',
+                                    ),
                                     _buildPartItem(
-                                        title: 'Part I & II',
-                                        content: 'Part 1 data'),
+                                      title: 'Part I & II',
+                                      content: 'Part 1 data',
+                                    ),
                                     _buildPartItem(
-                                        title: 'Part II & III',
-                                        content: 'Part 1 data'),
+                                      title: 'Part II & III',
+                                      content: 'Part 1 data',
+                                    ),
                                     _buildPartItem(
-                                        title: 'Part Full',
-                                        content: 'Part 1 data'),
+                                      title: 'Part Full',
+                                      content: 'Part 1 data',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -308,7 +314,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 5,
-                            crossAxisSpacing: 30
+                        crossAxisSpacing: 30,
                       ),
                       itemBuilder: (context, index) {
                         return _buildCheckTopicBtn(
