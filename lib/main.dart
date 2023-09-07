@@ -16,8 +16,8 @@ Future<void> main() async {
   if (Platform.isWindows) {
     // WindowManager.instance.setMinimumSize(const Size(700, 800));
     WindowOptions windowOptions = const WindowOptions(
-      size: Size(1080, 720),
-      minimumSize: Size(1080, 720),
+      size: Size(1380, 920),
+      minimumSize: Size(1380, 920),
       center: true,
       skipTaskbar: true,
       windowButtonVisibility: true,
