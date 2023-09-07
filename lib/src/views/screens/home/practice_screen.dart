@@ -14,15 +14,38 @@ class _PracticeScreenState extends State<PracticeScreen> {
   String partFocused = 'Part I';
   Set<String> checkedTopics = {};
   Set<String> topics = {
+    'Animals',
+    'Routines',
+    'Books',
+    'Cleanliness',
+    'Clothing',
+    'Culture',
+    'Exercise',
+    'Family',
+    'Fears',
+    'Goals',
+    'Hobbies',
+    'Feelings',
+    'Hometown',
+    'Household Items',
     'Holidays',
     'Relationships',
     'Technology',
     'Sport',
     'Food',
+    'Jobs',
+    'Transportation',
+    'Television',
+    'Time',
     'Education',
+    'Travel',
+    'School',
     'Work',
     'Health',
+    'Seasons',
+    'Movies',
     'Books and Films',
+    'Sleep',
     'Accommodation',
     'Clothes and Fashion',
     'People — Personality and Character',
@@ -50,10 +73,24 @@ class _PracticeScreenState extends State<PracticeScreen> {
               children: [
                 Container(
                   margin: EdgeInsets.symmetric(
-                      vertical: Utils.instance().getDevicesHeight(context) * 0.05),
+                      vertical:
+                          Utils.instance().getDevicesHeight(context) * 0.05),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.defaultGrayColor,),
+                    border: Border.all(
+                      color: AppColors.defaultGrayColor,
+                    ),
                     borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 3,
+                        blurRadius: 10,
+                        offset: const Offset(
+                          0,
+                          2,
+                        ), // changes position of shadow
+                      ),
+                    ],
                   ),
                   width: Utils.instance().getDevicesWidth(context),
                   height: Utils.instance().getDevicesHeight(context),
@@ -66,7 +103,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 ),
                 Padding(
                   padding: EdgeInsets.symmetric(
-                    horizontal: Utils.instance().getDevicesWidth(context) * 0.04,
+                    horizontal:
+                        Utils.instance().getDevicesWidth(context) * 0.04,
                     vertical: Utils.instance().getDevicesHeight(context) * 0.03,
                   ),
                   child: Column(
@@ -74,7 +112,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       SizedBox(
-                        height: Utils.instance().getDevicesHeight(context) * 0.6,
+                        height:
+                            Utils.instance().getDevicesHeight(context) * 0.6,
                         child: Stack(
                           alignment: Alignment.topCenter,
                           children: [
@@ -84,8 +123,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
                             Expanded(
                               child: SizedBox(
                                 height:
-                                Utils.instance().getDevicesHeight(context) *
-                                    0.8,
+                                    Utils.instance().getDevicesHeight(context) *
+                                        0.8,
                                 child: ListView(
                                   children: [
                                     _buildPartItem(
@@ -179,10 +218,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: CustomTextStyle.textBoldBlack_22,
                           ),
                           Text(
                             content,
@@ -225,13 +261,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
                     padding: const EdgeInsets.only(top: 40, bottom: 10),
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          if (checkedTopics.length < topics.length) {
-                            checkedTopics.addAll(topics);
-                          } else {
-                            checkedTopics.clear();
-                          }
-                        });
+                        setState(
+                          () {
+                            if (checkedTopics.length < topics.length) {
+                              checkedTopics.addAll(topics);
+                            } else {
+                              checkedTopics.clear();
+                            }
+                          },
+                        );
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -262,14 +300,23 @@ class _PracticeScreenState extends State<PracticeScreen> {
                     height: 20,
                   ),
                   //list topics
-                  ListView.builder(
-                    itemCount: topics.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return _buildCheckTopicBtn(
-                          topic: topics.elementAt(index));
-                    },
-                  )
+                  SizedBox(
+                    height: Utils.instance().getDevicesHeight(context) * 0.7,
+                    child: GridView.builder(
+                      itemCount: topics.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 5,
+                            crossAxisSpacing: 30
+                      ),
+                      itemBuilder: (context, index) {
+                        return _buildCheckTopicBtn(
+                          topic: topics.elementAt(index),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -298,15 +345,17 @@ class _PracticeScreenState extends State<PracticeScreen> {
             checkedTopics.contains(topic)
                 ? const Icon(Icons.check_box_outlined)
                 : const Icon(Icons.check_box_outline_blank),
-            Text(
-              topic,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
+            Expanded(
+              child: Text(
+                topic,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                ),
+                overflow: TextOverflow.clip,
+                maxLines: 2,
+                softWrap: true,
               ),
-              overflow: TextOverflow.clip,
-              maxLines: 2,
-              softWrap: true,
             ),
           ],
         ),
