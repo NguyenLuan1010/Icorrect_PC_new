@@ -44,6 +44,11 @@ class _PracticeScreenState extends State<PracticeScreen> {
     'Health',
     'Seasons',
     'Movies',
+    'Music',
+    'Weather',
+    'Shopping',
+    'Environment',
+    'Advertising',
     'Books and Films',
     'Sleep',
     'Accommodation',
@@ -52,11 +57,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
     'Business',
     'People — Physical Appearance',
     'Towns and Cities',
-    'Music',
-    'Weather',
-    'Shopping',
-    'Environment',
-    'Advertising',
   };
 
   @override
@@ -64,7 +64,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: Utils.instance().getDevicesWidth(context) * 0.04,
+          horizontal: Utils.instance().getDevicesWidth(context) * 0.055,
           vertical: Utils.instance().getDevicesHeight(context) * 0.03,
         ),
         child: Center(
@@ -73,8 +73,8 @@ class _PracticeScreenState extends State<PracticeScreen> {
               children: [
                 Container(
                   margin: EdgeInsets.symmetric(
-                      vertical:
-                          Utils.instance().getDevicesHeight(context) * 0.05),
+                    vertical: Utils.instance().getDevicesHeight(context) * 0.05,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: AppColors.defaultGrayColor,
@@ -104,7 +104,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal:
-                        Utils.instance().getDevicesWidth(context) * 0.04,
+                        Utils.instance().getDevicesWidth(context) * 0.05,
                     vertical: Utils.instance().getDevicesHeight(context) * 0.03,
                   ),
                   child: Column(
