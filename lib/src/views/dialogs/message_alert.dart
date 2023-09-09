@@ -9,10 +9,7 @@ class MessageDialog {
         elevation: 0,
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          width: 400,
-          child: Wrap(
+        child:  Wrap(
             alignment: WrapAlignment.center,
             children: [
               const Text("Notify",
@@ -48,6 +45,6 @@ class MessageDialog {
                   )),
             ],
           ),
-        ));
+        );
   }
 }

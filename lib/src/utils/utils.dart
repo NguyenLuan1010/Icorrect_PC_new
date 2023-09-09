@@ -4,10 +4,14 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../data_source/constants.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
 import '../data_source/local/app_shared_references.dart';
+import '../data_source/local/file_storage_helper.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
+import '../models/homework_models/new_api_135/new_class_model.dart';
+import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import 'define_object.dart';
 
@@ -71,7 +75,7 @@ class Utils {
     }
   }
 
-    Map<String, dynamic> getHomeWorkStatus(ActivitiesModel homeWorkModel) {
+  Map<String, dynamic> getHomeWorkStatus(ActivitiesModel homeWorkModel) {
     if (null == homeWorkModel.activityAnswer) {
       //TODO: Check time end so voi time hien tai
       //Can server tra ve time hien tai - de thong nhat, do phai check timezone
@@ -120,7 +124,7 @@ class Utils {
     }
   }
 
-   String haveAiResponse(ActivitiesModel homeWorkModel) {
+  String haveAiResponse(ActivitiesModel homeWorkModel) {
     if (null != homeWorkModel.activityAnswer) {
       if (homeWorkModel.activityAnswer!.aiOrder != 0) {
         return "& AI Scored";
@@ -212,7 +216,7 @@ class Utils {
     return nameFile;
   }
 
-   String reConvertFileName(String nameFile) {
+  String reConvertFileName(String nameFile) {
     String letter = '-';
     String newLetter = '/';
     if (nameFile.contains(letter)) {
@@ -222,4 +226,134 @@ class Utils {
     return nameFile;
   }
 
+  String fileType(String filePath) {
+    String fileExtension = filePath.split('.').last.toLowerCase();
+    if (fileExtension == 'mp4' ||
+        fileExtension == 'mov' ||
+        fileExtension == 'avi') {
+      return StringClass.video;
+    }
+    if (fileExtension == 'wav' ||
+        fileExtension == 'mp3' ||
+        fileExtension == 'aac') {
+      return StringClass.audio;
+    }
+    return '';
+  }
+
+  Future<File> prepareVideoFile(String fileName) async {
+    File decodedVideoFile;
+    String bs4str =
+        await FileStorageHelper.readVideoFromFile(fileName, MediaType.video);
+    Uint8List decodedBytes = base64.decode(bs4str);
+    String filePath =
+        await FileStorageHelper.getFilePath(fileName, MediaType.video, null);
+
+    if (decodedBytes.isEmpty) {
+      //From second time and before
+      decodedVideoFile = File(filePath);
+    } else {
+      //Convert for first time
+      decodedVideoFile = await File(filePath).writeAsBytes(decodedBytes);
+    }
+    return decodedVideoFile;
+  }
+
+  Future<File> prepareAudioFile(String fileName, String? testId) async {
+    File decodedVideoFile;
+    String bs4str =
+        await FileStorageHelper.readVideoFromFile(fileName, MediaType.audio);
+    Uint8List decodedBytes = base64.decode(bs4str);
+    String filePath =
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+    if (decodedBytes.isEmpty) {
+      decodedVideoFile = File(filePath);
+    } else {
+      decodedVideoFile = await File(filePath).writeAsBytes(decodedBytes);
+    }
+    return decodedVideoFile;
+  }
+
+  int getRecordTime(int type) {
+    switch (type) {
+      case 0: //Answer for question in introduce
+        return 30;
+      case 1: //Answer for question in part 1
+        return 30;
+      case 2: //Answer for question in part 2
+        return 120;
+      case 3: //Answer for question in part 3
+        return 45;
+      default:
+        return 0;
+    }
+  }
+
+  String getTimeRecordString(int timerCount) {
+    String result = '';
+
+    if (timerCount < 10) {
+      return "00:0$timerCount";
+    }
+
+    if (timerCount < 60) {
+      return "00:$timerCount";
+    }
+
+    if (timerCount > 60) {
+      int seconds = (timerCount / 60).floor();
+      int ms = (timerCount - seconds * 60);
+      String str1 = seconds < 10 ? "0$seconds" : "$seconds";
+      String str2 = ms < 10 ? '0$ms' : '$ms';
+      return "$str1:$str2";
+    }
+
+    return result;
+  }
+
+  String formatTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(duration.inHours);
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return [if (duration.inHours > 0) hours, minutes, seconds].join(':');
+  }
+
+  Future<String> getAudioPathToPlay(
+      QuestionTopicModel question, String? testId) async {
+    String fileName = '';
+    if (question.answers.length > 1) {
+      if (question.repeatIndex == 0) {
+        fileName = question.answers.last.url;
+      } else {
+        fileName = question.answers.elementAt(question.repeatIndex - 1).url;
+      }
+    } else {
+      fileName = question.answers.first.url;
+    }
+    String path =
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+    return path;
+  }
+
+  Future<String> getReviewingAudioPathToPlay(
+      QuestionTopicModel question, String? testId) async {
+    String fileName = question.answers.first.url;
+    String path =
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+    return path;
+  }
+
+  String getClassNameWithId(String id, List<NewClassModel> list) {
+    if (list.isEmpty) return "";
+
+    for (int i = 0; i < list.length; i++) {
+      NewClassModel c = list[i];
+      if (c.id.toString() == id) {
+        return c.name;
+      }
+    }
+
+    return "";
+  }
 }

@@ -8,6 +8,8 @@ import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_mo
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/utils/define_object.dart';
+import 'package:icorrect_pc/src/utils/navigations.dart';
+import 'package:icorrect_pc/src/views/widgets/simulator_test_widget/download_progressing_widget.dart';
 
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -199,29 +201,31 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   Widget _buildHomeworkList() {
     double height = 450;
-
+    double w = MediaQuery.of(context).size.width;
     return Container(
+        width: w,
         margin: const EdgeInsets.only(top: 20, left: 100, right: 100),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [
-              AppColors.purpleSlight2,
-              Color.fromARGB(0, 255, 255, 255),
-              Color.fromARGB(0, 255, 255, 255)
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
         child: Consumer<HomeProvider>(builder: (context, provider, child) {
           return FDottedLine(
               color: AppColors.defaultPurpleColor,
               strokeWidth: 2.0,
               dottedLength: 10.0,
+              width: w,
               space: 6.0,
               corner: FDottedLineCorner.all(20),
               child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    colors: [
+                      AppColors.purpleSlight2,
+                      Color.fromARGB(0, 255, 255, 255),
+                      Color.fromARGB(0, 255, 255, 255)
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
                 padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,6 +281,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
   Widget _questionItem(ActivitiesModel homeWork) {
     Map<String, dynamic> statusMap =
         Utils.instance().getHomeWorkStatus(homeWork) ?? {};
+
+    int activityStatus = Utils.instance().getFilterStatus(statusMap['title']);
     return Container(
       margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -355,17 +361,16 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               ),
             ],
           ),
-          (homeWork.activityStatus == Status.OUT_OF_DATE.get ||
-                  homeWork.activityStatus == Status.NOT_COMPLETED.get)
+          // (homeWork.activityStatus == Status.OUT_OF_DATE.get ||
+          //         homeWork.activityStatus == Status.NOT_COMPLETED.get)
+          (activityStatus == Status.NOT_COMPLETED.get ||
+                  activityStatus == Status.OUT_OF_DATE.get)
               ? SizedBox(
                   width: 100,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (context.mounted) {
-                        // _provider.setCurrentMainWidget(
-                        //     DoingTest(homework: homeWork));
-                        // print('HomeWork Id : ${homeWork.id}');
-                      }
+                      Navigations.instance()
+                          .goToSimulatorTestRoom(context, homeWork);
                     },
                     style: ButtonStyle(
                         backgroundColor:
@@ -446,6 +451,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
   @override
   void onUpdateCurrentUserInfo(UserDataModel userDataModel) {
     print('onUpdateCurrentUserInfo');
-    //_loading?.hide();
+    _provider.setCurrentUser(userDataModel);
   }
 }

@@ -211,8 +211,8 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   }
 
   void _onPressLogin() {
-    String email = _txtEmailController.text;
-    String password = _txtPasswordController.text;
+    String email = _txtEmailController.text.trim();
+    String password = _txtPasswordController.text.trim();
 
     LoginPresenter presenter = LoginPresenter(this);
     presenter.login(email, password);
