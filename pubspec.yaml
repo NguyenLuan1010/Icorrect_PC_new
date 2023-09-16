@@ -57,6 +57,7 @@ dependencies:
   permission_handler: ^10.2.0
   flutter_local_notifications: ^13.0.0
   window_manager: ^0.3.6
+  flutter_breadcrumb: ^1.0.1
 
 dev_dependencies:
   flutter_test:
