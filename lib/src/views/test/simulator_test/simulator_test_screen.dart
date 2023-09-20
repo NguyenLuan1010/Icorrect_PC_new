@@ -10,7 +10,6 @@ import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/views/test/simulator_test/test_room_simulator.dart';
-import 'package:icorrect_pc/src/views/test/simulator_test/test_room_widget.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -20,6 +19,7 @@ import '../../../data_source/local/file_storage_helper.dart';
 import '../../../models/homework_models/new_api_135/activities_model.dart';
 import '../../../presenters/simulator_test_presenter.dart';
 import '../../../providers/simulator_test_provider.dart';
+import '../../../providers/test_room_provider.dart';
 import '../../dialogs/alert_dialog.dart';
 import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
@@ -81,42 +81,40 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   @override
   Widget build(BuildContext context) {
     double h = MediaQuery.of(context).size.height;
+    double w = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Align(
-          alignment: Alignment.topLeft,
-          child: SafeArea(
-            left: true,
-            top: true,
-            right: true,
-            bottom: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    children: [
-                      BackButtonWidget(backButtonTapped: _backButtonTapped),
-                      Text(widget.homeWorkModel.activityName,
-                          style: const TextStyle(
-                              color: AppColors.defaultPurpleColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    _buildBody(),
-                    _buildDownloadAgain(),
-                  ],
-                ),
-              ],
+        body: Align(
+      alignment: Alignment.topLeft,
+      child: SafeArea(
+        left: true,
+        top: true,
+        right: true,
+        bottom: true,
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                children: [
+                  BackButtonWidget(backButtonTapped: _backButtonTapped),
+                  Text(widget.homeWorkModel.activityName,
+                      style: const TextStyle(
+                          color: AppColors.defaultPurpleColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-          )),
-    );
+            Stack(
+              children: [
+                _buildBody(),
+                _buildDownloadAgain(),
+              ],
+            )
+          ],
+        ),
+      ),
+    ));
   }
 
   @override
@@ -260,7 +258,6 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
       if (provider.isDownloadProgressing) {
         return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const DownloadProgressingWidget(),
             Visibility(
@@ -283,14 +280,13 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
         return SizedBox(
           child: Stack(
             children: [
-              // TestRoomWidget(
-              //   homeWorkModel: widget.homeWorkModel,
-              //   simulatorTestPresenter: _simulatorTestPresenter!,
-              // ),
-              TestRoomSimulator(
-                  activitiesModel: widget.homeWorkModel,
-                  testDetailModel: _simulatorTestProvider!.currentTestDetail,
-                  simulatorTestPresenter: _simulatorTestPresenter!),
+              ChangeNotifierProvider(
+                create: (_) => TestRoomProvider(),
+                child: TestRoomSimulator(
+                    activitiesModel: widget.homeWorkModel,
+                    testDetailModel: _simulatorTestProvider!.currentTestDetail,
+                    simulatorTestPresenter: _simulatorTestPresenter!),
+              ),
               Visibility(
                 visible: provider.submitStatus == SubmitStatus.submitting,
                 child: const DefaultLoadingIndicator(
@@ -303,6 +299,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       }
     });
   }
+  
 
   Widget _buildDownloadAgain() {
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {

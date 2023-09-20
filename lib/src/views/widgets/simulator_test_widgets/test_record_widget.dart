@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 
 import 'package:provider/provider.dart';
@@ -26,9 +27,11 @@ class TestRecordWidget extends StatelessWidget {
 
     QuestionTopicModel currentQuestion = simulatorTestProvider.currentQuestion;
 
-    bool isRepeat = simulatorTestProvider.enableRepeatButton;
-
     return Consumer<TestRoomProvider>(builder: (context, provider, _) {
+      PlayListModel playListModel = provider.currentPlay;
+      bool enableRepeat = ((playListModel.numPart == PartOfTest.part1.get ||
+              playListModel.numPart == PartOfTest.part3.get) &&
+          provider.repeatTimes <= 1);
       if (provider.visibleRecord) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -65,26 +68,15 @@ class TestRecordWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildFinishButton(currentQuestion),
-                      Consumer<TestRoomProvider>(
-                          builder: (context, provider, _) {
-                        if (provider.topicQueue.isNotEmpty) {
-                          isRepeat = (provider.topicQueue.first.numPart ==
-                                      PartOfTest.part1.get ||
-                                  provider.topicQueue.first.numPart ==
-                                      PartOfTest.part3.get) &&
-                              provider.enableRepeatButton;
-                        }
-
-                        return Visibility(
-                          visible: isRepeat,
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 20),
-                              _buildRepeatButton(currentQuestion),
-                            ],
-                          ),
-                        );
-                      }),
+                      Visibility(
+                        visible: enableRepeat,
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 20),
+                            _buildRepeatButton(currentQuestion),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                   const SizedBox(height: 20),

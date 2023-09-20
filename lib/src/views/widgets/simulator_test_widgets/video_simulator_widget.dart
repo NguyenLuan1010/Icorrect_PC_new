@@ -29,16 +29,8 @@ class _VideoSimulatorWidgetState extends State<VideoSimulatorWidget> {
     return _buildVideoSimulator();
   }
 
-
   Widget _buildVideoSimulator() {
     return Consumer<TestRoomProvider>(builder: (context, provider, child) {
-      provider.videoPlayController.addListener(() {
-        VideoPlayerController currentController = provider.videoPlayController;
-        if (currentController.value.position ==
-            currentController.value.duration) {
-          widget.onVideoEnd();
-        }
-      });
       return Column(
         children: [
           Expanded(
@@ -83,18 +75,18 @@ class _VideoSimulatorWidgetState extends State<VideoSimulatorWidget> {
                   decoration: BoxDecoration(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
                       border: Border.all(color: Colors.grey, width: 1)),
-                  child: const LinearProgressIndicator(
+                  child: LinearProgressIndicator(
                     minHeight: 7,
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                         AppColors.defaultPurpleColor),
                     backgroundColor: Colors.white,
-                    value: 0.2,
+                    value: provider.indexQuestion / provider.questionLength,
                   ),
                 ),
                 Text(
-                  "Question ${(provider.indexCurrentQuestion + 1).toString()}"
+                  "Question ${(provider.indexQuestion).toString()}"
                   "/"
-                  " ${provider.currentQuestionList.length.toString()} ",
+                  " ${provider.questionLength.toString()} ",
                   style: const TextStyle(
                       color: Colors.black,
                       fontSize: 18,

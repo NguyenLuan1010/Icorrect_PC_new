@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/presenters/login_presenter.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/views/screens/auth/register_screen.dart';
-import 'package:icorrect_pc/src/views/widgets/homework_widget.dart';
 
 import 'package:provider/provider.dart';
 

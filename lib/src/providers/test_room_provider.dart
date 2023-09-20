@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/models/simulator_test_models/file_topic_model.dart';
+import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/utils/define_object.dart';
@@ -27,7 +29,7 @@ class TestRoomProvider extends ChangeNotifier {
   void clearData() {
     _strCountCueCard = "";
     _currentQuestion = QuestionTopicModel();
-    _currentQuestionList.clear();
+    _questionList.clear();
     _isVisibleCueCard = false;
     _isVisibleSaveTheTest = false;
     _isStartTest = false;
@@ -41,10 +43,112 @@ class TestRoomProvider extends ChangeNotifier {
     }
   }
 
-  HandleWhenFinish _handleWhenFinish = HandleWhenFinish.introVideoType;
-  HandleWhenFinish get handleWhenFinish => _handleWhenFinish;
-  void setHandleWhenFinish(HandleWhenFinish handle) {
-    _handleWhenFinish = handle;
+  int _selectedQuestionIndex = -1;
+  bool _isPlaying = false;
+  int get selectedQuestionIndex => _selectedQuestionIndex;
+  bool get isPlaying => _isPlaying;
+  void setSelectedQuestionIndex(int i, bool isPlaying) {
+    _selectedQuestionIndex = i;
+    _isPlaying = isPlaying;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _canPlayAnswer = false;
+  bool get canPlayAnswer => _canPlayAnswer;
+  void setCanPlayAnswer(bool canPlayAnswer) {
+    _canPlayAnswer = canPlayAnswer;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _canReanswer = false;
+  bool get canReanswer => _canReanswer;
+  void setCanReanswer(bool reanswer) {
+    _canReanswer = reanswer;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  List<FileTopicModel> _answersRecord = [];
+  List<FileTopicModel> get answerRecord => _answersRecord;
+  void addAnswerRecord(FileTopicModel file) {
+    _answersRecord.add(file);
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void clearAnswers() {
+    if (_answersRecord.isNotEmpty) {
+      _answersRecord.clear();
+    }
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _playedIntroduce = false;
+  bool get playedIntroduce => _playedIntroduce;
+  void setPlayedIntroduce(bool played) {
+    _playedIntroduce = played;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  PlayListModel _currentPlay = PlayListModel();
+  PlayListModel get currentPlay => _currentPlay;
+  void setCurrentPlay(PlayListModel play) {
+    _currentPlay = play;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _repeatTimes = 0;
+  int get repeatTimes => _repeatTimes;
+  void setRepeatTimes(int time) {
+    _repeatTimes = time;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _indexCurrentPlay = 0;
+  int get indexCurrentPlay => _indexCurrentPlay;
+  void setIndexCurrentPlay(int index) {
+    _indexCurrentPlay = index;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _questionLength = 1;
+  int get questionLength => _questionLength;
+  void setQuestionLength(int length) {
+    _questionLength = length;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _indexQuestion = 0;
+  int get indexQuestion => _indexQuestion;
+  void setIndexQuestion(int index) {
+    _indexQuestion = index;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  List<PlayListModel> _playList = [];
+  List<PlayListModel> get playList => _playList;
+  void setPlayList(List<PlayListModel> playList) {
+    _playList = playList;
     if (!isDisposed) {
       notifyListeners();
     }
@@ -87,24 +191,28 @@ class TestRoomProvider extends ChangeNotifier {
   }
 
   QuestionTopicModel _currentQuestion = QuestionTopicModel();
-  int _indexCurrentQuestion = 0;
   QuestionTopicModel get currentQuestion => _currentQuestion;
-  int get indexCurrentQuestion => _indexCurrentQuestion;
-  void setCurrentQuestion(int index, QuestionTopicModel question) {
+  void setCurrentQuestion(QuestionTopicModel question) {
     _currentQuestion = question;
-    _indexCurrentQuestion = index;
     if (!isDisposed) {
       notifyListeners();
     }
   }
 
-  List<QuestionTopicModel> _currentQuestionList = [];
-  List<QuestionTopicModel> get currentQuestionList => _currentQuestionList;
-  void setCurrentQuestionList(List<QuestionTopicModel> questions) {
-    if (_currentQuestionList.isNotEmpty) {
-      _currentQuestionList.clear();
+  List<QuestionTopicModel> _questionList = [];
+  List<QuestionTopicModel> get questionList => _questionList;
+  void addQuestionToList(QuestionTopicModel questionTopicModel) {
+    _questionList.add(questionTopicModel);
+    if (!isDisposed) {
+      notifyListeners();
     }
-    _currentQuestionList.addAll(questions);
+  }
+
+  void setQuestionList(List<QuestionTopicModel> questions) {
+    if (_questionList.isNotEmpty) {
+      _questionList.clear();
+    }
+    _questionList.addAll(questions);
     if (!isDisposed) {
       notifyListeners();
     }

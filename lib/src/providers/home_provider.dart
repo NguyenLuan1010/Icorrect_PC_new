@@ -32,6 +32,15 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
+  String _currentTime = "";
+  String get currentTime => _currentTime;
+  void setCurrentTime(String time){
+    _currentTime = time;
+     if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   List<ActivitiesModel> _activitiesList = [];
   List<ActivitiesModel> get activitiesList => _activitiesList;
 

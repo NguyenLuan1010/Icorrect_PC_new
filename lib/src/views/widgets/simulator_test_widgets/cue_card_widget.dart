@@ -20,7 +20,7 @@ class _CueCardWidgetState extends State<CueCardWidget> {
     return Consumer<TestRoomProvider>(
       builder: (context, provider, child) {
         if (provider.isVisibleCueCard &&
-            provider.currentQuestion.cueCard.isNotEmpty) {
+            provider.currentPlay.cueCard.isNotEmpty) {
           return Container(
             width: w,
             height: h,
@@ -54,7 +54,7 @@ class _CueCardWidgetState extends State<CueCardWidget> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    provider.currentQuestion.content,
+                    provider.currentPlay.questionContent,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -67,7 +67,7 @@ class _CueCardWidgetState extends State<CueCardWidget> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: Text(
-                        provider.currentQuestion.cueCard.trim(),
+                        provider.currentPlay.cueCard.trim(),
                         textAlign: TextAlign.left,
                         style: const TextStyle(
                           fontSize: 18,

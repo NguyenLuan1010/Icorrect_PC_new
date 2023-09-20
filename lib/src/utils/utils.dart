@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../data_source/constants.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
@@ -75,19 +76,38 @@ class Utils {
     }
   }
 
-  Map<String, dynamic> getHomeWorkStatus(ActivitiesModel homeWorkModel) {
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) {
+      if (n >= 10) {
+        return '$n';
+      }
+      return '0$n';
+    }
+
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+
+    return '$twoDigitMinutes:$twoDigitSeconds';
+  }
+
+  Map<String, dynamic> getHomeWorkStatus(
+      ActivitiesModel homeWorkModel, String serverCurrentTime) {
     if (null == homeWorkModel.activityAnswer) {
-      //TODO: Check time end so voi time hien tai
-      //Can server tra ve time hien tai - de thong nhat, do phai check timezone
-      //End time > time hien tai ==> out of date
-      //End time < time hien tai ==> Not Complete
+      bool timeCheck =
+          isExpired(homeWorkModel.activityEndTime, serverCurrentTime);
+      if (timeCheck) {
+        return {
+          'title': 'Out of date',
+          'color': Colors.red,
+        };
+      }
+
       return {
         'title': 'Not Completed',
         'color': const Color.fromARGB(255, 237, 179, 3)
       };
     } else {
-      if (homeWorkModel.activityAnswer!.aiOrder != 0 ||
-          homeWorkModel.activityAnswer!.orderId != 0) {
+      if (homeWorkModel.activityAnswer!.orderId != 0) {
         return {
           'title': 'Corrected',
           'color': const Color.fromARGB(255, 12, 201, 110)
@@ -124,10 +144,24 @@ class Utils {
     }
   }
 
+  static bool isExpired(String activityEndTime, String serverCurrentTime) {
+    final t1 = DateTime.parse(activityEndTime);
+
+    var inputFormat = DateFormat('MM/dd/yyyy HH:mm:ss');
+    var inputDate = inputFormat.parse(serverCurrentTime);
+    var outputFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    final t2 = DateTime.parse(outputFormat.format(inputDate));
+    if (t1.compareTo(t2) < 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   String haveAiResponse(ActivitiesModel homeWorkModel) {
     if (null != homeWorkModel.activityAnswer) {
       if (homeWorkModel.activityAnswer!.aiOrder != 0) {
-        return "& AI Scored";
+        return " AI Scored";
       } else {
         return '';
       }
@@ -208,7 +242,7 @@ class Utils {
 
   String convertFileName(String nameFile) {
     String letter = '/';
-    String newLetter = '-';
+    String newLetter = '_slash_';
     if (nameFile.contains(letter)) {
       nameFile = nameFile.replaceAll(letter, newLetter);
     }
@@ -217,7 +251,7 @@ class Utils {
   }
 
   String reConvertFileName(String nameFile) {
-    String letter = '-';
+    String letter = '_slash_';
     String newLetter = '/';
     if (nameFile.contains(letter)) {
       nameFile = nameFile.replaceAll(letter, newLetter);
@@ -334,6 +368,14 @@ class Utils {
     String path =
         await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
     return path;
+  }
+
+  Future<String> generateAudioFileName() async {
+    DateTime dateTime = DateTime.now();
+    String timeNow =
+        '${dateTime.year}${dateTime.month}${dateTime.day}_${dateTime.hour}${dateTime.minute}${dateTime.second}';
+
+    return '${timeNow}_reanswer';
   }
 
   Future<String> getReviewingAudioPathToPlay(

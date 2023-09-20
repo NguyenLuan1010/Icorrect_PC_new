@@ -1,23 +1,32 @@
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/providers/test_room_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/widgets/divider.dart';
 import 'package:icorrect_pc/src/views/widgets/grid_view_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../data_source/constants.dart';
+import '../../../data_source/local/file_storage_helper.dart';
 import '../../../models/simulator_test_models/question_topic_model.dart';
 import '../../../presenters/test_room_presenter.dart';
 import '../../../providers/play_answer_provider.dart';
 import '../../../providers/simulator_test_provider.dart';
 
 class TestQuestionWidget extends StatelessWidget {
-  const TestQuestionWidget({
+  TestQuestionWidget({
     super.key,
+    required this.testId,
     required this.playAnswerCallBack,
     required this.playReAnswerCallBack,
     required this.showTipCallBack,
   });
 
+  int testId;
   final Function(
           QuestionTopicModel questionTopicModel, int selectedQuestionIndex)
       playAnswerCallBack;
@@ -26,9 +35,9 @@ class TestQuestionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SimulatorTestProvider>(
-      builder: (context, simulatorTestProvider, child) {
-        if (simulatorTestProvider.questionList.isEmpty) {
+    return Consumer<TestRoomProvider>(
+      builder: (context, provider, child) {
+        if (provider.questionList.isEmpty) {
           return Container(
             alignment: Alignment.center,
             margin: const EdgeInsets.all(20),
@@ -49,7 +58,7 @@ class TestQuestionWidget extends StatelessWidget {
             height: h,
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: MyGridView(
-                data: simulatorTestProvider.questionList,
+                data: provider.questionList,
                 itemWidget: (dynamic itemModel, int index) {
                   QuestionTopicModel question = itemModel;
                   return _buildTestQuestionItem(context, question, index);
@@ -68,15 +77,11 @@ class TestQuestionWidget extends StatelessWidget {
     double h = MediaQuery.of(context).size.height / 1.8;
     if (question.cueCard.trim().isNotEmpty) {
       hasCueCard = true;
-      questionStr = 'Answer of Part 2';
+      questionStr = question.cueCard;
     }
 
-    SimulatorTestProvider prepareSimulatorTestProvider =
-        Provider.of<SimulatorTestProvider>(context, listen: false);
-    bool hasReAnswer = false;
-    if (prepareSimulatorTestProvider.activityType == "homework") {
-      hasReAnswer = true;
-    }
+    TestRoomProvider provider =
+        Provider.of<TestRoomProvider>(context, listen: false);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
@@ -86,30 +91,25 @@ class TestQuestionWidget extends StatelessWidget {
         children: [
           Visibility(
             visible: hasCueCard,
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    question.content,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  question.content,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    question.cueCard.trim(),
-                    textAlign: TextAlign.start,
-                    style: const TextStyle(
-                      fontSize: 15,
-                    ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  question.cueCard.trim(),
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(
+                    fontSize: 15,
                   ),
-                  const SizedBox(height: 5),
-                  const Divider(color: AppColors.defaultPurpleColor, height: 1),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           Row(
@@ -118,17 +118,19 @@ class TestQuestionWidget extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: w,
-                    child: Text(
-                      questionStr,
-                      overflow: TextOverflow.clip,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  !hasCueCard
+                      ? SizedBox(
+                          width: w,
+                          child: Text(
+                            questionStr,
+                            overflow: TextOverflow.clip,
+                            style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      : const SizedBox(),
                   const SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -136,7 +138,7 @@ class TestQuestionWidget extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          if (hasReAnswer)
+                          if (provider.canReanswer)
                             InkWell(
                               onTap: () {
                                 playReAnswerCallBack(question);
@@ -177,26 +179,28 @@ class TestQuestionWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              Consumer<PlayAnswerProvider>(
-                  builder: (context, playAnswerProvider, _) {
-                String iconPath;
-                if (index == playAnswerProvider.selectedQuestionIndex) {
-                  iconPath = AppAssets.img_pause;
-                } else {
-                  iconPath = AppAssets.img_play;
-                }
+              if (provider.canPlayAnswer)
+                Consumer<TestRoomProvider>(
+                    builder: (context, playAnswerProvider, _) {
+                  String iconPath;
+                  if (index == playAnswerProvider.selectedQuestionIndex &&
+                      playAnswerProvider.isPlaying) {
+                    iconPath = AppAssets.img_pause;
+                  } else {
+                    iconPath = AppAssets.img_play;
+                  }
 
-                return InkWell(
-                  onTap: () {
-                    playAnswerCallBack(question, index);
-                  },
-                  child: Image(
-                    image: AssetImage(iconPath),
-                    width: 50,
-                    height: 50,
-                  ),
-                );
-              })
+                  return InkWell(
+                    onTap: () {
+                      playAnswerCallBack(question, index);
+                    },
+                    child: Image(
+                      image: AssetImage(iconPath),
+                      width: 50,
+                      height: 50,
+                    ),
+                  );
+                })
             ],
           ),
           const SizedBox(height: 5),

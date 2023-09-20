@@ -122,7 +122,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   _provider.setClassSelection(newValue!);
                   List<ActivitiesModel> activities =
                       _presenter.filterActivities(newValue.id,
-                          provider.activitiesList, provider.statusActivity);
+                          provider.activitiesList, provider.statusActivity,_provider.currentTime);
                   _provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
@@ -174,7 +174,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   _provider.setStatusActivity(newValue!);
                   List<ActivitiesModel> activities =
                       _presenter.filterActivities(provider.classSelected.id,
-                          provider.activitiesList, newValue);
+                          provider.activitiesList, newValue,_provider.currentTime);
                   _provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
@@ -280,7 +280,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   Widget _questionItem(ActivitiesModel homeWork) {
     Map<String, dynamic> statusMap =
-        Utils.instance().getHomeWorkStatus(homeWork) ?? {};
+        Utils.instance().getHomeWorkStatus(homeWork, _provider.currentTime) ??
+            {};
 
     int activityStatus = Utils.instance().getFilterStatus(statusMap['title']);
     return Container(
@@ -344,16 +345,11 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                               fontSize: 12, color: Colors.black)),
                       const Text(' | ',
                           style: TextStyle(fontSize: 12, color: Colors.black)),
-                      Text(
-                          (statusMap.isNotEmpty)
-                              ? '${statusMap['title']} ${Utils.instance().haveAiResponse(homeWork)}'
-                              : '',
+                      Text(_statusOfActivity(homeWork),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: (statusMap.isNotEmpty)
-                                ? statusMap['color']
-                                : AppColors.purple,
+                            color: _getColor(homeWork),
                           ))
                     ],
                   )
@@ -361,8 +357,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               ),
             ],
           ),
-          // (homeWork.activityStatus == Status.OUT_OF_DATE.get ||
-          //         homeWork.activityStatus == Status.NOT_COMPLETED.get)
           (activityStatus == Status.NOT_COMPLETED.get ||
                   activityStatus == Status.OUT_OF_DATE.get)
               ? SizedBox(
@@ -407,9 +401,30 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     );
   }
 
+  String _statusOfActivity(ActivitiesModel activitiesModel) {
+    String status = Utils.instance()
+        .getHomeWorkStatus(activitiesModel, _provider.currentTime)['title'];
+    String aiStatus = Utils.instance().haveAiResponse(activitiesModel);
+    if (aiStatus.isNotEmpty) {
+      return "${status == 'Corrected' ? '$status &' : ''}$aiStatus";
+    } else {
+      return status;
+    }
+  }
+
+  Color _getColor(ActivitiesModel activitiesModel) {
+    String aiStatus = Utils.instance().haveAiResponse(activitiesModel);
+    if (aiStatus.isNotEmpty) {
+      return const Color.fromARGB(255, 12, 201, 110);
+    } else {
+      return Utils.instance().getHomeWorkStatus(activitiesModel,_provider.currentTime)['color'];
+    }
+  }
+
   @override
-  void onGetListHomeworkComplete(
-      List<ActivitiesModel> homeworks, List<NewClassModel> classes) {
+  void onGetListHomeworkComplete(List<ActivitiesModel> homeworks,
+      List<NewClassModel> classes, String currrentTime) {
+    _provider.setCurrentTime(currrentTime);
     _provider.setActivitiesList(homeworks);
     _provider.setActivitiesFilter(homeworks);
 

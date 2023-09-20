@@ -14,10 +14,13 @@ import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
+import '../models/simulator_test_models/playlist_model.dart';
 
 abstract class TestRoomSimulatorContract {
   void playIntroduce(File introduceFile);
   void playQuestion(File normalFile, File slowFile);
+  void playEndOfTakeNote(File endOfTakeNoteFile);
+  void playEndOfTest(File fileEndOfTest);
   void onCountDown(String strCount);
   void onFinishAnswer(bool isPart2);
   void onCountDownForCueCard(String strCount);
@@ -55,6 +58,64 @@ class TestRoomSimulatorPresenter {
     return topicsList;
   }
 
+  List<PlayListModel> getPlayList(TestDetailModel testDetailModel) {
+    List<PlayListModel> playList = [];
+    List<TopicModel> topicsList = getListTopicModel(testDetailModel);
+
+    for (int i = 0; i < topicsList.length; i++) {
+      TopicModel topic = topicsList.elementAt(i);
+
+      List<QuestionTopicModel> questions = getAllQuestionsTopic(topic);
+
+      if (topic.files.isNotEmpty && topic.questionList.isNotEmpty) {
+        PlayListModel playListIntro = PlayListModel();
+        playListIntro.questionContent = PlayListType.introduce.name;
+        playListIntro.numPart = topic.numPart;
+        playListIntro.fileIntro =
+            topic.files.isNotEmpty ? topic.files.first.url : "";
+        playList.add(playListIntro);
+      }
+
+      for (int j = 0; j < questions.length; j++) {
+        PlayListModel playListModel = PlayListModel();
+        playListModel.numPart = topic.numPart;
+        playListModel.endOfTakeNote = topic.endOfTakeNote.url;
+        playListModel.endOfTest = topic.fileEndOfTest.url;
+        QuestionTopicModel question = questions.elementAt(j);
+        playListModel.questionContent = question.content;
+        playListModel.cueCard = question.cueCard;
+        playListModel.isFollowUp = question.isFollowUpQuestion();
+        List<FileTopicModel> files = question.files;
+        playListModel.questionTopicModel = question;
+        playListModel.fileQuestionNormal = files.first.url;
+        playListModel.fileQuestionSlow = files.length > 1
+            ? files.last.url
+            : playListModel.fileQuestionNormal;
+        playList.add(playListModel);
+      }
+
+      if (topic.endOfTakeNote.url.isNotEmpty && topic.questionList.isNotEmpty) {
+        PlayListModel playListEndOfTakeNote = PlayListModel();
+        playListEndOfTakeNote.endOfTakeNote = topic.endOfTakeNote.url;
+        playListEndOfTakeNote.questionContent = PlayListType.endOfTakeNote.name;
+        playListEndOfTakeNote.numPart = 2;
+        playList.add(playListEndOfTakeNote);
+      }
+
+      if (topic.fileEndOfTest.url.isNotEmpty) {
+        PlayListModel playListEndOfTest = PlayListModel();
+        playListEndOfTest.endOfTest = topic.fileEndOfTest.url;
+        playListEndOfTest.questionContent = PlayListType.endOfTest.name;
+        playListEndOfTest.numPart = 3;
+        playList.add(playListEndOfTest);
+      }
+    }
+
+    playList.sort((a, b) => a.numPart.compareTo(b.numPart));
+
+    return playList;
+  }
+
   List<QuestionTopicModel> getAllQuestionsTopic(TopicModel topicModel) {
     List<QuestionTopicModel> questions = [];
     if (topicModel.followUp.isNotEmpty) {
@@ -64,76 +125,70 @@ class TestRoomSimulatorPresenter {
     return questions;
   }
 
-  // Future doingTest(, TopicModel currentTopic,
-  //     {QuestionTopicModel? currentQuestion}) async {
-  //   if (!playedIntroduce) {
-  //     playingIntroduce(currentTopic);
-  //   } else {
-  //     playingQuestion(currentQuestion!);
-  //   }
-  // }
-
-  bool isLastTopic(TopicModel currentTopic, Queue<TopicModel> topics) {
-    return currentTopic.id == topics.last.id;
+  int getQuestionLength(TestDetailModel testDetailModel) {
+    List<TopicModel> topics = getListTopicModel(testDetailModel);
+    List<QuestionTopicModel> questions = [];
+    for (int i = 0; i < topics.length; i++) {
+      questions.addAll(getAllQuestionsTopic(topics[i]));
+    }
+    return questions.length;
   }
 
-  bool hasFollowUp(TopicModel currentTopic) {
-    return currentTopic.followUp.isNotEmpty;
-  }
-
-  Future playingIntroduce(TopicModel currentTopic) async {
-    List<FileTopicModel> files = currentTopic.files;
-
-    if (files.isNotEmpty) {
-      FileTopicModel file = files.first;
-      if (kDebugMode) {
-        print("DEBUG: file.url.toString() : ${file.url.toString()}");
-      }
-
-      bool isExist = await FileStorageHelper.checkExistFile(
-          file.url, MediaType.video, null);
-      if (isExist) {
-        String filePath = await FileStorageHelper.getFilePath(
-            file.url, MediaType.video, null);
-        _view!.playIntroduce(File(filePath));
-      } else {
-        //Handle have not file introduce
-        print("Handle have not file introduce 1");
-      }
+  Future playingIntroduce(String file) async {
+    bool isExist =
+        await FileStorageHelper.checkExistFile(file, MediaType.video, null);
+    if (isExist) {
+      String filePath =
+          await FileStorageHelper.getFilePath(file, MediaType.video, null);
+      _view!.playIntroduce(File(filePath));
     } else {
       //Handle have not file introduce
-      print("Handle have not file introduce 2");
+      print("Handle have not file introduce 1");
     }
   }
 
-  Future playingQuestion(QuestionTopicModel currentQuestion) async {
-    List<FileTopicModel> files = currentQuestion.files;
-    if (files.isNotEmpty) {
-      FileTopicModel fileMormal = files.first;
-      FileTopicModel fileSlow = FileTopicModel();
-      if (files.length == 2) {
-        fileSlow = files.last;
-      }
+  Future playingQuestion(String fileNormal, String fileSlow) async {
+    bool isExistFileNormal = await FileStorageHelper.checkExistFile(
+        fileNormal, MediaType.video, null);
+    bool isExistFileSlow =
+        await FileStorageHelper.checkExistFile(fileSlow, MediaType.video, null);
 
-      bool isExistFileNormal = await FileStorageHelper.checkExistFile(
-          fileMormal.url, MediaType.video, null);
-      bool isExistFileSlow = await FileStorageHelper.checkExistFile(
-          fileSlow.url, MediaType.video, null);
+    if (isExistFileNormal) {
+      String normalPath = await FileStorageHelper.getFilePath(
+          fileNormal, MediaType.video, null);
 
-      if (isExistFileNormal) {
-        String normalPath = await FileStorageHelper.getFilePath(
-            fileMormal.url, MediaType.video, null);
-
-        String slowPath = isExistFileSlow
-            ? await FileStorageHelper.getFilePath(
-                fileSlow.url, MediaType.video, null)
-            : normalPath;
-        _view!.playQuestion(File(normalPath), File(slowPath));
-      } else {
-        //Handle have not file question
-      }
+      String slowPath = isExistFileSlow
+          ? await FileStorageHelper.getFilePath(fileSlow, MediaType.video, null)
+          : normalPath;
+      _view!.playQuestion(File(normalPath), File(slowPath));
     } else {
       //Handle have not file question
+    }
+  }
+
+  Future playingEndOfTakeNote(String file) async {
+    bool isExist =
+        await FileStorageHelper.checkExistFile(file, MediaType.video, null);
+    if (isExist) {
+      String filePath =
+          await FileStorageHelper.getFilePath(file, MediaType.video, null);
+      _view!.playEndOfTakeNote(File(filePath));
+    } else {
+      //Handle have not file introduce
+      print("Handle have not file introduce 1");
+    }
+  }
+
+  Future playingEndOfTest(String file) async {
+    bool isExist =
+        await FileStorageHelper.checkExistFile(file, MediaType.video, null);
+    if (isExist) {
+      String filePath =
+          await FileStorageHelper.getFilePath(file, MediaType.video, null);
+      _view!.playEndOfTest(File(filePath));
+    } else {
+      //Handle have not file introduce
+      print("Handle have not file introduce 1");
     }
   }
 

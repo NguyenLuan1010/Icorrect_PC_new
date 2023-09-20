@@ -13,8 +13,8 @@ import '../models/user_data_models/user_data_model.dart';
 import '../utils/utils.dart';
 
 abstract class HomeWorkViewContract {
-  void onGetListHomeworkComplete(
-      List<ActivitiesModel> homeworks, List<NewClassModel> classes);
+  void onGetListHomeworkComplete(List<ActivitiesModel> homeworks,
+      List<NewClassModel> classes, String currentTime);
   void onGetListHomeworkError(String message);
   void onLogoutComplete();
   void onLogoutError(String message);
@@ -54,7 +54,8 @@ class HomeWorkPresenter {
         List<NewClassModel> classes =
             await _generateListNewClass(dataMap['data']);
         List<ActivitiesModel> homeworks = await _generateListHomeWork(classes);
-        _view!.onGetListHomeworkComplete(homeworks, classes);
+        _view!.onGetListHomeworkComplete(
+            homeworks, classes, dataMap['current_time']);
       } else {
         _view!.onGetListHomeworkError(
             "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}");
@@ -74,8 +75,8 @@ class HomeWorkPresenter {
     return temp;
   }
 
-  List<ActivitiesModel> filterActivities(
-      int classSelectedId, List<ActivitiesModel> activities, String status) {
+  List<ActivitiesModel> filterActivities(int classSelectedId,
+      List<ActivitiesModel> activities, String currentTime, String status) {
     List<ActivitiesModel> activitiesFilter = [];
 
     if (classSelectedId == 0 && status == "All") {
@@ -84,7 +85,7 @@ class HomeWorkPresenter {
 
     for (ActivitiesModel activity in activities) {
       Map<String, dynamic> activityStatus =
-          Utils.instance().getHomeWorkStatus(activity);
+          Utils.instance().getHomeWorkStatus(activity, currentTime);
       if (activityStatus['title'] == status &&
           activity.classId == classSelectedId) {
         activitiesFilter.add(activity);

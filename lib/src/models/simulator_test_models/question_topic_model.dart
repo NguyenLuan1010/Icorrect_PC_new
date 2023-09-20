@@ -22,6 +22,7 @@ class QuestionTopicModel {
   //0 - first answer  1 - second answer(repeat 1)  2 - third answer (repeat 2)
   int? _repeatIndex = 0;
   List<FileTopicModel>? _files;
+  String? _duration;
 
   QuestionTopicModel(
       {int? id,
@@ -77,6 +78,10 @@ class QuestionTopicModel {
   set numPart(int numPart) => _numPart = numPart;
   int get repeatIndex => _repeatIndex ?? 0;
   set repeatIndex(int repeatIndex) => _repeatIndex = repeatIndex;
+
+  String? get duration => _duration ?? "00:00";
+
+  set duration(String? value) => _duration = value;
 
   List<FileTopicModel> get files => _files ?? [];
   set files(List<FileTopicModel> files) => _files = files;
