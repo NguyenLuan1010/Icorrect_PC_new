@@ -16,6 +16,7 @@ class AppAssets {
   static const img_download_waring = '${image_folder}img_download_warning.png';
   static const img_empty = '${image_folder}img_empty.png';
   static const img_micro = '${image_folder}img_mic.png';
+  static const img_download = "${image_folder}img_download.png";
   static const img_connect_internet = '${image_folder}img_no_internet.png';
   static const img_not_found = '${image_folder}img_not_found.png';
   static const img_pause = '${image_folder}img_pause.png';
@@ -26,4 +27,5 @@ class AppAssets {
   static const img_warning = '${image_folder}img_warning.png';
   static const img_logo_app = '${image_folder}logo_app.png';
   static const img_voice_line = '${image_folder}img_voice_line.jpg';
+  static const img_start = '${image_folder}img_start.png';
 }

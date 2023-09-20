@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../models/ui_models/alert_info.dart';
 
-
 enum ToastStatesType {
   success,
   error,
@@ -32,6 +31,18 @@ enum HandleWhenFinish {
   endOfTestVideoType,
   reviewingVideoType,
   reviewingPlayTheQuestionType,
+}
+
+enum VideoType {
+  introVideoType,
+  questionVideoType,
+  endOfTestVideoType,
+}
+
+enum PlayListType {
+  introduce,
+  endOfTakeNote,
+  endOfTest,
 }
 
 enum Status {
@@ -136,7 +147,7 @@ enum Alert {
   static const icon = 'icon';
   final Map<String, String> type;
 }
- 
+
 enum SelectType { classType, statusType }
 
 class FilterJsonData {
@@ -223,8 +234,6 @@ class GlobalScaffoldKey {
   static final simulatorTestScaffoldKey =
       GlobalKey<ScaffoldState>(debugLabel: 'SimulatorTestScaffoldKey');
 }
-
-
 
 class FontsSize {
   static const double fontSize_8 = 8.0;

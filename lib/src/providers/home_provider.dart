@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/new_class_model.dart';
 
+import '../models/user_data_models/user_data_model.dart';
+import '../presenters/simulator_test_presenter.dart';
+
 class HomeProvider extends ChangeNotifier {
   bool isDisposed = false;
 
@@ -25,6 +28,15 @@ class HomeProvider extends ChangeNotifier {
     _classSelected = NewClassModel();
     _statusActivity = "All";
     if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  String _currentTime = "";
+  String get currentTime => _currentTime;
+  void setCurrentTime(String time){
+    _currentTime = time;
+     if (!isDisposed) {
       notifyListeners();
     }
   }
@@ -77,5 +89,22 @@ class HomeProvider extends ChangeNotifier {
     if (!isDisposed) {
       notifyListeners();
     }
+  }
+
+  //Current user information
+  UserDataModel _currentUser = UserDataModel();
+  UserDataModel get currentUser => _currentUser;
+  void setCurrentUser(UserDataModel user) {
+    _currentUser = user;
+
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  SimulatorTestPresenter? _simulatorTestPresenter;
+  SimulatorTestPresenter? get simulatorTestPresenter => _simulatorTestPresenter;
+  void setSimulatorTestPresenter(SimulatorTestPresenter? presenter) {
+    _simulatorTestPresenter = presenter;
   }
 }

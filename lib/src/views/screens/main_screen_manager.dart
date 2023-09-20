@@ -176,6 +176,42 @@ class _MainWidgetState extends State<MainWidget> {
     );
   }
 
+  // static Widget _getCircleAvatar(UserDataModel? user) {
+   
+  //   return CircleAvatar(
+  //             child: Consumer<HomeProvider>(
+  //                 builder: (context, homeWorkProvider, child) {
+  //               return CachedNetworkImage(
+  //                 imageUrl:
+  //                     fileEP(homeWorkProvider.currentUser.profileModel.avatar),
+  //                 imageBuilder: (context, imageProvider) => Container(
+  //                   decoration: BoxDecoration(
+  //                     borderRadius: BorderRadius.circular(CustomSize.size_100),
+  //                     image: DecorationImage(
+  //                       image: imageProvider,
+  //                       fit: BoxFit.cover,
+  //                       colorFilter: const ColorFilter.mode(
+  //                         Colors.transparent,
+  //                         BlendMode.colorBurn,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 placeholder: (context, url) =>
+  //                     const CircularProgressIndicator(),
+  //                 errorWidget: (context, url, error) => CircleAvatar(
+  //                   child: Image.asset(
+  //                     AppAssets.default_avatar,
+  //                     width: CustomSize.size_40,
+  //                     height: CustomSize.size_40,
+  //                   ),
+  //                 ),
+  //               );
+  //             })
+  //   );
+  // }
+
+
   Widget _body() {
     return Consumer<MainWidgetProvider>(
         builder: (context, appState, child) =>

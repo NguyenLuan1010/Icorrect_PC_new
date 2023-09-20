@@ -86,6 +86,7 @@ class ActivitiesModel {
     _activityType = json['activity_type'];
     _activityStatus = json['activity_status'];
     _activityTestOption = json['activity_test_option'];
+
     _activityAnswer = json['activity_answer'] != null
         ? ActivityAnswer.fromJson(json['activity_answer'])
         : null;
