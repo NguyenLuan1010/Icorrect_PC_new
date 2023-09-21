@@ -11,7 +11,6 @@ import '../../../../core/app_colors.dart';
 import '../../../data_source/local/app_shared_preferences_keys.dart';
 import '../../../data_source/local/app_shared_references.dart';
 import '../../../utils/Navigations.dart';
-import '../../../utils/define_object.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
 import '../../dialogs/message_alert.dart';

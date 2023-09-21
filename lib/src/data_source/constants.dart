@@ -214,6 +214,15 @@ class AlertClass {
 
   static AlertInfo errorWhenUpdateAnswer = AlertInfo(
       'Warning', 'An error when update your answers. Please try again !');
+
+  ///////////////////////////Submit test///////////////////////////////////////
+
+  static AlertInfo submitTestSuccess =
+      AlertInfo('Notification', 'Your test is save successfully !');
+  static AlertInfo failToSubmitAndContactAdmin = AlertInfo('Warning',
+      'Error! An error occurred. Please try again later. Please contact I Correct admin for support!');
+  static AlertInfo networkFailToSubmit = AlertInfo('Warning',
+      'Error! An error occurred.Please check your internet and click Save The Test again');
 }
 
 class GlobalScaffoldKey {

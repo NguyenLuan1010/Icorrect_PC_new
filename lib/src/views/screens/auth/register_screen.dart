@@ -3,7 +3,6 @@ import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/define_object.dart';
 import '../../widgets/input_field_custom.dart';
 import 'login_screen.dart';
 

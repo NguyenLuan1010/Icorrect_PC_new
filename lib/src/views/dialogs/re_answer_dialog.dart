@@ -8,6 +8,7 @@ import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 
+import '../../data_source/local/file_storage_helper.dart';
 import '../../models/simulator_test_models/question_topic_model.dart';
 import '../../presenters/test_room_presenter.dart';
 import '../../providers/re_answer_provider.dart';
@@ -20,7 +21,8 @@ class ReAnswerDialog extends Dialog {
   Timer? _countDown;
   int _timeRecord = 30;
   late Record _record;
-  final String _filePath = '';
+  String _filePath = '';
+  String _fileName = '';
   final String _currentTestId;
   final Function(QuestionTopicModel question) _finishReanswerCallback;
 
@@ -150,15 +152,20 @@ class ReAnswerDialog extends Dialog {
   }
 
   void _finishReAnswer(QuestionTopicModel question) {
+    question.answers.last.url = _fileName;
     _record.stop();
     _countDown!.cancel();
     _finishReanswerCallback(question);
     Navigator.pop(_context);
   }
 
-  void _cancelReAnswer() {
+  void _cancelReAnswer() async {
+    if (File(_filePath).existsSync()) {
+      await File(_filePath).delete();
+    }
     _record.stop();
     _countDown!.cancel();
+    // ignore: use_build_context_synchronously
     Navigator.pop(_context);
   }
 
@@ -172,13 +179,14 @@ class ReAnswerDialog extends Dialog {
   }
 
   void _startRecord() async {
-    String path =
-        await Utils.instance().getAudioPathToPlay(_question, _currentTestId);
-
+    _fileName = '${await Utils.instance().generateAudioFileName()}.wav';
+    _filePath =
+        '${await FileStorageHelper.getFolderPath(MediaType.audio, _currentTestId)}'
+        '/$_fileName';
     if (await _record.hasPermission()) {
       await _record.start(
-        path: path,
-        encoder: AudioEncoder.wav,
+        path: _filePath,
+        encoder: Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
         bitRate: 128000,
         samplingRate: 44100,
       );

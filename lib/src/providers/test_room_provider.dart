@@ -7,7 +7,6 @@ import 'package:icorrect_pc/src/models/simulator_test_models/file_topic_model.da
 import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
-import 'package:icorrect_pc/src/utils/define_object.dart';
 import 'package:video_player/video_player.dart';
 
 class TestRoomProvider extends ChangeNotifier {

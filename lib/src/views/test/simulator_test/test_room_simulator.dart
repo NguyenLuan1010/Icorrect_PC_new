@@ -11,9 +11,9 @@ import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
+import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/presenters/test_room_presenter.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
-import 'package:icorrect_pc/src/utils/define_object.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/re_answer_dialog.dart';
 import 'package:icorrect_pc/src/views/widgets/empty_widget.dart';
@@ -154,7 +154,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
                 StartTestWidget(onClickStartTest: () {
                   _onClickStartTest();
                 }),
-                SaveTheTestWidget(),
+                SaveTheTestWidget(() {
+                  _presenter!.submitMyTest(
+                      testId: widget.testDetailModel.testId.toString(),
+                      activityId: widget.activitiesModel.activityId.toString(),
+                      questionsList: _roomProvider!.questionList);
+                }),
                 TestRecordWidget(
                   finishAnswer: (questionTopicModel) {
                     _onFinishAnswer();
@@ -177,31 +182,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   @override
-  void playIntroduce(File introduceFile) {
-    _initVideoController(introduceFile);
-  }
-
-  @override
-  void playQuestion(File normalFile, File slowFile) {
-    if (_roomProvider!.repeatTimes >= 1) {
-      File videoFile = normalFile;
-      if (normalFile.path != slowFile.path) {
-        videoFile = slowFile;
-      } else {
-        _videoPlayerController!.setPlaybackSpeed(0.7);
-      }
-      
-    } else {}
-  }
-
-  @override
-  void playEndOfTakeNote(File endOfTakeNoteFile) {
-    _initVideoController(endOfTakeNoteFile);
-  }
-
-  @override
-  void playEndOfTest(File fileEndOfTest) {
-    _initVideoController(fileEndOfTest);
+  void playFileVideo(File normalFile, File slowFile) {
+    _initVideoController(normalFile);
   }
 
   Future _initVideoController(File file) async {
@@ -211,6 +193,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
             ? _videoPlayerController!.pause()
             : _videoPlayerController!.play();
       });
+
+    if (_roomProvider!.repeatTimes > 1) {
+      _videoPlayerController!.setPlaybackSpeed(0.7);
+    }
 
     _roomProvider!.setPlayController(_videoPlayerController!);
     _roomProvider!.videoPlayController.addListener(() {
@@ -230,14 +216,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       _startCountDownCueCard();
     } else if (playListModel.questionContent == PlayListType.endOfTest.name ||
         _roomProvider!.indexQuestion == _roomProvider!.questionLength) {
-      _roomProvider!.setVisibleSaveTheTest(true);
-      _roomProvider!
-          .setCanReanswer(widget.activitiesModel.activityType == "homework");
-      _roomProvider!.setCanPlayAnswer(true);
-      _roomProvider!.setVisibleRecord(false);
-      if (null != _countDown) {
-        _countDown!.cancel();
-      }
+      _onEndTheTest();
     } else {
       _startCountDownRecord();
     }
@@ -277,14 +256,13 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   // }
 
   void _onClickRepeatAnswer() {
+    _roomProvider!.setVisibleRecord(false);
     _roomProvider!.setRepeatTimes(_roomProvider!.repeatTimes + 1);
     PlayListModel playListModel = _roomProvider!.currentPlay;
 
     if (null != _countDown) {
       _countDown!.cancel();
     }
-
-    _roomProvider!.setVisibleRecord(false);
 
     _presenter!.playingQuestion(
         playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
@@ -325,29 +303,46 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   void _doingTest() {
     int indexPlay = _roomProvider!.indexCurrentPlay + 1;
-    _roomProvider!.setIndexCurrentPlay(indexPlay);
-    PlayListModel playListModel1 = _roomProvider!.currentPlay;
-    for (int i = 0; i < playListModel1.questionTopicModel.answers.length; i++) {
+    if (indexPlay <= _roomProvider!.playList.length - 1) {
+      _roomProvider!.setIndexCurrentPlay(indexPlay);
+      PlayListModel playListModel1 = _roomProvider!.currentPlay;
       if (kDebugMode) {
-        print(
-            "DEBUG : ${playListModel1.questionTopicModel.answers[i].url},index :${i.toString()}");
+        for (int i = 0;
+            i < playListModel1.questionTopicModel.answers.length;
+            i++) {
+          print(
+              "DEBUG : ${playListModel1.questionTopicModel.answers[i].url},index :${i.toString()}");
+        }
       }
-    }
-    PlayListModel playListModel = _roomProvider!.playList[indexPlay];
+      PlayListModel playListModel = _roomProvider!.playList[indexPlay];
 
-    if (playListModel.questionContent == PlayListType.introduce.name) {
-      _presenter!.playingIntroduce(playListModel.fileIntro);
-    } else if (playListModel.questionContent ==
-        PlayListType.endOfTakeNote.name) {
-      _presenter!.playingEndOfTakeNote(playListModel.endOfTakeNote);
-    } else if (playListModel.questionContent == PlayListType.endOfTest.name) {
-      _presenter!.playingEndOfTest(playListModel.endOfTest);
-    } else {
       _roomProvider!.setRepeatTimes(0);
-      _presenter!.playingQuestion(
-          playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+      if (playListModel.questionContent == PlayListType.introduce.name) {
+        _presenter!.playingIntroduce(playListModel.fileIntro);
+      } else if (playListModel.questionContent ==
+          PlayListType.endOfTakeNote.name) {
+        _presenter!.playingEndOfTakeNote(playListModel.endOfTakeNote);
+      } else if (playListModel.questionContent == PlayListType.endOfTest.name) {
+        _presenter!.playingEndOfTest(playListModel.endOfTest);
+      } else {
+        _presenter!.playingQuestion(
+            playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+      }
+      _roomProvider!.setCurrentPlay(playListModel);
+    } else {
+      _onEndTheTest();
     }
-    _roomProvider!.setCurrentPlay(playListModel);
+  }
+
+  void _onEndTheTest() {
+    _roomProvider!.setVisibleSaveTheTest(true);
+    _roomProvider!
+        .setCanReanswer(widget.activitiesModel.activityType == "homework");
+    _roomProvider!.setCanPlayAnswer(true);
+    _roomProvider!.setVisibleRecord(false);
+    if (null != _countDown) {
+      _countDown!.cancel();
+    }
   }
 
   Future<void> _recordAnswer() async {
@@ -359,7 +354,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (await _recordController!.hasPermission()) {
       await _recordController!.start(
         path: path,
-        encoder: AudioEncoder.wav,
+        encoder: Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
         bitRate: 128000,
         samplingRate: 44100,
       );
@@ -390,7 +385,6 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           question.answers.last.url,
           MediaType.audio,
           widget.testDetailModel.testId.toString());
-
       try {
         await _audioPlayer!.play(DeviceFileSource(path));
         await _audioPlayer!.setVolume(2.5);
@@ -404,16 +398,28 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     }
   }
 
-  Future _reanswerCallBack(QuestionTopicModel question) async {
+  Future _reanswerCallBack(QuestionTopicModel question, int index) async {
     showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return ReAnswerDialog(context, question,
-              widget.testDetailModel.testId.toString(), (question) {});
+          return ReAnswerDialog(
+              context, question, widget.testDetailModel.testId.toString(),
+              (question) {
+            _roomProvider!.questionList[index] = question;
+          });
         });
   }
 
+  @override
+  void submitAnswerFail(AlertInfo alertInfo) {
+    // TODO: implement submitAnswerFail
+  }
+
+  @override
+  void submitAnswersSuccess(AlertInfo alertInfo) {
+    // TODO: implement submitAnswersSuccess
+  }
   ////////////////////////////CHECK VALUE FUNCTION//////////////////////////////
 
   bool _isPart2() {

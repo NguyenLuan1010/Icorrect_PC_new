@@ -2,12 +2,12 @@ import 'dart:collection';
 
 import 'package:fdottedline_nullsafety/fdottedline__nullsafety.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/homework_models/class_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/homework_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
-import 'package:icorrect_pc/src/utils/define_object.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/views/widgets/simulator_test_widget/download_progressing_widget.dart';
 
@@ -357,8 +357,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               ),
             ],
           ),
-          (activityStatus == Status.NOT_COMPLETED.get ||
-                  activityStatus == Status.OUT_OF_DATE.get)
+          (activityStatus == Status.notComplete.get ||
+                  activityStatus == Status.outOfDate.get)
               ? SizedBox(
                   width: 100,
                   child: ElevatedButton(

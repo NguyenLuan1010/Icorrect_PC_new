@@ -4,7 +4,6 @@ import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 
 import 'package:provider/provider.dart';
 
-import '../../utils/define_object.dart';
 
 class AuthWidget extends StatefulWidget {
   const AuthWidget({super.key});
@@ -20,17 +19,26 @@ class _AuthWidgetState extends State<AuthWidget> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
-            return Container(
-              padding: const EdgeInsets.only(left: 30, right: 30, bottom: 0),
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(AppAssets.bg_main), fit: BoxFit.fill),
-              ),
-              child: _mainItem(),
-            );
-          } else {
-            return Container(
+          // if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
+          //   return Container(
+          //     padding: const EdgeInsets.only(left: 30, right: 30, bottom: 0),
+          //     decoration: const BoxDecoration(
+          //       image: DecorationImage(
+          //           image: AssetImage(AppAssets.bg_main), fit: BoxFit.fill),
+          //     ),
+          //     child: _mainItem(),
+          //   );
+          // } else {
+          //   return Container(
+          //     padding: const EdgeInsets.only(left: 30, right: 30, bottom: 0),
+          //     decoration: const BoxDecoration(
+          //       image: DecorationImage(
+          //           image: AssetImage(AppAssets.bg_login), fit: BoxFit.fill),
+          //     ),
+          //     child: _mainItem(),
+          //   );
+          // }
+           return Container(
               padding: const EdgeInsets.only(left: 30, right: 30, bottom: 0),
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -38,7 +46,6 @@ class _AuthWidgetState extends State<AuthWidget> {
               ),
               child: _mainItem(),
             );
-          }
         }),
       ),
     );

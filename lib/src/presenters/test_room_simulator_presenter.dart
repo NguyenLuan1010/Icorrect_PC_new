@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -9,21 +10,23 @@ import 'package:icorrect_pc/src/models/simulator_test_models/file_topic_model.da
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
+import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
 import '../models/simulator_test_models/playlist_model.dart';
+import 'package:http/http.dart' as http;
 
 abstract class TestRoomSimulatorContract {
-  void playIntroduce(File introduceFile);
-  void playQuestion(File normalFile, File slowFile);
-  void playEndOfTakeNote(File endOfTakeNoteFile);
-  void playEndOfTest(File fileEndOfTest);
+  void playFileVideo(File normalFile, File slowFile);
   void onCountDown(String strCount);
   void onFinishAnswer(bool isPart2);
   void onCountDownForCueCard(String strCount);
+  void submitAnswersSuccess(AlertInfo alertInfo);
+  void submitAnswerFail(AlertInfo alertInfo);
 }
 
 class TestRoomSimulatorPresenter {
@@ -77,11 +80,13 @@ class TestRoomSimulatorPresenter {
       }
 
       for (int j = 0; j < questions.length; j++) {
+        print('topic numpart : ${topic.numPart.toString()}');
         PlayListModel playListModel = PlayListModel();
         playListModel.numPart = topic.numPart;
         playListModel.endOfTakeNote = topic.endOfTakeNote.url;
         playListModel.endOfTest = topic.fileEndOfTest.url;
         QuestionTopicModel question = questions.elementAt(j);
+        question.numPart = topic.numPart;
         playListModel.questionContent = question.content;
         playListModel.cueCard = question.cueCard;
         playListModel.isFollowUp = question.isFollowUpQuestion();
@@ -140,7 +145,7 @@ class TestRoomSimulatorPresenter {
     if (isExist) {
       String filePath =
           await FileStorageHelper.getFilePath(file, MediaType.video, null);
-      _view!.playIntroduce(File(filePath));
+      _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
       print("Handle have not file introduce 1");
@@ -160,7 +165,7 @@ class TestRoomSimulatorPresenter {
       String slowPath = isExistFileSlow
           ? await FileStorageHelper.getFilePath(fileSlow, MediaType.video, null)
           : normalPath;
-      _view!.playQuestion(File(normalPath), File(slowPath));
+      _view!.playFileVideo(File(normalPath), File(slowPath));
     } else {
       //Handle have not file question
     }
@@ -172,7 +177,7 @@ class TestRoomSimulatorPresenter {
     if (isExist) {
       String filePath =
           await FileStorageHelper.getFilePath(file, MediaType.video, null);
-      _view!.playEndOfTakeNote(File(filePath));
+      _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
       print("Handle have not file introduce 1");
@@ -185,7 +190,7 @@ class TestRoomSimulatorPresenter {
     if (isExist) {
       String filePath =
           await FileStorageHelper.getFilePath(file, MediaType.video, null);
-      _view!.playEndOfTest(File(filePath));
+      _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
       print("Handle have not file introduce 1");
@@ -246,5 +251,41 @@ class TestRoomSimulatorPresenter {
         _view!.onFinishAnswer(isPart2);
       }
     });
+  }
+
+  Future submitMyTest(
+      {required String testId,
+      required String activityId,
+      required List<QuestionTopicModel> questionsList}) async {
+    assert(_view != null && _repository != null);
+
+    http.MultipartRequest multiRequest = await Utils.instance()
+        .formDataRequestSubmit(
+            testId: testId,
+            activityId: activityId,
+            questions: questionsList,
+            isUpdate: false);
+    try {
+      _repository!.submitTest(multiRequest).then((value) {
+        Map<String, dynamic> json = jsonDecode(value) ?? {};
+        if (kDebugMode) {
+          print("DEBUG: error form: ${json.toString()}");
+        }
+        if (json['error_code'] == 200 && json['status'] == 'success') {
+          _view!.submitAnswersSuccess(AlertClass.submitTestSuccess);
+        } else {
+          _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
+        }
+      }).catchError((onError) {
+        print('catchError updateAnswerFail ${onError.toString()}');
+        _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
+      });
+    } on TimeoutException {
+      _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
+    } on SocketException {
+      _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
+    } on http.ClientException {
+      _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
+    }
   }
 }

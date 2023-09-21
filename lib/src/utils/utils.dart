@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../data_source/api_urls.dart';
 import '../data_source/constants.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
 import '../data_source/local/app_shared_references.dart';
@@ -14,7 +15,7 @@ import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/user_data_models/user_data_model.dart';
-import 'define_object.dart';
+import 'package:http/http.dart' as http;
 
 class Utils {
   Utils._();
@@ -397,5 +398,84 @@ class Utils {
     }
 
     return "";
+  }
+
+  Future<http.MultipartRequest> formDataRequestSubmit(
+      {required String testId,
+      required String activityId,
+      required List<QuestionTopicModel> questions,
+      required bool isUpdate}) async {
+    String url = submitHomeWorkV2EP();
+    http.MultipartRequest request =
+        http.MultipartRequest(RequestMethod.post, Uri.parse(url));
+    request.headers.addAll({
+      'Content-Type': 'multipart/form-data',
+      'Authorization': 'Bearer ${await Utils.instance().getAccessToken()}'
+    });
+    print('test id : $testId');
+    print('activity_id: $activityId');
+
+    Map<String, String> formData = {};
+    formData.addEntries([MapEntry('test_id', testId)]);
+    formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
+    formData.addEntries([MapEntry('activity_id', activityId)]);
+
+    if (Platform.isWindows) {
+      formData.addEntries([const MapEntry('os', "window")]);
+    } else {
+      formData.addEntries([const MapEntry('os', "macos")]);
+    }
+    formData.addEntries([const MapEntry('app_version', '2.0.2')]);
+    String format = '';
+    String reanswerFormat = '';
+    String endFormat = '';
+    for (QuestionTopicModel q in questions) {
+      String questionId = q.id.toString();
+      print("questionId: $questionId");
+      if (kDebugMode) {
+        print("DEBUG: num part : ${q.numPart.toString()}");
+      }
+      if (q.numPart == PartOfTest.introduce.get) {
+        format = 'introduce[$questionId]';
+        reanswerFormat = 'reanswer_introduce[$questionId]';
+      }
+
+      if (q.type == PartOfTest.part1.get) {
+        format = 'part1[$questionId]';
+        reanswerFormat = 'reanswer_part1[$questionId]';
+      }
+
+      if (q.type == PartOfTest.part2.get) {
+        format = 'part2[$questionId]';
+        reanswerFormat = 'reanswer_part2[$questionId]';
+      }
+
+      if (q.type == PartOfTest.part3.get && !q.isFollowUpQuestion()) {
+        format = 'part3[$questionId]';
+        reanswerFormat = 'reanswer_part3[$questionId]';
+      }
+      if (q.type == PartOfTest.part3.get && q.isFollowUpQuestion()) {
+        format = 'followup[$questionId]';
+        reanswerFormat = 'reanswer_followup[$questionId]';
+      }
+
+      formData
+          .addEntries([MapEntry(reanswerFormat, q.reAnswerCount.toString())]);
+
+      for (int i = 0; i < q.answers.length; i++) {
+        endFormat = '$format[$i]';
+        File audioFile = File(await FileStorageHelper.getFilePath(
+            q.answers.elementAt(i).url.toString(), MediaType.audio, testId));
+
+        if (await audioFile.exists()) {
+          request.files.add(
+              await http.MultipartFile.fromPath(endFormat, audioFile.path));
+        }
+      }
+    }
+
+    request.fields.addAll(formData);
+
+    return request;
   }
 }

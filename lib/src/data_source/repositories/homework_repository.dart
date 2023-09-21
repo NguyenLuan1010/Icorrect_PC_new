@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../../utils/define_object.dart';
 import '../api_urls.dart';
 import 'app_repository.dart';
 import 'package:http/http.dart' as http;

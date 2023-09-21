@@ -5,7 +5,6 @@ import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
-import '../../../utils/define_object.dart';
 import '../../widgets/input_field_custom.dart';
 import 'login_screen.dart';
 
@@ -36,11 +35,12 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: ((context, constraints) {
-      if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
-        return _buildForgotPasswordFormMobile();
-      } else {
-        return _buildForgotPasswordFormDesktop();
-      }
+      // if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
+      //   return _buildForgotPasswordFormMobile();
+      // } else {
+      //   return _buildForgotPasswordFormDesktop();
+      // }
+      return _buildForgotPasswordFormDesktop();
     }));
   }
 
