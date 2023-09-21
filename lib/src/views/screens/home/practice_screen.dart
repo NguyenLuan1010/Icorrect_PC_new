@@ -68,108 +68,95 @@ class _PracticeScreenState extends State<PracticeScreen> {
           vertical: Utils.instance().getDevicesHeight(context) * 0.03,
         ),
         child: Center(
-          child: Expanded(
-            child: Stack(
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(
-                    vertical: Utils.instance().getDevicesHeight(context) * 0.05,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppColors.defaultGrayColor,
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 3,
-                        blurRadius: 10,
-                        offset: const Offset(
-                          0,
-                          2,
-                        ), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  width: Utils.instance().getDevicesWidth(context),
-                  height: Utils.instance().getDevicesHeight(context),
-                  child: const GridPaper(
+          child: Stack(
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(
+                  vertical: Utils.instance().getDevicesHeight(context) * 0.05,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
                     color: AppColors.defaultGrayColor,
-                    divisions: 1,
-                    interval: 200,
-                    subdivisions: 10,
                   ),
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 3,
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        Utils.instance().getDevicesWidth(context) * 0.05,
-                    vertical: Utils.instance().getDevicesHeight(context) * 0.03,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      SizedBox(
-                        height:
-                            Utils.instance().getDevicesHeight(context) * 0.6,
-                        child: Stack(
-                          alignment: Alignment.topCenter,
-                          children: [
-                            Expanded(
-                              child: _buildTopicBackground(),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                height:
-                                    Utils.instance().getDevicesHeight(context) *
-                                        0.8,
-                                child: ListView(
-                                  children: [
-                                    _buildPartItem(
-                                      title: 'Part I',
-                                      content: 'Part 1 data',
-                                    ),
-                                    _buildPartItem(
-                                      title: 'Part II',
-                                      content: 'Part 1 data',
-                                    ),
-                                    _buildPartItem(
-                                      title: 'Part III',
-                                      content: 'Part 1 data',
-                                    ),
-                                    _buildPartItem(
-                                      title: 'Part I & II',
-                                      content: 'Part 1 data',
-                                    ),
-                                    _buildPartItem(
-                                      title: 'Part II & III',
-                                      content: 'Part 1 data',
-                                    ),
-                                    _buildPartItem(
-                                      title: 'Part Full',
-                                      content: 'Part 1 data',
-                                    ),
-                                  ],
+                width: Utils.instance().getDevicesWidth(context),
+                height: Utils.instance().getDevicesHeight(context),
+                child: const GridPaper(
+                  color: AppColors.defaultGrayColor,
+                  divisions: 1,
+                  interval: 200,
+                  subdivisions: 10,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Utils.instance().getDevicesWidth(context) * 0.05,
+                  vertical: Utils.instance().getDevicesHeight(context) * 0.03,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      height: Utils.instance().getDevicesHeight(context) * 0.6,
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          _buildTopicBackground(),
+                          SizedBox(
+                            height: Utils.instance().getDevicesHeight(context) *
+                                0.8,
+                            child: ListView(
+                              // physics: const NeverScrollableScrollPhysics(),
+                              children: [
+                                _buildPartItem(
+                                  title: 'Part I',
+                                  content: 'Part 1 data',
                                 ),
-                              ),
+                                _buildPartItem(
+                                  title: 'Part II',
+                                  content: 'Part 1 data',
+                                ),
+                                _buildPartItem(
+                                  title: 'Part III',
+                                  content: 'Part 1 data',
+                                ),
+                                _buildPartItem(
+                                  title: 'Part I & II',
+                                  content: 'Part 1 data',
+                                ),
+                                _buildPartItem(
+                                  title: 'Part II & III',
+                                  content: 'Part 1 data',
+                                ),
+                                _buildPartItem(
+                                  title: 'Part Full',
+                                  content: 'Part 1 data',
+                                ),
+                              ],
                             ),
-                            Expanded(
-                              child: _buildTopicPanel(),
-                            ),
-                          ],
-                        ),
+                          ),
+                          _buildTopicPanel(),
+                        ],
                       ),
-                      const SizedBox(
-                        height: 30,
-                      ),
-                      _buildStartBtn(),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(
+                      height: 30,
+                    ),
+                    _buildStartBtn(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -184,7 +171,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
         });
       },
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 30),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Stack(
           children: [
             _buildPartItemBackground(title: title),
@@ -192,12 +179,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(3),
                   child: Container(
                     width: partFocused == title
                         ? Utils.instance().getDevicesWidth(context) * 0.46
                         : Utils.instance().getDevicesWidth(context) * 0.30,
-                    height: 90,
+                    height: 80,
                     decoration: BoxDecoration(
                       color: AppColors.defaultWhiteColor,
                       borderRadius: BorderRadius.circular(13),
@@ -208,10 +195,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                                 color: Colors.grey.withOpacity(0.5),
                                 spreadRadius: 3,
                                 blurRadius: 8,
-                                offset: const Offset(
-                                  0,
-                                  2,
-                                ), // changes position of shadow
+                                offset: const Offset(0, 2),
                               ),
                       ],
                     ),
@@ -251,9 +235,9 @@ class _PracticeScreenState extends State<PracticeScreen> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Padding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(3),
           child: Container(
-            width: Utils.instance().getDevicesWidth(context) * 0.45 - 10,
+            width: Utils.instance().getDevicesWidth(context) * 0.45 - 7,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               color: AppColors.defaultWhiteColor,
@@ -351,17 +335,15 @@ class _PracticeScreenState extends State<PracticeScreen> {
             checkedTopics.contains(topic)
                 ? const Icon(Icons.check_box_outlined)
                 : const Icon(Icons.check_box_outline_blank),
-            Expanded(
-              child: Text(
-                topic,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-                overflow: TextOverflow.clip,
-                maxLines: 2,
-                softWrap: true,
+            Text(
+              topic,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
               ),
+              overflow: TextOverflow.clip,
+              maxLines: 2,
+              softWrap: true,
             ),
           ],
         ),
@@ -380,7 +362,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
           ),
           child: Container(
             width: Utils.instance().getDevicesWidth(context) * 0.45,
-            height: 100,
+            height: 86,
             color: partFocused == title
                 ? AppColors.defaultPurpleColor
                 : Colors.transparent,
