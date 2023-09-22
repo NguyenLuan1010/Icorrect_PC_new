@@ -117,16 +117,7 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
-  //Status of doing the test
-  DoingStatus _doingStatus = DoingStatus.none;
-  DoingStatus get doingStatus => _doingStatus;
-  void updateDoingStatus(DoingStatus status) {
-    _doingStatus = status;
-
-    if (!isDisposed) {
-      notifyListeners();
-    }
-  }
+  _provider
 
   String _activityType = '';
   String get activityType => _activityType;

@@ -13,7 +13,6 @@ import '../../../../core/app_colors.dart';
 import '../../../data_source/constants.dart';
 import '../../../data_source/local/file_storage_helper.dart';
 import '../../../models/simulator_test_models/question_topic_model.dart';
-import '../../../presenters/test_room_presenter.dart';
 import '../../../providers/play_answer_provider.dart';
 import '../../../providers/simulator_test_provider.dart';
 
@@ -21,52 +20,51 @@ class TestQuestionWidget extends StatelessWidget {
   TestQuestionWidget({
     super.key,
     required this.testId,
+    required this.questions,
     required this.playAnswerCallBack,
     required this.playReAnswerCallBack,
     required this.showTipCallBack,
   });
 
   int testId;
+  List<QuestionTopicModel> questions;
   final Function(
           QuestionTopicModel questionTopicModel, int selectedQuestionIndex)
       playAnswerCallBack;
-  final Function(QuestionTopicModel questionTopicModel ,int indexQuestion) playReAnswerCallBack;
+  final Function(QuestionTopicModel questionTopicModel, int indexQuestion)
+      playReAnswerCallBack;
   final Function(QuestionTopicModel questionTopicModel) showTipCallBack;
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TestRoomProvider>(
-      builder: (context, provider, child) {
-        if (provider.questionList.isEmpty) {
-          return Container(
-            alignment: Alignment.center,
-            margin: const EdgeInsets.all(20),
-            height: 300,
-            child: const Text(
-              "Oops, No answer here, please start your test!",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          );
-        } else {
-          double h = MediaQuery.of(context).size.height / 2;
-          double w = MediaQuery.of(context).size.width;
-          return Container(
-            height: h,
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: MyGridView(
-                data: provider.questionList,
-                itemWidget: (dynamic itemModel, int index) {
-                  QuestionTopicModel question = itemModel;
-                  return _buildTestQuestionItem(context, question, index);
-                }),
-          );
-        }
-      },
-    );
+    if (questions.isEmpty) {
+      return Container(
+        alignment: Alignment.center,
+        margin: const EdgeInsets.all(20),
+        height: 300,
+        child: const Text(
+          "Oops, No answer here, please start your test!",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    } else {
+      double h = MediaQuery.of(context).size.height / 2;
+      double w = MediaQuery.of(context).size.width;
+      return Container(
+        height: h,
+        padding: const EdgeInsets.symmetric(vertical: 30),
+        child: MyGridView(
+            data: questions,
+            itemWidget: (dynamic itemModel, int index) {
+              QuestionTopicModel question = itemModel;
+              return _buildTestQuestionItem(context, question, index);
+            }),
+      );
+    }
   }
 
   Widget _buildTestQuestionItem(
@@ -141,7 +139,7 @@ class TestQuestionWidget extends StatelessWidget {
                           if (provider.canReanswer)
                             InkWell(
                               onTap: () {
-                                playReAnswerCallBack(question,index);
+                                playReAnswerCallBack(question, index);
                               },
                               child: const Text(
                                 "Re-answer",

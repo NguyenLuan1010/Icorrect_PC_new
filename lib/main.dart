@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/my_test_provider.dart';
 import 'package:icorrect_pc/src/providers/play_answer_provider.dart';
 import 'package:icorrect_pc/src/providers/re_answer_provider.dart';
 import 'package:icorrect_pc/src/providers/simulator_test_provider.dart';
@@ -11,6 +12,7 @@ import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 import 'package:icorrect_pc/src/providers/timer_provider.dart';
 import 'package:icorrect_pc/src/views/screens/auth/login_screen.dart';
 import 'package:icorrect_pc/src/views/screens/auth_screen_manager.dart';
+import 'package:icorrect_pc/src/views/test/my_test/my_test_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -45,6 +47,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => PlayAnswerProvider()),
           ChangeNotifierProvider(create: (_) => TimerProvider()),
           ChangeNotifierProvider(create: (_) => TestRoomProvider()),
+          // ChangeNotifierProvider(create: (_) => MyTestProvider()),
         ],
         child: const MaterialApp(
             debugShowCheckedModeBanner: false, home: SplashScreen()));

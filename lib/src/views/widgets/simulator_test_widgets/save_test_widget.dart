@@ -6,7 +6,6 @@ import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
-import '../../../presenters/test_room_presenter.dart';
 import '../../../providers/simulator_test_provider.dart';
 import '../button_custom.dart';
 

@@ -121,8 +121,11 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                 onChanged: (NewClassModel? newValue) {
                   _provider.setClassSelection(newValue!);
                   List<ActivitiesModel> activities =
-                      _presenter.filterActivities(newValue.id,
-                          provider.activitiesList, provider.statusActivity,_provider.currentTime);
+                      _presenter.filterActivities(
+                          newValue.id,
+                          provider.activitiesList,
+                          provider.statusActivity,
+                          _provider.currentTime);
                   _provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
@@ -173,8 +176,11 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                 onChanged: (String? newValue) {
                   _provider.setStatusActivity(newValue!);
                   List<ActivitiesModel> activities =
-                      _presenter.filterActivities(provider.classSelected.id,
-                          provider.activitiesList, newValue,_provider.currentTime);
+                      _presenter.filterActivities(
+                          provider.classSelected.id,
+                          provider.activitiesList,
+                          newValue,
+                          _provider.currentTime);
                   _provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
@@ -384,6 +390,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                         // print('homework id: ${homeWork.id.toString()}');
                         // _provider.setCurrentMainWidget(
                         //     ResultTestWidget(homeWork: homeWork));
+                        Navigations.instance().goToMyTest(context, homeWork);
                       },
                       style: ButtonStyle(
                           backgroundColor:
@@ -417,7 +424,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     if (aiStatus.isNotEmpty) {
       return const Color.fromARGB(255, 12, 201, 110);
     } else {
-      return Utils.instance().getHomeWorkStatus(activitiesModel,_provider.currentTime)['color'];
+      return Utils.instance()
+          .getHomeWorkStatus(activitiesModel, _provider.currentTime)['color'];
     }
   }
 

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/views/screens/auth_screen_manager.dart';
-import 'package:icorrect_pc/src/views/test/simulator_test/simulator_test_screen.dart';
+import 'package:icorrect_pc/src/views/test/my_test/my_test_screen.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/my_test_provider.dart';
 import '../views/screens/auth/login_screen.dart';
 import '../views/screens/main_screen_manager.dart';
+import '../views/test/my_test/my_test_screen.dart';
+import '../views/test/simulator_test/simulator_test_screen.dart';
 
 class Navigations {
   Navigations._();
@@ -44,13 +48,15 @@ class Navigations {
                 SimulatorTestScreen(homeWorkModel: activitiesModel)));
   }
 
-  void goToMyTest( BuildContext context, ActivitiesModel activitiesModel){
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => MyTestScreen(
-    //         homeWorkModel: activitiesModel, isFromSimulatorTest: true),
-    //   ),
-    // );
+  void goToMyTest(BuildContext context, ActivitiesModel activitiesModel) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChangeNotifierProvider(
+          create: (_) => MyTestProvider(),
+          child: MyTestScreen(homeWork: activitiesModel),
+        ),
+      ),
+    );
   }
 
   // void goToTopicDetailWidget(BuildContext context, HomeWorks homeWork) {

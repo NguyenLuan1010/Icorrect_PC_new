@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/app_assets.dart';
 import '../../../../core/app_colors.dart';
+import '../../../models/ui_models/download_info.dart';
 import '../../../providers/simulator_test_provider.dart';
 
 class DownloadProgressingWidget extends StatelessWidget {
-  const DownloadProgressingWidget({super.key});
+  DownloadProgressingWidget(this.downloadInfo, {super.key});
+
+  DownloadInfo downloadInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +22,13 @@ class DownloadProgressingWidget extends StatelessWidget {
         Image.asset(AppAssets.img_download, width: 120, height: 120),
         const SizedBox(height: 8),
         //percent
-        Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
-          double p = provider.downloadingPercent * 100;
-          return Text("${p.toStringAsFixed(0)}%",
-              style: const TextStyle(
-                  color: AppColors.defaultLightPurpleColor,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold));
-        }),
+
+        Text("${downloadInfo.strPercent}%",
+            style: const TextStyle(
+                color: AppColors.defaultLightPurpleColor,
+                fontSize: 17,
+                fontWeight: FontWeight.bold)),
+
         const SizedBox(height: 8),
         //progress bar
         SizedBox(
@@ -35,13 +37,12 @@ class DownloadProgressingWidget extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         //part of total
-        Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
-          return Text("${provider.downloadingIndex}/${provider.total}",
-              style: const TextStyle(
-                  color: AppColors.defaultLightPurpleColor,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold));
-        }),
+        Text("${downloadInfo.downloadIndex}/${downloadInfo.total}",
+            style: const TextStyle(
+                color: AppColors.defaultLightPurpleColor,
+                fontSize: 17,
+                fontWeight: FontWeight.bold)),
+
         const SizedBox(height: 8),
         const Text('Downloading...',
             style: TextStyle(
@@ -54,15 +55,13 @@ class DownloadProgressingWidget extends StatelessWidget {
   }
 
   Widget _buildProgressBar() {
-    return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
-      return LinearProgressIndicator(
-        backgroundColor: AppColors.defaultLightGrayColor,
-        minHeight: 10,
-        borderRadius: BorderRadius.circular(10),
-        valueColor:
-            const AlwaysStoppedAnimation<Color>(AppColors.defaultPurpleColor),
-        value: provider.downloadingPercent,
-      );
-    });
+    return LinearProgressIndicator(
+      backgroundColor: AppColors.defaultLightGrayColor,
+      minHeight: 10,
+      borderRadius: BorderRadius.circular(10),
+      valueColor:
+          const AlwaysStoppedAnimation<Color>(AppColors.defaultPurpleColor),
+      value: downloadInfo.downloadPercent,
+    );
   }
 }

@@ -20,8 +20,9 @@ import 'package:dio/dio.dart';
 
 import '../utils/utils.dart';
 
-abstract class MyTestContractDio {
-  void getMyTestSuccess(List<QuestionTopicModel> questions);
+abstract class MyTestContract {
+  void getMyTestSuccess(TestDetailModel testDetailModel,
+      List<QuestionTopicModel> questions, int total);
   void onDownloadSuccess(TestDetailModel testDetail, String nameFile,
       double percent, int index, int total);
   void downloadFilesFail(AlertInfo alertInfo);
@@ -34,11 +35,11 @@ abstract class MyTestContractDio {
   void onTryAgainToDownload();
 }
 
-class MyTestPresenterDio {
-  final MyTestContractDio? _view;
+class MyTestPresenter {
+  final MyTestContract? _view;
   MyTestRepository? _repository;
 
-  MyTestPresenterDio(this._view) {
+  MyTestPresenter(this._view) {
     _repository = Injector().getMyTestRepository();
   }
 
@@ -96,15 +97,15 @@ class MyTestPresenterDio {
 
           downloadFiles(testDetailModel, tempFilesTopic);
 
-          _view!.getMyTestSuccess(_getQuestionsAnswer(testDetailModel));
+          _view!.getMyTestSuccess(testDetailModel,
+              _getQuestionsAnswer(testDetailModel), tempFilesTopic.length);
         } else {
           _view!.getMyTestFail(AlertClass.notResponseLoadTestAlert);
         }
       } else {
         _view!.getMyTestFail(AlertClass.getTestDetailAlert);
       }
-    }).catchError(
-        (onError) {
+    }).catchError((onError) {
       if (kDebugMode) {
         print("DEBUG: fail meomoe");
       }
@@ -237,7 +238,8 @@ class MyTestPresenterDio {
       for (int index = 0; index < filesTopic.length; index++) {
         FileTopicModel temp = filesTopic[index];
         String fileTopic = temp.url;
-        String fileNameForDownload = Utils.instance().reConvertFileName(fileTopic);
+        String fileNameForDownload =
+            Utils.instance().reConvertFileName(fileTopic);
 
         if (filesTopic.isNotEmpty) {
           String fileType = Utils.instance().fileType(fileTopic);
@@ -251,14 +253,18 @@ class MyTestPresenterDio {
               !await _isExist(fileTopic, _mediaType(fileType))) {
             try {
               String url = downloadFileEP(fileNameForDownload);
-              print('DEBUG : fileDownload : $url');
+              if (kDebugMode) {
+                print('DEBUG : fileDownload : $url');
+              }
               dio!.head(url).timeout(const Duration(seconds: 10));
               String savePath =
-                  '${await FileStorageHelper.getFolderPath(_mediaType(fileType), null)}/$fileTopic';
+                  '${await FileStorageHelper.getFolderPath(_mediaType(fileType), null)}\\$fileTopic';
               Response response = await dio!.download(url, savePath);
 
               if (response.statusCode == 200) {
-                print("DEBUG savePath : ${savePath}");
+                if (kDebugMode) {
+                  print("DEBUG savePath : ${savePath}");
+                }
                 double percent = _getPercent(index + 1, filesTopic.length);
                 _view!.onDownloadSuccess(testDetail, fileTopic, percent,
                     index + 1, filesTopic.length);

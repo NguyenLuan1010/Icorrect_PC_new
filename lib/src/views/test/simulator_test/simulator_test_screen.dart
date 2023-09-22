@@ -8,6 +8,7 @@ import 'package:icorrect_pc/src/models/homework_models/new_api_135/activity_answ
 import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
+import 'package:icorrect_pc/src/models/ui_models/download_info.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/views/test/simulator_test/test_room_simulator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -251,9 +252,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       }
 
       if (provider.isDownloadProgressing) {
+        DownloadInfo downloadInfo = DownloadInfo(provider.downloadingIndex,
+            provider.downloadingPercent, provider.total);
         return Column(
           children: [
-            const DownloadProgressingWidget(),
+            DownloadProgressingWidget(downloadInfo),
             Visibility(
               visible: provider.startNowAvailable,
               child: StartNowButtonWidget(
@@ -298,8 +301,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
       if (provider.needDownloadAgain) {
         return DownloadAgainWidget(
-          simulatorTestPresenter: _simulatorTestPresenter!,
-          myTestPresenter: null,
+          onClickTryAgain: () {
+            if (_simulatorTestPresenter != null) {
+              _simulatorTestPresenter!.tryAgainToDownload();
+            }
+          },
         );
       } else {
         return const SizedBox();

@@ -12,7 +12,6 @@ import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
-import 'package:icorrect_pc/src/presenters/test_room_presenter.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/re_answer_dialog.dart';
@@ -368,11 +367,14 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Widget _buildQuestionList() {
-    return TestQuestionWidget(
-        testId: widget.testDetailModel.testId,
-        playAnswerCallBack: _playAnswerCallBack,
-        playReAnswerCallBack: _reanswerCallBack,
-        showTipCallBack: (q) {});
+    return Consumer<TestRoomProvider>(builder: (context, provider, child) {
+      return TestQuestionWidget(
+          testId: widget.testDetailModel.testId,
+          questions: provider.questionList,
+          playAnswerCallBack: _playAnswerCallBack,
+          playReAnswerCallBack: _reanswerCallBack,
+          showTipCallBack: (q) {});
+    });
   }
 
   Future _playAnswerCallBack(QuestionTopicModel question, int index) async {
