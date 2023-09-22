@@ -15,7 +15,7 @@ class _OthersTabState extends State<OthersTab> {
     'Do you often eat with your family?',
     'Do you like cooking?',
     'What is your favorite food?',
-    'What is your favorite drink?',
+    'What is your favorite drink?'
   };
 
   @override
