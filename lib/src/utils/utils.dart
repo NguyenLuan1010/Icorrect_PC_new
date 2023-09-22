@@ -478,4 +478,12 @@ class Utils {
 
     return request;
   }
+
+  double getDevicesWidth(BuildContext context) {
+    return MediaQuery.of(context).size.width;
+  }
+
+  double getDevicesHeight(BuildContext context) {
+    return MediaQuery.of(context).size.height;
+  }
 }

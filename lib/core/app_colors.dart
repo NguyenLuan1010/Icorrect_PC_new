@@ -8,7 +8,7 @@ class AppColors {
   static const purple = Color(0xFF47318f);
   static const purpleOpacity = Color.fromARGB(190, 71, 49, 143);
   static const purpleBlue = Color(0xFF6832DB);
-  static const purpleSlight = Color(0xFF9177d2);
+  static const purpleSlight = Color(0xFFA8A4DF);
   static const purpleSlight2 = Color.fromARGB(255, 201, 187, 237);
   static const progressBar = Color(0xFF918EC1);
   static const gray = Color(0xFF8c8989);

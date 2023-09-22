@@ -9,7 +9,7 @@ import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_mo
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
-import 'package:icorrect_pc/src/views/widgets/simulator_test_widget/download_progressing_widget.dart';
+import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/download_progressing_widget.dart';
 
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';

@@ -25,9 +25,9 @@ import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
 import '../../widgets/default_loading_indicator.dart';
 import '../../widgets/download_again_widget.dart';
-import '../../widgets/simulator_test_widget/back_button_widget.dart';
-import '../../widgets/simulator_test_widget/download_progressing_widget.dart';
-import '../../widgets/simulator_test_widget/start_now_button_widget.dart';
+import '../../widgets/simulator_test_widgets/back_button_widget.dart';
+import '../../widgets/simulator_test_widgets/download_progressing_widget.dart';
+import '../../widgets/simulator_test_widgets/start_now_button_widget.dart';
 
 class SimulatorTestScreen extends StatefulWidget {
   const SimulatorTestScreen({super.key, required this.homeWorkModel});
@@ -83,37 +83,31 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     double h = MediaQuery.of(context).size.height;
     double w = MediaQuery.of(context).size.width;
     return Scaffold(
-        body: Align(
-      alignment: Alignment.topLeft,
-      child: SafeArea(
-        left: true,
-        top: true,
-        right: true,
-        bottom: true,
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  BackButtonWidget(backButtonTapped: _backButtonTapped),
-                  Text(widget.homeWorkModel.activityName,
-                      style: const TextStyle(
-                          color: AppColors.defaultPurpleColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            Stack(
-              children: [
-                _buildBody(),
-                _buildDownloadAgain(),
-              ],
-            )
-          ],
+        body: Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            children: [
+              BackButtonWidget(backButtonTapped: _backButtonTapped),
+              Text(widget.homeWorkModel.activityName,
+                  style: const TextStyle(
+                      color: AppColors.defaultPurpleColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
         ),
-      ),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildBody(),
+              _buildDownloadAgain(),
+            ],
+          ),
+        ),
+      ],
     ));
   }
 
@@ -299,7 +293,6 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       }
     });
   }
-  
 
   Widget _buildDownloadAgain() {
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {

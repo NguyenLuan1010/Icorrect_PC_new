@@ -3,6 +3,8 @@ import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
+import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
+import 'package:icorrect_pc/src/views/screens/home/practice_screen.dart';
 
 import 'package:provider/provider.dart';
 
@@ -75,14 +77,7 @@ class _MainWidgetState extends State<MainWidget> {
                   children: [
                     InkWell(
                       onTap: () {
-                        // if (appState.currentScreen.runtimeType ==
-                        //     DoingTest) {
-                        //   whenOutTheTest(HOMEWORK_ACTION_TAB);
-                        // } else {
-                        //   _provider.resetTestSimulatorValue();
-                        //   _provider
-                        //       .setCurrentMainWidget(const HomeWorksWidget());
-                        // }
+                        _provider.setCurrentScreen(const HomeWorksWidget());
                       },
                       child: const Text('Homeworks',
                           style: TextStyle(
@@ -93,14 +88,7 @@ class _MainWidgetState extends State<MainWidget> {
                     const SizedBox(width: 30),
                     InkWell(
                       onTap: () {
-                        // if (appState.currentMainWidget.runtimeType ==
-                        //     DoingTest) {
-                        //   whenOutTheTest(PRACTICE_ACTION_TAB);
-                        // } else {
-                        //   _provider.resetTestSimulatorValue();
-                        //   _provider
-                        //       .setCurrentMainWidget(const PracticesWidget());
-                        // }
+                        _provider.setCurrentScreen(const PracticeScreen());
                       },
                       child: const Text('Practices',
                           style: TextStyle(
@@ -243,33 +231,33 @@ class _MainWidgetState extends State<MainWidget> {
     //     });
   }
 
-  // @override
-  // void onClickCancel() {}
+// @override
+// void onClickCancel() {}
 
-  // @override
-  // void onClickOK() {
-  //   Navigations.instance().goToAuthWidget(context);
-  //   SharedRef.instance().setUser(null);
-  //   SharedRef.instance().setAccessToken('');
-  // }
+// @override
+// void onClickOK() {
+//   Navigations.instance().goToAuthWidget(context);
+//   SharedRef.instance().setUser(null);
+//   SharedRef.instance().setAccessToken('');
+// }
 
-  // @override
-  // void onAlertExit(String keyInfo) {}
+// @override
+// void onAlertExit(String keyInfo) {}
 
-  // @override
-  // void onAlertNextStep(String keyInfo) {
-  //   switch (keyInfo) {
-  //     case 'HOMEWORK_ACTION_TAB':
-  //       if (mounted) {
-  //         _provider.stopVideoController();
-  //         _provider.resetTestSimulatorValue();
-  //         _provider.setCurrentMainWidget(const HomeWorksWidget());
-  //       }
-  //       break;
-  //     case 'PRACTICE_ACTION_TAB':
-  //       _provider.stopVideoController();
-  //       _provider.resetTestSimulatorValue();
-  //       break;
-  //   }
-  // }
+// @override
+// void onAlertNextStep(String keyInfo) {
+//   switch (keyInfo) {
+//     case 'HOMEWORK_ACTION_TAB':
+//       if (mounted) {
+//         _provider.stopVideoController();
+//         _provider.resetTestSimulatorValue();
+//         _provider.setCurrentMainWidget(const HomeWorksWidget());
+//       }
+//       break;
+//     case 'PRACTICE_ACTION_TAB':
+//       _provider.stopVideoController();
+//       _provider.resetTestSimulatorValue();
+//       break;
+//   }
+// }
 }

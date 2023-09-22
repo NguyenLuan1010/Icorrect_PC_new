@@ -245,13 +245,15 @@ class GlobalScaffoldKey {
 }
 
 class FontsSize {
-  static const double fontSize_8 = 8.0;
+   static const double fontSize_8 = 8.0;
   static const double fontSize_13 = 13.0;
   static const double fontSize_14 = 14.0;
   static const double fontSize_15 = 15.0;
   static const double fontSize_16 = 16.0;
   static const double fontSize_18 = 18.0;
   static const double fontSize_20 = 20.0;
+  static const double fontSize_22 = 22.0;
+  static const double fontSize_24 = 24.0;
 }
 
 class CustomPadding {
@@ -286,6 +288,36 @@ class CustomSize {
 }
 
 class CustomTextStyle {
+static const TextStyle textBoldBlack_22 = TextStyle(
+    color: AppColors.defaultBlackColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_22,
+  );
+
+  static const TextStyle textBoldWhite_24 = TextStyle(
+    color: AppColors.defaultWhiteColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_24,
+  );
+
+  static const TextStyle textBoldWhite_22 = TextStyle(
+    color: AppColors.defaultWhiteColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_22,
+  );
+
+  static const TextStyle textBoldWhite_20 = TextStyle(
+    color: AppColors.defaultWhiteColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_20,
+  );
+
+  static const TextStyle textBoldBlack_20 = TextStyle(
+    color: AppColors.defaultBlackColor,
+    fontWeight: FontWeight.w800,
+    fontSize: FontsSize.fontSize_20,
+  );
+
   static const TextStyle appbarContent = TextStyle(
     color: AppColors.defaultPurpleColor,
     fontWeight: FontWeight.w800,
