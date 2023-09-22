@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
-import 'package:icorrect_pc/core/app_colors.dart';
-import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 
-class MyTestScreen extends StatefulWidget {
-  const MyTestScreen({super.key});
+class OthersTab extends StatefulWidget {
+  const OthersTab({super.key});
 
   @override
-  State<MyTestScreen> createState() => _MyTestScreenState();
+  State<OthersTab> createState() => _OthersTabState();
 }
 
-class _MyTestScreenState extends State<MyTestScreen> {
+class _OthersTabState extends State<OthersTab> {
   Set<String> ques = {
     'Can you please tell me your full name?',
     'Do you often eat with your family?',
@@ -32,60 +30,17 @@ class _MyTestScreenState extends State<MyTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: Utils.instance().getDevicesWidth(context) * 0.05,
-          vertical: Utils.instance().getDevicesHeight(context) * 0.03,
-        ),
-        child: Expanded(
-          child: Column(
-            children: [
-              _buildBreadcrumb(),
-              _buildVideoQuesContainer(),
-              _buildListQuesContainer(),
-            ],
-          ),
-        ),
+    return Expanded(
+      child: Column(
+        children: [
+          Center(child: Text('Others')),
+        ],
       ),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        BreadCrumb(
-          overflow: const WrapOverflow(
-            keepLastDivider: false,
-          ),
-          items: <BreadCrumbItem>[
-            BreadCrumbItem(
-              onTap: () {},
-              content: const Text(
-                'Item 1',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              ),
-            ),
-            BreadCrumbItem(
-              onTap: () {},
-              content: const Text(
-                'Item 2',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              ),
-            ),
-          ],
-          divider: const Icon(Icons.chevron_right),
-        ),
-      ],
     );
   }
 
   Widget _buildVideoQuesContainer() {
     return Container(
-      margin: const EdgeInsets.only(
-        top: 30,
-      ),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.grey,
@@ -197,7 +152,7 @@ class _MyTestScreenState extends State<MyTestScreen> {
               const Expanded(
                 flex: 1,
                 child: Image(
-                  image: AssetImage('assets/img_play.png'),
+                  image: AssetImage('lib/assets/ic_play.png'),
                   alignment: Alignment.center,
                   height: 50,
                 ),
