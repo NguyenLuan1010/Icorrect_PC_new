@@ -31,7 +31,7 @@ class MyGridView extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, i) {
-                    return itemWidget(list1[i], i);
+                    return itemWidget(list1[i], 2*i);
                   })),
           Expanded(
               child: ListView.builder(
@@ -39,7 +39,7 @@ class MyGridView extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, i) {
-                    return itemWidget(list2[i], i + list1.length);
+                    return itemWidget(list2[i], 2*i+1);
                   })),
         ],
       ),

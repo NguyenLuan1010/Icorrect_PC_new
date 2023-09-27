@@ -21,12 +21,17 @@ class TestQuestionWidget extends StatelessWidget {
     super.key,
     required this.testId,
     required this.questions,
+    required this.canReanswer,
+    required this.canPlayAnswer,
+    required this.isPlayingAnswer,
+    required this.selectedQuestionIndex,
     required this.playAnswerCallBack,
     required this.playReAnswerCallBack,
     required this.showTipCallBack,
   });
 
-  int testId;
+  int testId, selectedQuestionIndex;
+  bool canReanswer, canPlayAnswer, isPlayingAnswer;
   List<QuestionTopicModel> questions;
   final Function(
           QuestionTopicModel questionTopicModel, int selectedQuestionIndex)
@@ -78,8 +83,12 @@ class TestQuestionWidget extends StatelessWidget {
       questionStr = question.cueCard;
     }
 
-    TestRoomProvider provider =
-        Provider.of<TestRoomProvider>(context, listen: false);
+    String iconPath;
+    if (isPlayingAnswer && index == selectedQuestionIndex) {
+      iconPath = AppAssets.img_pause;
+    } else {
+      iconPath = AppAssets.img_play;
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
@@ -120,7 +129,7 @@ class TestQuestionWidget extends StatelessWidget {
                       ? SizedBox(
                           width: w,
                           child: Text(
-                            questionStr,
+                            "${index + 1}. $questionStr",
                             overflow: TextOverflow.clip,
                             style: const TextStyle(
                                 color: Colors.black,
@@ -136,7 +145,7 @@ class TestQuestionWidget extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          if (provider.canReanswer)
+                          if (canReanswer)
                             InkWell(
                               onTap: () {
                                 playReAnswerCallBack(question, index);
@@ -149,56 +158,44 @@ class TestQuestionWidget extends StatelessWidget {
                                   fontSize: 16,
                                 ),
                               ),
-                            )
-                          else
-                            Visibility(
-                              visible: question.tips.isNotEmpty,
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 20),
-                                  InkWell(
-                                    onTap: () {
-                                      showTipCallBack(question);
-                                    },
-                                    child: const Text(
-                                      "View tips",
-                                      style: TextStyle(
-                                          color: Colors.amber,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
+                          Visibility(
+                            visible: question.tips.isNotEmpty,
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 20),
+                                InkWell(
+                                  onTap: () {
+                                    showTipCallBack(question);
+                                  },
+                                  child: const Text(
+                                    "View tips",
+                                    style: TextStyle(
+                                        color: Colors.amber,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ],
               ),
-              if (provider.canPlayAnswer)
-                Consumer<TestRoomProvider>(
-                    builder: (context, playAnswerProvider, _) {
-                  String iconPath;
-                  if (index == playAnswerProvider.selectedQuestionIndex &&
-                      playAnswerProvider.isPlaying) {
-                    iconPath = AppAssets.img_pause;
-                  } else {
-                    iconPath = AppAssets.img_play;
-                  }
-
-                  return InkWell(
-                    onTap: () {
-                      playAnswerCallBack(question, index);
-                    },
-                    child: Image(
-                      image: AssetImage(iconPath),
-                      width: 50,
-                      height: 50,
-                    ),
-                  );
-                })
+              if (canPlayAnswer)
+                InkWell(
+                  onTap: () {
+                    playAnswerCallBack(question, index);
+                  },
+                  child: Image(
+                    image: AssetImage(iconPath),
+                    width: 50,
+                    height: 50,
+                  ),
+                )
             ],
           ),
           const SizedBox(height: 5),

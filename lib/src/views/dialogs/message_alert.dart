@@ -3,14 +3,34 @@ import 'package:flutter/material.dart';
 
 import '../../../core/app_colors.dart';
 
-class MessageDialog {
-  static Widget alertDialog(BuildContext context, String message) {
-    return Dialog(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child:  Wrap(
-            alignment: WrapAlignment.center,
+class MessageDialog extends Dialog {
+  BuildContext context;
+  String message;
+
+  MessageDialog({required this.context, required this.message, super.key});
+
+  @override
+  double? get elevation => 0;
+
+  @override
+  Color? get backgroundColor => Colors.white;
+  @override
+  ShapeBorder? get shape =>
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(20));
+
+  @override
+  Widget? get child => _buildDialog();
+
+  Widget _buildDialog() {
+    double w = MediaQuery.of(context).size.width;
+    return Container(
+      width: w / 3,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text("Notify",
                   style: TextStyle(
@@ -44,7 +64,9 @@ class MessageDialog {
                         fontWeight: FontWeight.bold),
                   )),
             ],
-          ),
-        );
+          )
+        ],
+      ),
+    );
   }
 }

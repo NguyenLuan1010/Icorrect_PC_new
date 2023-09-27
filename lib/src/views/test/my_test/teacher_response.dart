@@ -1,23 +1,37 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
+import 'package:icorrect_pc/src/models/my_test_models/result_response_model.dart';
 import 'package:icorrect_pc/src/models/my_test_models/skill_problem_model.dart';
+import 'package:icorrect_pc/src/providers/my_test_provider.dart';
+import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
+import 'package:provider/provider.dart';
 
+import '../../../presenters/my_test_presenter.dart';
+import '../../../presenters/response_presenter.dart';
+import '../../dialogs/example_problem_dialog.dart';
 import '../../widgets/gradient_border_painter.dart';
 import '../../widgets/nothing_widget.dart';
 
 class TeacherResponseWidget extends StatefulWidget {
-  TeacherResponseWidget({super.key});
+  ActivitiesModel activitiesModel;
+  MyTestProvider provider;
+  TeacherResponseWidget(this.activitiesModel, this.provider, {super.key});
 
   @override
   State<TeacherResponseWidget> createState() => _TeacherResponseWidgetState();
 }
 
-class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
+class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
+    with AutomaticKeepAliveClientMixin<TeacherResponseWidget>
+    implements ResponseContracts {
   bool _selected = true;
   bool _visible = false;
   double _widthBonus = 35;
+  ResponsePresenter? _presenter;
+  CircleLoading? _loading;
 
   double w = 0;
   double h = 0;
@@ -25,23 +39,27 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
   @override
   void initState() {
     super.initState();
+    _loading = CircleLoading();
+    _presenter = ResponsePresenter(this);
+    if (widget.activitiesModel.haveTeacherResponse()) {
+      _loading!.show(context);
+      _presenter!.getResponse(
+          widget.activitiesModel.activityAnswer!.orderId.toString());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return buildResultTest();
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
   }
 
   Widget buildResultTest() {
     w = MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
     var radius = const Radius.circular(5);
-    return LayoutBuilder(builder: (context, constaint) {
+    return Consumer<MyTestProvider>(builder: (context, provider, child) {
+      ResultResponseModel responseModel = provider.responseModel;
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -57,9 +75,9 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: const BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    borderRadius: BorderRadius.all(Radius.circular(6)),
                     color: AppColors.defaultPurpleColor),
-                child: Text("Overall Score: 8.0",
+                child: Text("Overall Score: ${responseModel.overallScore}",
                     style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -69,14 +87,14 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
               SizedBox(
                 width: w / 2,
                 child: Text(
-                  "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit. Exercitation veniam consequat sunt nostrud amet.Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit. Exercitation veniam consequat sunt nostrud amet.",
+                  responseModel.overallComment,
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 30),
-              _resultListScreen()
+              _resultListScreen(responseModel)
             ],
           ),
         ),
@@ -84,22 +102,26 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
     });
   }
 
-  Widget _resultListScreen() {
+  Widget _resultListScreen(ResultResponseModel responseModel) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Column(
           children: [
-            _resultItem('Fluency: 8.0', []),
+            _resultItem('Fluency: ${responseModel.fluency}',
+                responseModel.fluencyProblem),
             const SizedBox(height: 20),
-            _resultItem('Grammatical: 8.0', [])
+            _resultItem('Grammatical: ${responseModel.grammatical}',
+                responseModel.grammaticalProblem)
           ],
         ),
         Column(
           children: [
-            _resultItem('Lexical Resource: 8.0', []),
+            _resultItem('Lexical Resource: ${responseModel.lexicalResource}',
+                responseModel.lexicalResourceProblem),
             const SizedBox(height: 20),
-            _resultItem('Pronunciation: 8.0', [])
+            _resultItem('Pronunciation: ${responseModel.pronunciation}',
+                responseModel.pronunciationProblem)
           ],
         )
       ],
@@ -240,13 +262,16 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
                   visible: problem.exampleText.isNotEmpty,
                   child: InkWell(
                     onTap: () {
-                      // ExampleProblemDialog dialog = ExampleProblemDialog();
-                      // showDialog(
-                      //     context: context,
-                      //     barrierDismissible: false,
-                      //     builder: (context) {
-                      //       return dialog.showDialog(context, problem);
-                      //     });
+                      showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return ExampleProblemDialog(
+                              context: context,
+                              problem: problem,
+                              provider: widget.provider,
+                            );
+                          });
                     },
                     child: Container(
                       alignment: Alignment.center,
@@ -254,8 +279,8 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
                           border:
                               Border.all(color: AppColors.defaultPurpleColor),
                           borderRadius: BorderRadius.circular(5)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5),
                         child: Text('Xem ví dụ',
                             style: TextStyle(
                                 color: AppColors.defaultPurpleColor,
@@ -277,4 +302,21 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget> {
       ),
     );
   }
+
+  @override
+  void getErrorResponse(String message) {
+    if (kDebugMode) {
+      print("DEBUG : $message");
+    }
+    _loading!.hide();
+  }
+
+  @override
+  void getSuccessResponse(ResultResponseModel responseModel) {
+    _loading!.hide();
+    widget.provider.setResultResponseModel(responseModel);
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

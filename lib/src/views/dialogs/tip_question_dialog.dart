@@ -1,133 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 
-import 'package:provider/provider.dart';
+class TipQuestionDialog extends Dialog {
+  BuildContext _context;
+  QuestionTopicModel _questionTopicModel;
 
-import '../../../core/app_colors.dart';
-import '../../data_source/constants.dart';
-import '../../models/simulator_test_models/question_topic_model.dart';
-import '../widgets/empty_widget.dart';
+  TipQuestionDialog(this._context, this._questionTopicModel, {super.key});
 
-class TipQuestionDialog {
-  static Widget tipQuestionDialog(
-      BuildContext context, QuestionTopicModel question) {
-    return LayoutBuilder(builder: (_, constraint) {
-      return Scaffold(
-        key: GlobalScaffoldKey.showTipScaffoldKey,
-        body: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+  @override
+  double? get elevation => 0;
+
+  @override
+  Color? get backgroundColor => Colors.white;
+  @override
+  ShapeBorder? get shape =>
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(20));
+
+  @override
+  Widget? get child => _buildDialog();
+
+  Widget _buildDialog() {
+    double w = MediaQuery.of(_context).size.width;
+    double h = MediaQuery.of(_context).size.height;
+    return Wrap(
+      children: [
+        Container(
+          width: w / 2,
+          padding: const EdgeInsets.all(10),
+          child: Stack(
+            alignment: Alignment.topRight,
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.only(top: 20, right: 10),
-                    child: const Text(
-                      "Tips for you",
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.topRight,
-                    child: InkWell(
-                      onTap: () {
-                        Provider.of<AuthWidgetProvider>(context, listen: false).setShowDialogWithGlobalScaffoldKey(false, GlobalScaffoldKey.showTipScaffoldKey);
-                        Navigator.pop(context);
-                      },
-                      child: const Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.black,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(height: 5),
-              Text(
-                question.content.toString(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 5),
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                child: const Divider(
-                  thickness: 1,
-                  color: AppColors.defaultGrayColor,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(_context).pop();
+                  },
+                  child: const Icon(Icons.cancel_outlined, size: 30),
                 ),
               ),
-              const SizedBox(height: 5),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  question.numPart == PartOfTest.part2.get
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Cue Card',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              question.cueCard.trim(),
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                              ),
-                            )
-                          ],
-                        )
-                      : Container(),
-                  const SizedBox(height: 5),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      question.numPart == PartOfTest.part2.get
-                          ? const Text(
-                              'Another tips',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : Container(),
-                      (question.tips.toString().isNotEmpty)
-                          ? Text(
-                              question.tips.toString(),
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                              ),
-                            )
-                          : EmptyWidget.init().buildNothingWidget(
-                              'Nothing tips for you in here',
-                              widthSize: 100,
-                              heightSize: 100)
-                    ],
+                  const Text(
+                    "Tip",
+                    style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _questionTopicModel.content,
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(
+                    color: Colors.black,
+                    height: 1,
+                    thickness: 1,
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    height: h / 3,
+                    child: SingleChildScrollView(
+                      child: Text(
+                        _questionTopicModel.tips,
+                        style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ),
                   ),
                 ],
-              ),
+              )
             ],
           ),
-        ),
-      );
-    });
+        )
+      ],
+    );
   }
 }

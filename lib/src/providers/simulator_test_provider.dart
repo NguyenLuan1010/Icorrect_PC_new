@@ -20,7 +20,7 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   @override
   void notifyListeners() {
-    if (!isDisposed) {
+    if (!isDisposed) { 
       super.notifyListeners();
     }
   }
@@ -117,7 +117,16 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
-  _provider
+  //Status of doing the test
+  DoingStatus _doingStatus = DoingStatus.none;
+  DoingStatus get doingStatus => _doingStatus;
+  void updateDoingStatus(DoingStatus status) {
+    _doingStatus = status;
+
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
 
   String _activityType = '';
   String get activityType => _activityType;

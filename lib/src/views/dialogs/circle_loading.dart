@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class CircleLoading {
   OverlayEntry? _loadingEntry;
@@ -25,21 +26,10 @@ class CircleLoading {
                 color: Colors.black.withOpacity(0.3),
               ),
               Center(
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(100)),
-                      color: Colors.white),
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 4,
-                    backgroundColor: AppColors.purpleSlight2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.purple,
-                    ),
-                  ),
-                ),
+                child: LoadingAnimationWidget.flickr(
+                    leftDotColor: AppColors.defaultPurpleColor,
+                    rightDotColor: Colors.white,
+                    size: 70),
               )
             ],
           ));

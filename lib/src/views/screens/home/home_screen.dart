@@ -447,10 +447,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   @override
   void onGetListHomeworkError(String message) {
-    showDialog(
+   showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
     _loading?.hide();
   }
@@ -466,7 +466,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
     _loading?.hide();
   }

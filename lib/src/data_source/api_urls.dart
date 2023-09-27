@@ -30,9 +30,18 @@ Future<String> aiResponseEP(String orderId) async =>
     '?order_id=$orderId&token=${await Utils.instance().getAccessToken()}';
 
 String specialHomeWorksEP(
-        String email, String activityId, int status, int example) =>
-    '${publicDomain}api/list-answers-activity?'
-    'activity_id=$activityId&email=$email&status="$status"&example="$example"&all=1';
+    String email, String activityId, int status, int example) {
+  return "$publicDomain"
+      "api/list-answers-activity?activity_id="
+      "$activityId"
+      "&email="
+      "$email"
+      "&status="
+      "$status"
+      "&example="
+      "$example"
+      "&all=1";
+}
 
 String myTestDetailEP(String testId) =>
     '${icorrectDomain}api/v1/ielts-test/show/$testId';

@@ -16,6 +16,9 @@ import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.d
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/presenters/my_test_presenter.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
+import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
+import 'package:icorrect_pc/src/views/test/my_test/highlight_activities.dart';
+import 'package:icorrect_pc/src/views/test/my_test/other_activities.dart';
 import 'package:icorrect_pc/src/views/test/my_test/teacher_response.dart';
 import 'package:icorrect_pc/src/views/test/my_test/view_my_answers.dart';
 
@@ -48,7 +51,6 @@ class _MyTestScreenState extends State<MyTestScreen>
     with TickerProviderStateMixin
     implements MyTestContract, ActionAlertListener {
   TabController? _tabController;
-  final int _tabLength = 5;
   Permission? _microPermission;
   PermissionStatus _microPermissionStatus = PermissionStatus.denied;
 
@@ -56,6 +58,7 @@ class _MyTestScreenState extends State<MyTestScreen>
   StreamSubscription? connection;
   bool isOffline = false;
   MyTestProvider? _provider;
+  CircleLoading? _loading;
 
   @override
   void initState() {
@@ -80,14 +83,20 @@ class _MyTestScreenState extends State<MyTestScreen>
       }
     });
     super.initState();
+    _loading = CircleLoading();
     _myTestPresenter = MyTestPresenter(this);
     _provider = Provider.of<MyTestProvider>(context, listen: false);
-    _tabController = TabController(length: _tabLength, vsync: this);
+    Future.delayed(Duration.zero, () {
+      _provider!.clearData();
+    });
+    _tabController = TabController(
+        length: widget.homeWork.haveTeacherResponse() ? 5 : 4, vsync: this);
     if (!kIsWeb && Platform.isWindows) WindowsVideoPlayer.registerWith();
     _getTestDetail();
   }
 
   void _getTestDetail() async {
+    _loading!.show(context);
     await _myTestPresenter!.initializeData();
     _myTestPresenter!
         .getMyTest(widget.homeWork.activityAnswer!.testId.toString());
@@ -108,16 +117,47 @@ class _MyTestScreenState extends State<MyTestScreen>
 
   Widget _buildMyTestScreen() {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildBody(),
-            _buildDownloadAgain(),
-          ],
-        ),
+        body: Container(
+      padding: const EdgeInsets.all(20),
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 100,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.keyboard_backspace_sharp,
+                      color: AppColors.black,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Back',
+                      style: TextStyle(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 17),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [_buildBody(), _buildDownloadAgain()],
+            ),
+          )
+        ],
       ),
-    );
+    ));
   }
 
   Widget _buildBody() {
@@ -137,86 +177,106 @@ class _MyTestScreenState extends State<MyTestScreen>
           color: AppColors.defaultPurpleColor,
         );
       } else {
-        final tabs = [
-          const Tab(text: 'Test\'s Detail'),
-          const Tab(text: 'Response'),
-          const Tab(text: 'Highlights'),
-          const Tab(text: 'List Other'),
-          const Tab(text: 'AI Response'),
-        ];
-        return _buildTabLayoutScreen(tabs);
+        return _buildTabLayoutScreen(_getTabs());
       }
     });
   }
 
+  _getTabs() {
+    return widget.homeWork.haveTeacherResponse()
+        ? [
+            const Tab(text: 'Test\'s Detail'),
+            const Tab(text: 'Response'),
+            const Tab(text: 'Highlights'),
+            const Tab(text: 'List Other'),
+            const Tab(text: 'AI Response'),
+          ]
+        : [
+            const Tab(text: 'Test\'s Detail'),
+            const Tab(text: 'Highlights'),
+            const Tab(text: 'List Other'),
+            const Tab(text: 'AI Response'),
+          ];
+  }
+
   Widget _buildTabLayoutScreen(final tabs) {
     return Container(
-      margin: const EdgeInsets.only(top: 30, left: 50, right: 50),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: InkWell(
-              onTap: () {},
-              child: const Row(
+        margin: const EdgeInsets.only(top: 30, left: 10, right: 10),
+        child: Expanded(
+          child: Scaffold(
+            backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+            appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(40),
+                child: Container(
+                  margin: const EdgeInsets.only(left: 50, right: 600),
+                  child: DefaultTabController(
+                      initialIndex: 0,
+                      length: widget.homeWork.haveTeacherResponse() ? 5 : 4,
+                      child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(5),
+                                  topRight: Radius.circular(5)),
+                              border: Border.all(
+                                  color: AppColors.defaultGrayColor, width: 2)),
+                          indicatorColor: AppColors.defaultGrayColor,
+                          labelColor: AppColors.defaultGrayColor,
+                          unselectedLabelColor: AppColors.defaultGrayColor,
+                          tabs: tabs)),
+                )),
+            body: TabBarView(
+                controller: _tabController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(
-                    Icons.keyboard_backspace_sharp,
-                    color: AppColors.black,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Back',
-                    style: TextStyle(
-                        color: AppColors.black,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 17),
-                  )
-                ],
-              ),
-            ),
+                  ViewMyAnswers(
+                      activitiesModel: widget.homeWork,
+                      provider: _provider!,
+                      clickUpdateReanswerCallBack: _onClickUpdateReanswer),
+                  TeacherResponseWidget(widget.homeWork, _provider!),
+                  HighLightHomeWorks(
+                      provider: _provider!, homeWorkModel: widget.homeWork),
+                  OtherHomeWorks(
+                      provider: _provider!, homeWorkModel: widget.homeWork),
+                  Container()
+                ]),
           ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Scaffold(
-              backgroundColor: const Color.fromARGB(0, 255, 255, 255),
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(40),
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 50, right: 600),
-                    child: DefaultTabController(
-                        initialIndex: 0,
-                        length: _tabLength,
-                        child: TabBar(
-                            controller: _tabController,
-                            indicator: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(5),
-                                    topRight: Radius.circular(5)),
-                                border: Border.all(
-                                    color: AppColors.defaultGrayColor,
-                                    width: 2)),
-                            indicatorColor: AppColors.defaultGrayColor,
-                            labelColor: AppColors.defaultGrayColor,
-                            unselectedLabelColor: AppColors.defaultGrayColor,
-                            tabs: tabs)),
-                  )),
-              body: TabBarView(
-                  controller: _tabController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    ViewMyAnswers(),
-                    TeacherResponseWidget(),
-                    Container(),
-                    Container(),
-                    Container()
-                  ]),
-            ),
-          )
-        ],
-      ),
-    );
+        ));
+  }
+
+  _getTabsItem() {
+    return widget.homeWork.haveTeacherResponse()
+        ? [
+            ViewMyAnswers(
+                activitiesModel: widget.homeWork,
+                provider: _provider!,
+                clickUpdateReanswerCallBack: _onClickUpdateReanswer),
+            TeacherResponseWidget(widget.homeWork, _provider!),
+            HighLightHomeWorks(
+                provider: _provider!, homeWorkModel: widget.homeWork),
+            OtherHomeWorks(
+                provider: _provider!, homeWorkModel: widget.homeWork),
+            Container()
+          ]
+        : [
+            ViewMyAnswers(
+                activitiesModel: widget.homeWork,
+                provider: _provider!,
+                clickUpdateReanswerCallBack: _onClickUpdateReanswer),
+            HighLightHomeWorks(
+                provider: _provider!, homeWorkModel: widget.homeWork),
+            OtherHomeWorks(
+                provider: _provider!, homeWorkModel: widget.homeWork),
+            Container()
+          ];
+  }
+
+  void _onClickUpdateReanswer() {
+    _loading!.show(context);
+    _myTestPresenter!.updateMyAnswer(
+        testId: widget.homeWork.activityAnswer!.testId.toString(),
+        activityId: widget.homeWork.activityId.toString(),
+        reQuestions: _provider!.reAnswerQuestions);
   }
 
   Widget _buildDownloadAgain() {
@@ -238,6 +298,7 @@ class _MyTestScreenState extends State<MyTestScreen>
   @override
   void downloadFilesFail(AlertInfo alertInfo) {
     // TODO: implement downloadFilesFail
+    _loading!.hide();
   }
 
   @override
@@ -250,26 +311,26 @@ class _MyTestScreenState extends State<MyTestScreen>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, alertInfo.description);
+          return MessageDialog(
+              context: context, message: alertInfo.description);
         });
+    _loading!.hide();
   }
 
   @override
   void getMyTestSuccess(TestDetailModel testDetailModel,
       List<QuestionTopicModel> questions, int total) {
     _provider!.setCurrentTestDetail(testDetailModel);
+    _provider!.setQuestionsList(questions);
     _provider!.setDownloadProgressingStatus(true);
     _provider!.setTotal(total);
-  }
-
-  @override
-  void onCountDown(String time) {
-    // TODO: implement onCountDown
+    _loading!.hide();
   }
 
   @override
   void onDownloadSuccess(TestDetailModel testDetail, String nameFile,
       double percent, int index, int total) {
+    _loading!.hide();
     _provider!.setTotal(total);
     _provider!.updateDownloadingIndex(index);
     _provider!.updateDownloadingPercent(percent);
@@ -394,11 +455,18 @@ class _MyTestScreenState extends State<MyTestScreen>
   @override
   void updateAnswerFail(AlertInfo info) {
     // TODO: implement updateAnswerFail
+    _loading!.hide();
   }
 
   @override
   void updateAnswersSuccess(String message) {
-    // TODO: implement updateAnswersSuccess
+    _loading!.hide();
+    _provider!.clearReanswerQuestion();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(context: context, message: message);
+        });
   }
 
   @override

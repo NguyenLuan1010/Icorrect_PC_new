@@ -237,8 +237,8 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           showDialog(
               context: context,
               builder: (context) {
-                return MessageDialog.alertDialog(
-                    context, "Can not delete files!");
+                return MessageDialog(
+                    context: context, message: "Can not delete files!");
               });
         }
       });
@@ -440,7 +440,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
   }
 
@@ -496,7 +496,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, msg);
+          return MessageDialog(context: context, message: msg);
         });
     //Go to MyTest Screen
     Navigator.of(context).pop();
@@ -509,7 +509,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, msg);
+          return MessageDialog(context: context, message: msg);
         });
 
     //Go to MyTest Screen

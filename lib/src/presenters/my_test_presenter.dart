@@ -27,7 +27,6 @@ abstract class MyTestContract {
       double percent, int index, int total);
   void downloadFilesFail(AlertInfo alertInfo);
   void getMyTestFail(AlertInfo alertInfo);
-  void onCountDown(String time);
   void finishCountDown();
   void updateAnswersSuccess(String message);
   void updateAnswerFail(AlertInfo info);
@@ -148,7 +147,7 @@ class MyTestPresenter {
       QuestionTopicModel question, int index) {
     return question.copyWith(
         id: question.id,
-        content: question.content,
+        content: "Ask for repeat question",
         type: question.type,
         topicId: question.topicId,
         tips: question.tips,
@@ -187,8 +186,8 @@ class MyTestPresenter {
 
   //Check file is exist using file_storage
   Future<bool> _isExist(String fileName, MediaType mediaType) async {
-    bool isExist =
-        await FileStorageHelper.checkExistFile(fileName, mediaType, null);
+    bool isExist = await FileStorageHelper.checkExistFile(
+        fileName, mediaType, testDetail!.testId.toString());
     return isExist;
   }
 
@@ -256,9 +255,15 @@ class MyTestPresenter {
               if (kDebugMode) {
                 print('DEBUG : fileDownload : $url');
               }
+              if (dio == null) {
+                if (kDebugMode) {
+                  print("DEBUG: client is closed!");
+                }
+                return;
+              }
               dio!.head(url).timeout(const Duration(seconds: 10));
               String savePath =
-                  '${await FileStorageHelper.getFolderPath(_mediaType(fileType), null)}\\$fileTopic';
+                  '${await FileStorageHelper.getFolderPath(_mediaType(fileType), testDetail.testId.toString())}\\$fileTopic';
               Response response = await dio!.download(url, savePath);
 
               if (response.statusCode == 200) {
@@ -316,39 +321,18 @@ class MyTestPresenter {
     }
   }
 
-  Timer startCountDown(BuildContext context, int count) {
-    bool finishCountDown = false;
-    const oneSec = Duration(seconds: 1);
-    return Timer.periodic(oneSec, (Timer timer) {
-      if (count < 1) {
-        timer.cancel();
-      } else {
-        count = count - 1;
-      }
-
-      dynamic minutes = count ~/ 60;
-      dynamic seconds = count % 60;
-
-      dynamic minuteStr = minutes.toString().padLeft(2, '0');
-      dynamic secondStr = seconds.toString().padLeft(2, '0');
-
-      _view!.onCountDown("$minuteStr:$secondStr");
-
-      if (count == 0 && !finishCountDown) {
-        finishCountDown = true;
-        _view!.finishCountDown();
-      }
-    });
-  }
-
   Future updateMyAnswer(
       {required String testId,
       required String activityId,
       required List<QuestionTopicModel> reQuestions}) async {
     assert(_view != null && _repository != null);
 
-    http.MultipartRequest multiRequest = await _formDataRequest(
-        testId: testId, activityId: activityId, questions: reQuestions);
+    http.MultipartRequest multiRequest = await Utils.instance()
+        .formDataRequestSubmit(
+            testId: testId,
+            activityId: activityId,
+            questions: reQuestions,
+            isUpdate: true);
     try {
       _repository!.updateAnswers(multiRequest).then((value) {
         Map<String, dynamic> json = jsonDecode(value) ?? {};
@@ -371,82 +355,6 @@ class MyTestPresenter {
     } on http.ClientException {
       _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
     }
-  }
-
-  Future<http.MultipartRequest> _formDataRequest(
-      {required String testId,
-      required String activityId,
-      required List<QuestionTopicModel> questions}) async {
-    String url = submitHomeWorkV2EP();
-    http.MultipartRequest request =
-        http.MultipartRequest(RequestMethod.post, Uri.parse(url));
-    request.headers.addAll({
-      'Content-Type': 'multipart/form-data',
-      'Authorization': 'Bearer ${await Utils.instance().getAccessToken()}'
-    });
-
-    Map<String, String> formData = {};
-
-    formData.addEntries([MapEntry('test_id', testId)]);
-    formData.addEntries(const [MapEntry('is_update', '1')]);
-    formData.addEntries([MapEntry('activity_id', activityId)]);
-
-    if (Platform.isAndroid) {
-      formData.addEntries([const MapEntry('os', "android")]);
-    } else {
-      formData.addEntries([const MapEntry('os', "ios")]);
-    }
-    formData.addEntries([const MapEntry('app_version', '2.0.2')]);
-    String format = '';
-    String reanswerFormat = '';
-    String endFormat = '';
-    for (QuestionTopicModel q in questions) {
-      String questionId = q.id.toString();
-      if (kDebugMode) {
-        print("DEBUG: num part : ${q.numPart.toString()}");
-      }
-      if (q.numPart == PartOfTest.introduce.get) {
-        format = 'introduce[$questionId]';
-        reanswerFormat = 'reanswer_introduce[$questionId]';
-      }
-
-      if (q.type == PartOfTest.part1.get) {
-        format = 'part1[$questionId]';
-        reanswerFormat = 'reanswer_part1[$questionId]';
-      }
-
-      if (q.type == PartOfTest.part2.get) {
-        format = 'part2[$questionId]';
-        reanswerFormat = 'reanswer_part2[$questionId]';
-      }
-
-      if (q.type == PartOfTest.part3.get && !q.isFollowUpQuestion()) {
-        format = 'part3[$questionId]';
-        reanswerFormat = 'reanswer_part3[$questionId]';
-      }
-      if (q.type == PartOfTest.part3.get && q.isFollowUpQuestion()) {
-        format = 'followup[$questionId]';
-        reanswerFormat = 'reanswer_followup[$questionId]';
-      }
-
-      formData
-          .addEntries([MapEntry(reanswerFormat, q.reAnswerCount.toString())]);
-
-      for (int i = 0; i < q.answers.length; i++) {
-        endFormat = '$format[$i]';
-        File audioFile = File(await FileStorageHelper.getFilePath(
-            q.answers.elementAt(i).url.toString(), MediaType.audio, null));
-
-        if (await audioFile.exists()) {
-          request.files.add(
-              await http.MultipartFile.fromPath(endFormat, audioFile.path));
-        }
-      }
-    }
-
-    request.fields.addAll(formData);
-
-    return request;
   }
 
   void tryAgainToDownload() async {

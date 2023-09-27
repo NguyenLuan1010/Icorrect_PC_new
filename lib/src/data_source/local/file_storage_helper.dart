@@ -69,9 +69,9 @@ class FileStorageHelper {
     String filePath = '';
 
     if (null != testId) {
-      filePath = '$path/$folder/$testId';
+      filePath = '$path\\$folder\\$testId';
     } else {
-      filePath = '$path/$folder';
+      filePath = '$path\\$folder';
     }
 
     Directory hideDirectory = Directory(filePath);

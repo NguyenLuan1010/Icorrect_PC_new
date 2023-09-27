@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => PlayAnswerProvider()),
           ChangeNotifierProvider(create: (_) => TimerProvider()),
           ChangeNotifierProvider(create: (_) => TestRoomProvider()),
-          // ChangeNotifierProvider(create: (_) => MyTestProvider()),
+          ChangeNotifierProvider(create: (_) => MyTestProvider()),
         ],
         child: const MaterialApp(
             debugShowCheckedModeBanner: false, home: SplashScreen()));

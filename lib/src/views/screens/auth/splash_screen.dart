@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
   }
 

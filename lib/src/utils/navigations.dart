@@ -51,10 +51,7 @@ class Navigations {
   void goToMyTest(BuildContext context, ActivitiesModel activitiesModel) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ChangeNotifierProvider(
-          create: (_) => MyTestProvider(),
-          child: MyTestScreen(homeWork: activitiesModel),
-        ),
+        builder: (context) => MyTestScreen(homeWork: activitiesModel),
       ),
     );
   }

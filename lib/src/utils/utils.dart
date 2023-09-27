@@ -13,6 +13,7 @@ import '../data_source/local/file_storage_helper.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
+import '../models/my_test_models/student_result_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import 'package:http/http.dart' as http;
@@ -239,6 +240,35 @@ class Utils {
       return null;
     }
     return UserDataModel.fromJson(userMap);
+  }
+
+  Map<String, dynamic> scoreReponse(StudentResultModel resultModel) {
+    if (resultModel.overallScore.isNotEmpty &&
+        resultModel.overallScore != "0.0") {
+      return {'color': Colors.green, 'score': resultModel.overallScore};
+    } else {
+      String aiScore = resultModel.aiScore;
+      if (aiScore.isNotEmpty) {
+        if (isNumeric(aiScore) &&
+            (double.parse(aiScore) == -1.0 || double.parse(aiScore) == -2.0)) {
+          return {'color': Colors.red, 'score': 'Not Evaluated'};
+        } else {
+          return {'color': Colors.blue, 'score': aiScore};
+        }
+      } else {
+        return {'color': Colors.red, 'score': 'Not Evaluated'};
+      }
+    }
+  }
+
+  bool isNumeric(String str) {
+    try {
+      var value = double.parse(str);
+    } on FormatException {
+      return false;
+    } finally {
+      return true;
+    }
   }
 
   String convertFileName(String nameFile) {

@@ -371,6 +371,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       return TestQuestionWidget(
           testId: widget.testDetailModel.testId,
           questions: provider.questionList,
+          canPlayAnswer: provider.canPlayAnswer,
+          canReanswer: provider.canReanswer,
+          isPlayingAnswer: provider.isPlaying,
+          selectedQuestionIndex: provider.selectedQuestionIndex,
           playAnswerCallBack: _playAnswerCallBack,
           playReAnswerCallBack: _reanswerCallBack,
           showTipCallBack: (q) {});
