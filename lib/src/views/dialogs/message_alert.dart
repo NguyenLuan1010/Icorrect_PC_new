@@ -13,8 +13,6 @@ class MessageDialog extends Dialog {
   double? get elevation => 0;
 
   @override
-  Color? get backgroundColor => Colors.white;
-  @override
   ShapeBorder? get shape =>
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20));
 
@@ -23,11 +21,11 @@ class MessageDialog extends Dialog {
 
   Widget _buildDialog() {
     double w = MediaQuery.of(context).size.width;
+    double h = MediaQuery.of(context).size.width;
     return Container(
       width: w / 3,
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(20),
       child: Wrap(
-        alignment: WrapAlignment.center,
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -42,7 +40,7 @@ class MessageDialog extends Dialog {
                   child: Text(
                     textAlign: TextAlign.center,
                     message,
-                    style: const TextStyle(color: Colors.black, fontSize: 15),
+                    style: const TextStyle(color: Colors.black, fontSize: 16),
                   )),
               const Divider(
                 color: AppColors.gray,

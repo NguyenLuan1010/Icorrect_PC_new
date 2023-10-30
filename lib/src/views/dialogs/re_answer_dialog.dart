@@ -6,12 +6,12 @@ import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:provider/provider.dart';
-import 'package:record/record.dart';
 
 import '../../data_source/local/file_storage_helper.dart';
 import '../../models/simulator_test_models/question_topic_model.dart';
 import '../../providers/re_answer_provider.dart';
 import '../../utils/utils.dart';
+import 'package:record/record.dart';
 
 // ignore: must_be_immutable
 class ReAnswerDialog extends Dialog {
@@ -19,7 +19,7 @@ class ReAnswerDialog extends Dialog {
   final QuestionTopicModel _question;
   Timer? _countDown;
   int _timeRecord = 30;
-  late Record _record; 
+  late Record _record;
   String _filePath = '';
   String _fileName = '';
   final String _currentTestId;
@@ -181,7 +181,7 @@ class ReAnswerDialog extends Dialog {
     _fileName = '${await Utils.instance().generateAudioFileName()}.wav';
     _filePath =
         '${await FileStorageHelper.getFolderPath(MediaType.audio, _currentTestId)}'
-        '/$_fileName';
+        '\\$_fileName';
     if (await _record.hasPermission()) {
       await _record.start(
         path: _filePath,

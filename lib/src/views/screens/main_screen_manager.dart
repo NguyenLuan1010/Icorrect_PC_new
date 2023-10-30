@@ -1,12 +1,21 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
+import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/user_auth_detail_provider.dart';
+import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
+import 'package:icorrect_pc/src/views/dialogs/confirm_dialog.dart';
 import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
 import 'package:icorrect_pc/src/views/screens/home/practice_screen.dart';
+import 'package:icorrect_pc/src/views/screens/video_authentication/user_auth_status_detail_widget.dart';
 
 import 'package:provider/provider.dart';
+
+import '../../data_source/api_urls.dart';
+import '../../data_source/constants.dart';
 
 class MainWidget extends StatefulWidget {
   const MainWidget({super.key});
@@ -77,6 +86,19 @@ class _MainWidgetState extends State<MainWidget> {
                   children: [
                     InkWell(
                       onTap: () {
+                        _provider.setCurrentScreen(ChangeNotifierProvider(
+                            create: (_) => UserAuthDetailProvider(),
+                            child: const UserAuthDetailStatus()));
+                      },
+                      child: const Text('User Authentication',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                    const SizedBox(width: 30),
+                    InkWell(
+                      onTap: () {
                         _provider.setCurrentScreen(const HomeWorksWidget());
                       },
                       child: const Text('Homeworks',
@@ -97,35 +119,16 @@ class _MainWidgetState extends State<MainWidget> {
                               fontWeight: FontWeight.w500)),
                     ),
                     const SizedBox(width: 30),
-                    const Text('Logout',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500)),
-
-                    // (appState.currentMainWidget.runtimeType ==
-                    //             HomeWorksWidget ||
-                    //         appState.currentMainWidget.runtimeType ==
-                    //             PracticesWidget)
-                    //     ? InkWell(
-                    //         onTap: () {
-                    //           showDialog(
-                    //               context: context,
-                    //               builder: (context) {
-                    //                 return ConfirmDialog.init().showDialog(
-                    //                     context,
-                    //                     'Confirm to logout',
-                    //                     'Are you sure for logout ?',
-                    //                     this);
-                    //               });
-                    //         },
-                    //         child: const Text('Logout',
-                    //             style: TextStyle(
-                    //                 color: Colors.black,
-                    //                 fontSize: 15,
-                    //                 fontWeight: FontWeight.w500)),
-                    //       )
-                    //     : Container(),
+                    InkWell(
+                      onTap: () {
+                        _showConfirmLogOut();
+                      },
+                      child: const Text('Logout',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500)),
+                    ),
                     const SizedBox(width: 30),
                     FutureBuilder(
                         future: Utils.instance().getCurrentUser(),
@@ -161,103 +164,72 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   static Widget _getCircleAvatar(UserDataModel? user) {
-    String strAvatar = (user != null && user != UserDataModel())
-        ? user.profileModel.avatar ?? ''
-        : '';
-    if (strAvatar.contains("default-avatar") || strAvatar.isEmpty) {
-      return const CircleAvatar(
-        radius: 18,
-        backgroundImage: AssetImage(AppAssets.default_avatar),
-      );
-    }
-    return CircleAvatar(
-      radius: 18,
-      backgroundImage: NetworkImage('APIHelper.API_DOMAIN + strAvatar'),
+    return SizedBox(
+      width: CustomSize.size_50,
+      height: CustomSize.size_50,
+      child: CircleAvatar(
+        child:
+            Consumer<HomeProvider>(builder: (context, homeWorkProvider, child) {
+          return (homeWorkProvider.currentUser.userInfoModel.id != 0)
+              ? CachedNetworkImage(
+                  imageUrl:
+                      fileEP(homeWorkProvider.currentUser.profileModel.avatar),
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(CustomSize.size_100),
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.transparent,
+                          BlendMode.colorBurn,
+                        ),
+                      ),
+                    ),
+                  ),
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => CircleAvatar(
+                    child: Image.asset(
+                      AppAssets.default_avatar,
+                      width: CustomSize.size_40,
+                      height: CustomSize.size_40,
+                    ),
+                  ),
+                )
+              : CircleAvatar(
+                  child: Image.asset(
+                    AppAssets.default_avatar,
+                    width: CustomSize.size_40,
+                    height: CustomSize.size_40,
+                  ),
+                );
+        }),
+      ),
     );
   }
 
-  // static Widget _getCircleAvatar(UserDataModel? user) {
-   
-  //   return CircleAvatar(
-  //             child: Consumer<HomeProvider>(
-  //                 builder: (context, homeWorkProvider, child) {
-  //               return CachedNetworkImage(
-  //                 imageUrl:
-  //                     fileEP(homeWorkProvider.currentUser.profileModel.avatar),
-  //                 imageBuilder: (context, imageProvider) => Container(
-  //                   decoration: BoxDecoration(
-  //                     borderRadius: BorderRadius.circular(CustomSize.size_100),
-  //                     image: DecorationImage(
-  //                       image: imageProvider,
-  //                       fit: BoxFit.cover,
-  //                       colorFilter: const ColorFilter.mode(
-  //                         Colors.transparent,
-  //                         BlendMode.colorBurn,
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 placeholder: (context, url) =>
-  //                     const CircularProgressIndicator(),
-  //                 errorWidget: (context, url, error) => CircleAvatar(
-  //                   child: Image.asset(
-  //                     AppAssets.default_avatar,
-  //                     width: CustomSize.size_40,
-  //                     height: CustomSize.size_40,
-  //                   ),
-  //                 ),
-  //               );
-  //             })
-  //   );
-  // }
-
+  void _showConfirmLogOut() {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return ConfirmDialogWidget(
+              title: "Notification",
+              message: "Are you sure to logout ?",
+              cancelButtonTitle: "Cancel",
+              okButtonTitle: "Logout",
+              cancelButtonTapped: () {},
+              okButtonTapped: () {
+                Utils.instance().clearCurrentUser();
+                Utils.instance().setAccessToken('');
+                Navigations.instance().goToAuthWidget(context);
+              });
+        });
+  }
 
   Widget _body() {
     return Consumer<MainWidgetProvider>(
         builder: (context, appState, child) =>
-            Expanded(flex: 1, child: appState.currentScreen));
+            Expanded(child: appState.currentScreen));
   }
-
-  void whenOutTheTest(String keyInfo) {
-    // AlertInfo info = AlertInfo(
-    //     'Warning',
-    //     'Are you sure to out this test? Your test won\'t be saved !',
-    //     Alert.WARNING.type);
-    // showDialog(
-    //     context: context,
-    //     builder: (context) {
-    //       return AlertsDialog.init()
-    //           .showDialog(context, info, this, keyInfo: keyInfo);
-    //     });
-  }
-
-// @override
-// void onClickCancel() {}
-
-// @override
-// void onClickOK() {
-//   Navigations.instance().goToAuthWidget(context);
-//   SharedRef.instance().setUser(null);
-//   SharedRef.instance().setAccessToken('');
-// }
-
-// @override
-// void onAlertExit(String keyInfo) {}
-
-// @override
-// void onAlertNextStep(String keyInfo) {
-//   switch (keyInfo) {
-//     case 'HOMEWORK_ACTION_TAB':
-//       if (mounted) {
-//         _provider.stopVideoController();
-//         _provider.resetTestSimulatorValue();
-//         _provider.setCurrentMainWidget(const HomeWorksWidget());
-//       }
-//       break;
-//     case 'PRACTICE_ACTION_TAB':
-//       _provider.stopVideoController();
-//       _provider.resetTestSimulatorValue();
-//       break;
-//   }
-// }
 }

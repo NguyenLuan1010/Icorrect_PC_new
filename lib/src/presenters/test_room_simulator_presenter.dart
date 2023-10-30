@@ -271,13 +271,15 @@ class TestRoomSimulatorPresenter {
         if (kDebugMode) {
           print("DEBUG: error form: ${json.toString()}");
         }
-        if (json['error_code'] == 200 && json['status'] == 'success') {
+        if (json['error_code'] == 200) {
           _view!.submitAnswersSuccess(AlertClass.submitTestSuccess);
         } else {
           _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
         }
       }).catchError((onError) {
-        print('catchError updateAnswerFail ${onError.toString()}');
+        if (kDebugMode) {
+          print('catchError updateAnswerFail ${onError.toString()}');
+        }
         _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
       });
     } on TimeoutException {

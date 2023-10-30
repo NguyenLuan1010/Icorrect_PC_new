@@ -25,7 +25,7 @@ class HomeWorkRepositoryImpl implements HomeWorkRepository {
           url,
           true,
         )
-        .timeout(const Duration(seconds: 15))
+        .timeout(const Duration(seconds: 20))
         .then((http.Response response) {
       return response.body;
     });

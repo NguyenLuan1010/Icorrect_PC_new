@@ -61,6 +61,11 @@ String getActivitiesList(Map<String, String> queryParameters) {
   return '${apiDomain}api/v1/syllabus/activities-of-class/index?${Uri(queryParameters: queryParameters).query}';
 }
 
+String getUserAuthDetailEP()=>'$icorrectDomain/api/v1/exam/voice-bio/detail';
+String submitAuthEP() {
+  return  '$icorrectDomain/api/v1/exam/voice-bio/submit';
+}
+
 class RequestMethod {
   static const post = 'POST';
   static const get = 'GET';

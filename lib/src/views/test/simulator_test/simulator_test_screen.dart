@@ -284,6 +284,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                     testDetailModel: _simulatorTestProvider!.currentTestDetail,
                     simulatorTestPresenter: _simulatorTestPresenter!),
               ),
+              
               Visibility(
                 visible: provider.submitStatus == SubmitStatus.submitting,
                 child: const DefaultLoadingIndicator(
@@ -406,7 +407,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onDownloadFailure(AlertInfo info) {
-    // TODO: implement onDownloadFailure
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(context: context, message: info.description);
+        });
   }
 
   @override

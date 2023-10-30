@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fdottedline_nullsafety/fdottedline__nullsafety.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
@@ -119,14 +120,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   );
                 }).toList(),
                 onChanged: (NewClassModel? newValue) {
-                  _provider.setClassSelection(newValue!);
+                  provider.setClassSelection(newValue!);
                   List<ActivitiesModel> activities =
                       _presenter.filterActivities(
                           newValue.id,
-                          provider.activitiesList,
+                          newValue.activities,
                           provider.statusActivity,
-                          _provider.currentTime);
-                  _provider.setActivitiesFilter(activities);
+                          provider.currentTime);
+                  provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
                   contentPadding:
@@ -174,14 +175,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  _provider.setStatusActivity(newValue!);
+                  provider.setStatusActivity(newValue!);
                   List<ActivitiesModel> activities =
                       _presenter.filterActivities(
                           provider.classSelected.id,
                           provider.activitiesList,
                           newValue,
-                          _provider.currentTime);
-                  _provider.setActivitiesFilter(activities);
+                          provider.currentTime);
+                  provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
                   contentPadding:
@@ -239,13 +240,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                     const SizedBox(height: 10),
                     InkWell(
                         onTap: () {
-                          _provider.setStatusActivity("All");
                           _loading?.show(context);
+                          _provider.setStatusActivity("All");
                           _presenter.getListHomeWork();
                         },
-                        child: Container(
+                        child: const SizedBox(
                           width: 120,
-                          child: const Row(
+                          child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Icon(Icons.refresh_rounded),
@@ -337,10 +338,22 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                 children: [
                   SizedBox(
                       width: 300,
-                      child: Text(homeWork.activityName.toString(),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 17, color: Colors.black))),
+                      child: Row(
+                        children: [
+                          (homeWork.isExam())
+                              ? const Text("Test: ",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold))
+                              : Container(),
+                          Text(homeWork.activityName.toString(),
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 17, color: Colors.black))
+                        ],
+                      )),
                   Row(
                     children: [
                       Text(
@@ -387,9 +400,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   width: 100,
                   child: ElevatedButton(
                       onPressed: () {
-                        // print('homework id: ${homeWork.id.toString()}');
-                        // _provider.setCurrentMainWidget(
-                        //     ResultTestWidget(homeWork: homeWork));
                         Navigations.instance().goToMyTest(context, homeWork);
                       },
                       style: ButtonStyle(
@@ -447,7 +457,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   @override
   void onGetListHomeworkError(String message) {
-   showDialog(
+    showDialog(
         context: context,
         builder: (context) {
           return MessageDialog(context: context, message: message);

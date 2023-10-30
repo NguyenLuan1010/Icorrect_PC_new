@@ -282,19 +282,6 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
-  ReviewingStatus _reviewingStatus = ReviewingStatus.none;
-  ReviewingStatus get reviewingStatus => _reviewingStatus;
-  void updateReviewingStatus(ReviewingStatus status) {
-    if (kDebugMode) {
-      print("DEBUG: Current status of Reviewing = $_reviewingStatus");
-      print("DEBUG: Next status of Reviewing = $status");
-    }
-    _reviewingStatus = status;
-
-    if (!isDisposed) {
-      notifyListeners();
-    }
-  }
 
   int _indexOfHeaderPart2 = 0;
   int get indexOfHeaderPart2 => _indexOfHeaderPart2;
@@ -456,7 +443,6 @@ class SimulatorTestProvider extends ChangeNotifier {
     _videoPlayerController = null;
     _currentQuestion = QuestionTopicModel();
     _indexOfCurrentQuestion = 0;
-    _reviewingStatus = ReviewingStatus.none;
     resetTopicsQueue();
     clearQuestionList();
     resetTopicsList();

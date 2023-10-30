@@ -26,7 +26,6 @@ Future<void> main() async {
       await windowManager.setMinimumSize(Size(1200, 800));
       await windowManager.center();
       await windowManager.show();
-
     });
   }
   runApp(const MyApp());

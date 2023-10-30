@@ -3,6 +3,8 @@ import 'package:icorrect_pc/src/data_source/repositories/homework_repository.dar
 import 'package:icorrect_pc/src/data_source/repositories/my_test_repository.dart';
 import 'package:icorrect_pc/src/data_source/repositories/simulator_test_repository.dart';
 
+import 'repositories/user_authen_repository.dart';
+
 class Injector {
   static final Injector _singleton = Injector._internal();
   factory Injector() {
@@ -13,4 +15,5 @@ class Injector {
   AuthRepository getAuthRepository() => AuthRepositoryImpl();
   SimulatorTestRepository getTestRepository() => SimulatorTestRepositoryImpl();
   MyTestRepository getMyTestRepository() => MyTestImpl();
+  UserAuthRepository getUserAuthDetailRepository() => UserAuthRepositoryImpl();
 }

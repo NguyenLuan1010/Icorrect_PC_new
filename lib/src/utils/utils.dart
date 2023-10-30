@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/models/ui_models/user_authen_status.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/views/dialogs/custom_alert_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../data_source/api_urls.dart';
 import '../data_source/constants.dart';
@@ -13,6 +17,7 @@ import '../data_source/local/file_storage_helper.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
+import '../models/log_models/log_model.dart';
 import '../models/my_test_models/student_result_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/user_data_models/user_data_model.dart';
@@ -146,7 +151,7 @@ class Utils {
     }
   }
 
-  static bool isExpired(String activityEndTime, String serverCurrentTime) {
+  bool isExpired(String activityEndTime, String serverCurrentTime) {
     final t1 = DateTime.parse(activityEndTime);
 
     var inputFormat = DateFormat('MM/dd/yyyy HH:mm:ss');
@@ -270,6 +275,61 @@ class Utils {
       return true;
     }
   }
+
+   UserAuthenStatusUI getUserAuthenStatus(int status) {
+    switch (status) {
+      case 0:
+        return UserAuthenStatusUI(
+            title: StringConstants.not_auth_title,
+            description: StringConstants.not_auth_content,
+            icon: Icons.cancel_outlined,
+            backgroundColor: const Color.fromARGB(255, 248, 179, 179),
+            titleColor: Colors.red,
+            iconColor: Colors.red);
+      case 4:
+        return UserAuthenStatusUI(
+            title: StringConstants.reject_auth_title,
+            description: StringConstants.reject_auth_content,
+            icon: Icons.video_camera_front_outlined,
+            backgroundColor: const Color.fromARGB(255, 248, 233, 179),
+            titleColor: Colors.amber,
+            iconColor: Colors.amber);
+      case 1:
+        return UserAuthenStatusUI(
+            title: StringConstants.user_authed_title,
+            description: StringConstants.user_authed_content,
+            icon: Icons.check_circle_outline_rounded,
+            backgroundColor: const Color.fromARGB(255, 179, 248, 195),
+            titleColor: Colors.green,
+            iconColor: Colors.green);
+      case 3:
+        return UserAuthenStatusUI(
+            title: StringConstants.progress_auth_title,
+            description: StringConstants.progress_auth_content,
+            icon: Icons.change_circle_sharp,
+            backgroundColor: const Color.fromARGB(255, 179, 222, 248),
+            titleColor: Colors.blue,
+            iconColor: Colors.blue);
+      case 2:
+        return UserAuthenStatusUI(
+            title: StringConstants.lock_auth_title,
+            description: StringConstants.lock_auth_content,
+            icon: Icons.lock,
+            backgroundColor: const Color.fromARGB(255, 248, 179, 179),
+            titleColor: Colors.red,
+            iconColor: Colors.red);
+      case 99:
+      default:
+        return UserAuthenStatusUI(
+            title: StringConstants.error_auth_title,
+            description: StringConstants.error_auth_content,
+            icon: Icons.error_outline,
+            backgroundColor: const Color.fromARGB(255, 248, 179, 179),
+            titleColor: Colors.red,
+            iconColor: Colors.red);
+    }
+  }
+
 
   String convertFileName(String nameFile) {
     String letter = '/';
@@ -442,26 +502,20 @@ class Utils {
       'Content-Type': 'multipart/form-data',
       'Authorization': 'Bearer ${await Utils.instance().getAccessToken()}'
     });
-    print('test id : $testId');
-    print('activity_id: $activityId');
 
     Map<String, String> formData = {};
     formData.addEntries([MapEntry('test_id', testId)]);
     formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
     formData.addEntries([MapEntry('activity_id', activityId)]);
 
-    if (Platform.isWindows) {
-      formData.addEntries([const MapEntry('os', "window")]);
-    } else {
-      formData.addEntries([const MapEntry('os', "macos")]);
-    }
+    formData.addEntries([const MapEntry('os', "pc_flutter")]);
     formData.addEntries([const MapEntry('app_version', '2.0.2')]);
     String format = '';
     String reanswerFormat = '';
     String endFormat = '';
     for (QuestionTopicModel q in questions) {
       String questionId = q.id.toString();
-      print("questionId: $questionId");
+
       if (kDebugMode) {
         print("DEBUG: num part : ${q.numPart.toString()}");
       }
@@ -515,5 +569,217 @@ class Utils {
 
   double getDevicesHeight(BuildContext context) {
     return MediaQuery.of(context).size.height;
+  }
+
+  String getPreviousAction(BuildContext context) {
+    String previousAction = "";
+    AuthWidgetProvider authProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
+    previousAction = authProvider.previousAction;
+    return previousAction;
+  }
+
+  void setPreviousAction(BuildContext context, String action) {
+    AuthWidgetProvider authProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
+    authProvider.setPreviousAction(action);
+  }
+
+  Future<LogModel> prepareToCreateLog(BuildContext context,
+      {required String action}) async {
+    String previousAction = getPreviousAction(context);
+    LogModel log = await createLog(
+        action: action,
+        previousAction: previousAction,
+        status: "",
+        message: "",
+        data: {});
+    setPreviousAction(context, action);
+
+    return log;
+  }
+
+  Future<void> deleteLogFile() async {
+    //Check logs file is exist
+    String folderPath = await FileStorageHelper.getExternalDocumentPath();
+    String path = "$folderPath/flutter_logs.txt";
+    File file = File(path);
+
+    try {
+      if (await file.exists()) {
+        await file.delete();
+        if (kDebugMode) {
+          print("DEBUG: Delete log file success");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("DEBUG: Delete log file error: ${e.toString()}");
+      }
+    }
+  }
+
+  int getDateTimeNow() {
+    return DateTime.now().millisecondsSinceEpoch;
+  }
+
+  Future<String> getOSVersion() async {
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String version = "";
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      version =
+          '${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt})';
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      version = iosInfo.systemVersion;
+    }
+    return version;
+  }
+
+  Future<String> getDeviceName() async {
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String deviceName = "";
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      deviceName = androidInfo.model;
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      deviceName = iosInfo.utsname.machine;
+    }
+    return deviceName;
+  }
+
+  Future<LogModel> createLog({
+    required String action,
+    required String previousAction,
+    required String status,
+    required String message,
+    required Map<String, String> data,
+  }) async {
+    LogModel log = LogModel();
+    log.action = action;
+    log.previousAction = previousAction;
+    log.status = status;
+    log.createdTime = getDateTimeNow();
+    log.message = message;
+    log.os = await getOS();
+    UserDataModel? currentUser = await getCurrentUser();
+    if (null == currentUser) {
+      log.userId = 0;
+    } else {
+      log.userId = currentUser.userInfoModel.id;
+    }
+    log.deviceId = await getDeviceIdentifier();
+    log.deviceName = await getDeviceName();
+    log.osVersion = await getOSVersion();
+    log.versionApp = await getAppVersion();
+    log.data = data;
+    return log;
+  }
+
+  void prepareLogData({
+    required LogModel? log,
+    required Map<String, dynamic>? data,
+    required String? message,
+    required String status,
+  }) {
+    if (null == log) return;
+
+    if (null != data) {
+      log.addData(key: "data", value: jsonEncode(data));
+    }
+
+    if (null != message) {
+      log.message = message;
+    }
+
+    addLog(log, status);
+  }
+
+  void addLog(LogModel log, String status) {
+    if (status != "none") {
+      //NOT Action log
+      DateTime createdTime =
+          DateTime.fromMillisecondsSinceEpoch(log.createdTime);
+      DateTime responseTime = DateTime.now();
+
+      Duration diff = responseTime.difference(createdTime);
+
+      if (diff.inSeconds < 1) {
+        log.responseTime = 1;
+      } else {
+        log.responseTime = diff.inSeconds;
+      }
+    }
+    log.status = status;
+
+    //Convert log into string before write into file
+    String logString = convertLogModelToJson(log);
+    writeLogIntoFile(logString);
+  }
+
+  String convertLogModelToJson(LogModel log) {
+    final String jsonString = jsonEncode(log);
+    return jsonString;
+  }
+
+  void writeLogIntoFile(String logString) async {
+    String folderPath = await FileStorageHelper.getExternalDocumentPath();
+    String path = "$folderPath/flutter_logs.txt";
+    if (kDebugMode) {
+      print("DEBUG: log file path = $path");
+    }
+    File file;
+
+    bool isExistFile = await File(path).exists();
+
+    if (isExistFile) {
+      file = File(path);
+      await file.writeAsString("\n", mode: FileMode.append);
+    } else {
+      file = await File(path).create();
+    }
+
+    try {
+      await file.writeAsString(logString, mode: FileMode.append);
+      if (kDebugMode) {
+        print("DEBUG: write log into file success");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("DEBUG: write log into file failed");
+      }
+    }
+  }
+
+  void showConnectionErrorDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomAlertDialog(
+          title: StringConstants.dialog_title,
+          description: StringConstants.network_error_message,
+          okButtonTitle: StringConstants.ok_button_title,
+          cancelButtonTitle: null,
+          borderRadius: 8,
+          hasCloseButton: false,
+          okButtonTapped: () {
+            Navigator.of(context).pop();
+          },
+          cancelButtonTapped: null,
+        );
+      },
+    );
+  }
+
+  Future<bool> checkVideoFileExist(String path, MediaType mediaType) async {
+    bool result = await File(path).exists();
+    return result;
+  }
+
+  int getBeingOutTimeInSeconds(DateTime startTime, DateTime endTime) {
+    Duration diff = endTime.difference(startTime);
+    return diff.inSeconds;
   }
 }

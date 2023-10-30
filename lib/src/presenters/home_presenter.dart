@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import '../data_source/constants.dart';
@@ -11,6 +13,7 @@ import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import '../utils/utils.dart';
+import 'package:http/http.dart' as http;
 
 abstract class HomeWorkViewContract {
   void onGetListHomeworkComplete(List<ActivitiesModel> homeworks,
@@ -33,37 +36,47 @@ class HomeWorkPresenter {
 
   void getListHomeWork() async {
     assert(_view != null && _homeWorkRepository != null);
+    try {
+      UserDataModel? currentUser = await Utils.instance().getCurrentUser();
+      if (currentUser == null) {
+        _view!.onGetListHomeworkError("Loading list homework error");
+        return;
+      }
 
-    UserDataModel? currentUser = await Utils.instance().getCurrentUser();
-    if (currentUser == null) {
-      _view!.onGetListHomeworkError("Loading list homework error");
-      return;
+      _view!.onUpdateCurrentUserInfo(currentUser);
+
+      String email = currentUser.userInfoModel.email;
+      String status = Status.allHomework.get.toString();
+
+      _homeWorkRepository!.getHomeWorks(email, status).then((value) async {
+        Map<String, dynamic> dataMap = jsonDecode(value);
+        if (kDebugMode) {
+          print(jsonEncode(dataMap).toString());
+        }
+        if (dataMap['error_code'] == 200) {
+          List<NewClassModel> classes =
+              await _generateListNewClass(dataMap['data']);
+          List<ActivitiesModel> homeworks =
+              await _generateListHomeWork(classes);
+          _view!.onGetListHomeworkComplete(
+              homeworks, classes, dataMap['current_time']);
+        } else {
+          _view!.onGetListHomeworkError(
+              "Have Error: ${dataMap['error_code']}${dataMap['status']}");
+        }
+      }).catchError(
+        // ignore: invalid_return_type_for_catch_error
+        (onError) => _view!.onGetListHomeworkError(onError.toString()),
+      );
+    } on TimeoutException {
+      _view!.onGetListHomeworkError("Time Out : Please check your internet !");
+    } on http.ClientException {
+      _view!.onGetListHomeworkError(
+          "Client Exception: Please check your internet !");
+    } on SocketException {
+      _view!.onGetListHomeworkError(
+          "Socket Exception: Please check your internet !");
     }
-
-    _view!.onUpdateCurrentUserInfo(currentUser);
-
-    String email = currentUser.userInfoModel.email;
-    String status = Status.allHomework.get.toString();
-
-    _homeWorkRepository!.getHomeWorks(email, status).then((value) async {
-      Map<String, dynamic> dataMap = jsonDecode(value);
-      if (kDebugMode) {
-        print(jsonEncode(dataMap).toString());
-      }
-      if (dataMap['error_code'] == 200) {
-        List<NewClassModel> classes =
-            await _generateListNewClass(dataMap['data']);
-        List<ActivitiesModel> homeworks = await _generateListHomeWork(classes);
-        _view!.onGetListHomeworkComplete(
-            homeworks, classes, dataMap['current_time']);
-      } else {
-        _view!.onGetListHomeworkError(
-            "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}");
-      }
-    }).catchError(
-      // ignore: invalid_return_type_for_catch_error
-      (onError) => _view!.onGetListHomeworkError(onError.toString()),
-    );
   }
 
   Future<List<NewClassModel>> _generateListNewClass(List<dynamic> data) async {
@@ -76,7 +89,7 @@ class HomeWorkPresenter {
   }
 
   List<ActivitiesModel> filterActivities(int classSelectedId,
-      List<ActivitiesModel> activities, String currentTime, String status) {
+      List<ActivitiesModel> activities, String status, String currentTime) {
     List<ActivitiesModel> activitiesFilter = [];
 
     if (classSelectedId == 0 && status == "All") {

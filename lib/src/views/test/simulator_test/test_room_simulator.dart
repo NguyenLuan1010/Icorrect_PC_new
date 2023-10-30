@@ -12,15 +12,17 @@ import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
+import 'package:icorrect_pc/src/providers/simulator_test_provider.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
+import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:icorrect_pc/src/views/dialogs/re_answer_dialog.dart';
 import 'package:icorrect_pc/src/views/widgets/empty_widget.dart';
 import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/video_simulator_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:record/record.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_player_win/video_player_win_plugin.dart';
+import 'package:record/record.dart';
 
 import '../../../../core/app_assets.dart';
 import '../../../data_source/local/file_storage_helper.dart';
@@ -29,6 +31,7 @@ import '../../../models/simulator_test_models/file_topic_model.dart';
 import '../../../models/simulator_test_models/test_detail_model.dart';
 import '../../../presenters/simulator_test_presenter.dart';
 import '../../../presenters/test_room_simulator_presenter.dart';
+import '../../dialogs/message_alert.dart';
 import '../../widgets/simulator_test_widgets/cue_card_widget.dart';
 import '../../widgets/simulator_test_widgets/save_test_widget.dart';
 import '../../widgets/simulator_test_widgets/start_test_widget.dart';
@@ -52,12 +55,15 @@ class TestRoomSimulator extends StatefulWidget {
 class _TestRoomSimulatorState extends State<TestRoomSimulator>
     implements TestRoomSimulatorContract {
   TestRoomProvider? _roomProvider;
+  SimulatorTestProvider? _simulatorTestProvider;
   TestRoomSimulatorPresenter? _presenter;
 
   VideoPlayerController? _videoPlayerController;
   Timer? _countDown;
-  Record? _recordController;
   AudioPlayer? _audioPlayer;
+  Record? _recordController;
+  String _fileNameRecord = '';
+  CircleLoading? _loading;
 
   double w = 0;
   double h = 0;
@@ -65,9 +71,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   @override
   void initState() {
     super.initState();
-    _recordController = Record();
     _audioPlayer = AudioPlayer();
+    _recordController = Record();
+    _loading = CircleLoading();
     _roomProvider = Provider.of<TestRoomProvider>(context, listen: false);
+    _simulatorTestProvider =
+        Provider.of<SimulatorTestProvider>(context, listen: false);
     _presenter = TestRoomSimulatorPresenter(this);
     _prepareForTestRoom();
   }
@@ -77,9 +86,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       _roomProvider!.clearData();
       List<PlayListModel> playLists =
           _presenter!.getPlayList(widget.testDetailModel);
-
-      for (PlayListModel play in playLists) {
-        if (kDebugMode) {
+      if (kDebugMode) {
+        for (PlayListModel play in playLists) {
           print("DEBUG : play list ${play.questionContent}");
         }
       }
@@ -90,6 +98,11 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       _roomProvider!.setQuestionLength(
           _presenter!.getQuestionLength(widget.testDetailModel));
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -154,10 +167,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
                   _onClickStartTest();
                 }),
                 SaveTheTestWidget(() {
-                  _presenter!.submitMyTest(
-                      testId: widget.testDetailModel.testId.toString(),
-                      activityId: widget.activitiesModel.activityId.toString(),
-                      questionsList: _roomProvider!.questionList);
+                  _startSubmitAction();
                 }),
                 TestRecordWidget(
                   finishAnswer: (questionTopicModel) {
@@ -241,18 +251,15 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _roomProvider!.setVisibleRecord(false);
     PlayListModel playListModel = _roomProvider!.currentPlay;
     if (playListModel.questionTopicModel.id != 0) {
+      playListModel.questionTopicModel.repeatIndex =
+          playListModel.questionTopicModel.answers.isNotEmpty
+              ? playListModel.questionTopicModel.answers.length - 1
+              : 0;
       _roomProvider!.addQuestionToList(playListModel.questionTopicModel);
       _roomProvider!.setIndexQuestion(_roomProvider!.indexQuestion + 1);
     }
     _doingTest();
   }
-
-  // Future<String> _fileDuration(String path) async {
-  //   _audioPlayer!.setSourceUrl("https://icorrect-audio.s3.ap-southeast-1.amazonaws.com/audio/1680050829_5506-0.mp3");
-  //   return await _audioPlayer!.getDuration().then((value) {
-  //     return Utils.instance().formatDuration(value!);
-  //   });
-  // }
 
   void _onClickRepeatAnswer() {
     _roomProvider!.setVisibleRecord(false);
@@ -262,6 +269,24 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (null != _countDown) {
       _countDown!.cancel();
     }
+
+    QuestionTopicModel question = playListModel.questionTopicModel;
+    QuestionTopicModel repeatQuestion = question.copyWith(
+        id: question.id,
+        content: "Ask for repeat question",
+        type: question.type,
+        topicId: question.topicId,
+        tips: question.tips,
+        tipType: question.tipType,
+        isFollowUp: question.isFollowUp,
+        cueCard: question.cueCard,
+        reAnswerCount: question.reAnswerCount,
+        answers: question.answers,
+        numPart: question.numPart,
+        repeatIndex: _roomProvider!.repeatTimes - 1,
+        files: question.files);
+
+    _roomProvider!.questionList.add(repeatQuestion);
 
     _presenter!.playingQuestion(
         playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
@@ -334,25 +359,41 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   void _onEndTheTest() {
-    _roomProvider!.setVisibleSaveTheTest(true);
     _roomProvider!
         .setCanReanswer(widget.activitiesModel.activityType == "homework");
     _roomProvider!.setCanPlayAnswer(true);
     _roomProvider!.setVisibleRecord(false);
+    _simulatorTestProvider!.updateDoingStatus(DoingStatus.finish);
+
     if (null != _countDown) {
       _countDown!.cancel();
     }
+    if (widget.activitiesModel.isExam()) {
+      _startSubmitAction();
+    } else {
+      _roomProvider!.setVisibleSaveTheTest(true);
+    }
+  }
+
+  void _startSubmitAction() {
+    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.submitting);
+    _loading!.show(context);
+    _presenter!.submitMyTest(
+        testId: widget.testDetailModel.testId.toString(),
+        activityId: widget.activitiesModel.activityId.toString(),
+        questionsList: _roomProvider!.questionList);
   }
 
   Future<void> _recordAnswer() async {
     String newFileName =
         '${await Utils.instance().generateAudioFileName()}.wav';
-    String path = await FileStorageHelper.getFilePath(
+
+    _fileNameRecord = await FileStorageHelper.getFilePath(
         newFileName, MediaType.audio, widget.testDetailModel.testId.toString());
 
     if (await _recordController!.hasPermission()) {
       await _recordController!.start(
-        path: path,
+        path: _fileNameRecord,
         encoder: Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
         bitRate: 128000,
         samplingRate: 44100,
@@ -382,13 +423,14 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future _playAnswerCallBack(QuestionTopicModel question, int index) async {
+    print('index question: ${index.toString()}');
     bool isPlaying = _roomProvider!.isPlaying;
     if (isPlaying) {
       await _audioPlayer!.stop();
       _roomProvider!.setSelectedQuestionIndex(index, false);
     } else {
       String path = await FileStorageHelper.getFilePath(
-          question.answers.last.url,
+          question.answers[question.repeatIndex].url,
           MediaType.audio,
           widget.testDetailModel.testId.toString());
       try {
@@ -419,12 +461,26 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   @override
   void submitAnswerFail(AlertInfo alertInfo) {
-    // TODO: implement submitAnswerFail
+    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.fail);
+    _loading!.hide();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(
+              context: context, message: alertInfo.description);
+        });
   }
 
   @override
   void submitAnswersSuccess(AlertInfo alertInfo) {
-    // TODO: implement submitAnswersSuccess
+    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.success);
+    _loading!.hide();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(
+              context: context, message: alertInfo.description);
+        });
   }
   ////////////////////////////CHECK VALUE FUNCTION//////////////////////////////
 

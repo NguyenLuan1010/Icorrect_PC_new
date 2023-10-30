@@ -90,6 +90,9 @@ class SimulatorTestPresenter {
         .getTestDetail(homeworkId, distributeCode)
         .then((value) async {
       Map<String, dynamic> map = jsonDecode(value);
+      if (kDebugMode) {
+        print("DEBUG: get detail test $value");
+      }
       if (map['error_code'] == 200) {
         Map<String, dynamic> dataMap = map['data'];
         TestDetailModel tempTestDetailModel = TestDetailModel(testId: 0);
@@ -237,8 +240,6 @@ class SimulatorTestPresenter {
               Response response = await dio!.download(url, savePath);
 
               if (response.statusCode == 200) {
-    
-                print('DEBUG : save Path : $savePath');
                 double percent = _getPercent(index + 1, filesTopic.length);
                 _view!.onDownloadSuccess(testDetail, fileTopic, percent,
                     index + 1, filesTopic.length);
@@ -381,11 +382,7 @@ class SimulatorTestPresenter {
     formData.addEntries([MapEntry('activity_id', activityId)]);
     formData.addEntries([const MapEntry('is_update', '0')]);
 
-    if (Platform.isAndroid) {
-      formData.addEntries([const MapEntry('os', "android")]);
-    } else {
-      formData.addEntries([const MapEntry('os', "ios")]);
-    }
+    formData.addEntries([const MapEntry('os', "pc_flutter")]);
     formData.addEntries([const MapEntry('app_version', '2.0.2')]);
 
     for (QuestionTopicModel q in questions) {

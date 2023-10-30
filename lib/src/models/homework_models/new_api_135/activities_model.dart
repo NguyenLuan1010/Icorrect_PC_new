@@ -81,6 +81,10 @@ class ActivitiesModel {
     return true;
   }
 
+  bool isExam() {
+    return _activityType == 'exam' || _activityType == 'test';
+  }
+
   ActivitiesModel.fromJson(Map<String, dynamic> json) {
     _classId = json['class_id'];
     _syllabusId = json['syllabus_id'];
