@@ -85,6 +85,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _loading = CircleLoading();
     _cameraService = CameraService();
 
+    _cameraService!.fetchCameras();
+    _cameraService!
+        .initializeCamera(onCameraClosing: () {}, onCameraError: () {});
+
     _roomProvider = Provider.of<TestRoomProvider>(context, listen: false);
     _simulatorTestProvider =
         Provider.of<SimulatorTestProvider>(context, listen: false);
