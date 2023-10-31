@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import 'package:provider/provider.dart';
 
@@ -67,13 +68,15 @@ class TestRecordWidget extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildFinishButton(currentQuestion),
+                      _buildFinishButton(simulatorTestProvider, playListModel,
+                          currentQuestion),
                       Visibility(
                         visible: enableRepeat,
                         child: Row(
                           children: [
                             const SizedBox(width: 20),
-                            _buildRepeatButton(currentQuestion),
+                            _buildRepeatButton(simulatorTestProvider,
+                                playListModel, currentQuestion),
                           ],
                         ),
                       )
@@ -91,17 +94,22 @@ class TestRecordWidget extends StatelessWidget {
     });
   }
 
-  Widget _buildFinishButton(QuestionTopicModel questionTopicModel) {
+  Widget _buildFinishButton(TestRoomProvider simulatorTestProvider,
+      PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
       onTap: () {
-        finishAnswer(questionTopicModel);
+        if (!_lessThan2s(simulatorTestProvider, playListModel)) {
+          finishAnswer(questionTopicModel);
+        }
       },
       child: Container(
         width: 100,
         height: 44,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
-          color: Colors.green,
+          color: _lessThan2s(simulatorTestProvider, playListModel)
+              ? const Color.fromARGB(255, 130, 227, 134)
+              : Colors.green,
         ),
         alignment: Alignment.center,
         child: const Text(
@@ -116,10 +124,13 @@ class TestRecordWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRepeatButton(QuestionTopicModel questionTopicModel) {
+  Widget _buildRepeatButton(TestRoomProvider simulatorTestProvider,
+      PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
       onTap: () {
-        repeatQuestion(questionTopicModel);
+        if (!_lessThan2s(simulatorTestProvider, playListModel)) {
+          repeatQuestion(questionTopicModel);
+        }
       },
       child: Container(
         width: 100,
@@ -140,5 +151,13 @@ class TestRecordWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _lessThan2s(
+      TestRoomProvider simulatorTestProvider, PlayListModel playListModel) {
+    int countTime = Utils.instance().getRecordTime(playListModel.numPart);
+    print(
+        'counttime : $countTime, currentCount :${simulatorTestProvider.currentCount}');
+    return countTime - simulatorTestProvider.currentCount <= 2;
   }
 }

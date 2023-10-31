@@ -29,4 +29,5 @@ class AppAssets {
   static const img_voice_line = '${image_folder}img_voice_line.jpg';
   static const img_start = '${image_folder}img_start.png';
   static const img_teacher_simulator = '${image_folder}img_teacher_simulator.png';
+  static const img_video_play_holder = '${image_folder}video_playholder.png';
 }

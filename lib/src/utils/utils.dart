@@ -214,7 +214,7 @@ class Utils {
         .putString(key: AppSharedKeys.currentUser, value: null);
   }
 
-  Future<String> getAccessToken() {
+  Future<String?> getAccessToken() {
     return AppSharedPref.instance().getString(key: AppSharedKeys.apiToken);
   }
 
@@ -276,7 +276,7 @@ class Utils {
     }
   }
 
-   UserAuthenStatusUI getUserAuthenStatus(int status) {
+  UserAuthenStatusUI getUserAuthenStatus(int status) {
     switch (status) {
       case 0:
         return UserAuthenStatusUI(
@@ -330,7 +330,6 @@ class Utils {
     }
   }
 
-
   String convertFileName(String nameFile) {
     String letter = '/';
     String newLetter = '_slash_';
@@ -363,10 +362,42 @@ class Utils {
         fileExtension == 'aac') {
       return StringClass.audio;
     }
+
+    if (fileExtension == 'png' ||
+        fileExtension == 'jpg' ||
+        fileExtension == 'svg' ||
+        fileExtension == 'webp' ||
+        fileExtension == 'gif') {
+      return StringClass.image;
+    }
     return '';
   }
 
-  Future<File> prepareVideoFile(String fileName) async {
+  MediaType mediaType(String filePath) {
+    String fileExtension = filePath.split('.').last.toLowerCase();
+    if (fileExtension == 'mp4' ||
+        fileExtension == 'mov' ||
+        fileExtension == 'avi') {
+      return MediaType.video;
+    }
+    if (fileExtension == 'wav' ||
+        fileExtension == 'mp3' ||
+        fileExtension == 'aac' ||
+        fileExtension == 'm4a') {
+      return MediaType.audio;
+    }
+
+    if (fileExtension == 'png' ||
+        fileExtension == 'jpg' ||
+        fileExtension == 'svg' ||
+        fileExtension == 'webp' ||
+        fileExtension == 'gif') {
+      return MediaType.image;
+    }
+    return MediaType.video;
+  }
+
+  Future<File> prepareVideoFile(String testId, String fileName) async {
     File decodedVideoFile;
     String bs4str =
         await FileStorageHelper.readVideoFromFile(fileName, MediaType.video);
@@ -390,7 +421,7 @@ class Utils {
         await FileStorageHelper.readVideoFromFile(fileName, MediaType.audio);
     Uint8List decodedBytes = base64.decode(bs4str);
     String filePath =
-        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
     if (decodedBytes.isEmpty) {
       decodedVideoFile = File(filePath);
     } else {
@@ -457,7 +488,7 @@ class Utils {
       fileName = question.answers.first.url;
     }
     String path =
-        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
     return path;
   }
 
@@ -473,7 +504,7 @@ class Utils {
       QuestionTopicModel question, String? testId) async {
     String fileName = question.answers.first.url;
     String path =
-        await FileStorageHelper.getFilePath(fileName, MediaType.audio, testId);
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
     return path;
   }
 
@@ -509,7 +540,7 @@ class Utils {
     formData.addEntries([MapEntry('activity_id', activityId)]);
 
     formData.addEntries([const MapEntry('os', "pc_flutter")]);
-    formData.addEntries([const MapEntry('app_version', '2.0.2')]);
+    formData.addEntries([const MapEntry('app_version', '1.1.0')]);
     String format = '';
     String reanswerFormat = '';
     String endFormat = '';
@@ -549,7 +580,7 @@ class Utils {
       for (int i = 0; i < q.answers.length; i++) {
         endFormat = '$format[$i]';
         File audioFile = File(await FileStorageHelper.getFilePath(
-            q.answers.elementAt(i).url.toString(), MediaType.audio, testId));
+            q.answers.elementAt(i).url.toString(), MediaType.audio, null));
 
         if (await audioFile.exists()) {
           request.files.add(

@@ -33,12 +33,7 @@ enum HandleWhenFinish {
   reviewingPlayTheQuestionType,
 }
 
-enum VideoStatus{
-  pause,
-  playing,
-  endVideo,
-  start
-}
+enum VideoStatus { pause, playing, endVideo, start }
 
 enum VideoType {
   introVideoType,
@@ -46,11 +41,7 @@ enum VideoType {
   endOfTestVideoType,
 }
 
-enum PlayListType {
-  introduce,
-  endOfTakeNote,
-  endOfTest,
-}
+enum PlayListType { introduce, endOfTakeNote, endOfTest, question }
 
 enum Status {
   corrected(2),
@@ -159,6 +150,7 @@ class FilterJsonData {
 class StringClass {
   static const video = "videos";
   static const audio = "audios";
+  static const image = "images";
 
   static const String errorRequestTest = 'ERROR_REQUEST_TEST';
   static const String failDownloadVideo = 'FAIL_DOWNLOAD_VIDEO';
@@ -168,7 +160,7 @@ class StringClass {
   static const String permissionDenied = 'PERMISSION_DENIED';
 }
 
-enum MediaType { video, audio }
+enum MediaType { video, audio, image }
 
 class AlertClass {
   static AlertInfo downloadVideoErrorAlert = AlertInfo(
@@ -492,7 +484,6 @@ class LogEvent {
 }
 
 const sendLogsTask = "com.csupporter.sendlogtask";
-
 
 class StringConstants {
   //Button Titles

@@ -39,8 +39,10 @@ class FileStorageHelper {
     String folder = '';
     if (mediaType == MediaType.video) {
       folder = StringClass.video;
-    } else {
+    } else if (mediaType == MediaType.audio) {
       folder = StringClass.audio;
+    } else {
+      folder = StringClass.image;
     }
 
     String filePath = '';
@@ -55,15 +57,17 @@ class FileStorageHelper {
     return hideDirectory.path;
   }
 
-   static Future<String> getFolderPathVideoDIO(
+  static Future<String> getFolderPathVideoDIO(
       MediaType mediaType, String? testId) async {
     final path = await _getRootPath;
 
     String folder = '';
     if (mediaType == MediaType.video) {
       folder = StringClass.video;
-    } else {
+    } else if (mediaType == MediaType.audio) {
       folder = StringClass.audio;
+    } else {
+      folder = StringClass.image;
     }
 
     String filePath = '';

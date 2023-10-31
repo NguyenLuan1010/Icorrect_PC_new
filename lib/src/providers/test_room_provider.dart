@@ -26,6 +26,7 @@ class TestRoomProvider extends ChangeNotifier {
   }
 
   void clearData() {
+    _currentCount = 1000;
     _strCountCueCard = "";
     _currentQuestion = QuestionTopicModel();
     _questionList.clear();
@@ -67,6 +68,22 @@ class TestRoomProvider extends ChangeNotifier {
   bool get canReanswer => _canReanswer;
   void setCanReanswer(bool reanswer) {
     _canReanswer = reanswer;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  File _fileImage = File("");
+  File get fileImage => _fileImage;
+  void setFileImage(File fileImage) {
+    _fileImage = fileImage;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void clearImageFile() {
+    _fileImage = File('');
     if (!isDisposed) {
       notifyListeners();
     }
@@ -184,6 +201,15 @@ class TestRoomProvider extends ChangeNotifier {
   String get strCountDown => _strCountDown;
   void setStrCountDown(String count) {
     _strCountDown = count;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _currentCount = 100;
+  int get currentCount => _currentCount;
+  void setCurrentCount(int count) {
+    _currentCount = count;
     if (!isDisposed) {
       notifyListeners();
     }

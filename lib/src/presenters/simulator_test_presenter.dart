@@ -186,12 +186,12 @@ class SimulatorTestPresenter {
 
     //Add question files
     for (QuestionTopicModel q in topic.questionList) {
-      allFiles.add(q.files.first);
+      allFiles.addAll(q.files);
       allFiles.addAll(q.answers);
     }
 
     for (QuestionTopicModel q in topic.followUp) {
-      allFiles.add(q.files.first);
+      allFiles.addAll(q.files);
       allFiles.addAll(q.answers);
     }
 
@@ -222,8 +222,9 @@ class SimulatorTestPresenter {
 
         if (filesTopic.isNotEmpty) {
           String fileType = Utils.instance().fileType(fileTopic);
+          MediaType mediaType = Utils.instance().mediaType(fileTopic);
           bool isExist = await FileStorageHelper.checkExistFile(
-              fileTopic, MediaType.video, null);
+              fileTopic, mediaType, null);
           if (fileType.isNotEmpty && !isExist) {
             try {
               if (kDebugMode) {
@@ -236,7 +237,7 @@ class SimulatorTestPresenter {
               // use client.get as you would http.get
 
               String savePath =
-                  '${await FileStorageHelper.getFolderPath(MediaType.video, null)}\\$fileTopic';
+                  '${await FileStorageHelper.getFolderPath(mediaType, null)}\\$fileTopic';
               Response response = await dio!.download(url, savePath);
 
               if (response.statusCode == 200) {
@@ -316,11 +317,12 @@ class SimulatorTestPresenter {
   }) async {
     assert(_view != null && _testRepository != null);
 
-    http.MultipartRequest multiRequest = await _formDataRequest(
-      testId: testId,
-      activityId: activityId,
-      questions: questions,
-    );
+    http.MultipartRequest multiRequest = await Utils.instance()
+        .formDataRequestSubmit(
+            testId: testId,
+            activityId: activityId,
+            questions: questions,
+            isUpdate: false);
 
     try {
       _testRepository!.submitTest(multiRequest).then((value) {
@@ -330,9 +332,9 @@ class SimulatorTestPresenter {
 
         Map<String, dynamic> json = jsonDecode(value) ?? {};
         if (json['error_code'] == 200) {
-          ActivityAnswer activityAnswer = json[''];
+          //ActivityAnswer activityAnswer = json[''];
           _view!.onSubmitTestSuccess(
-              'Save your answers successfully!', activityAnswer);
+              'Save your answers successfully!', ActivityAnswer());
         } else {
           _view!.onSubmitTestFail("Has an error when submit this test!");
         }
@@ -346,95 +348,6 @@ class SimulatorTestPresenter {
     } on http.ClientException {
       _view!.onSubmitTestFail("Has an error when submit this test!");
     }
-  }
-
-  List<MapEntry<String, String>> _generateFormat(
-      QuestionTopicModel q, String suffix) {
-    List<MapEntry<String, String>> result = [];
-
-    if (q.answers.isEmpty) return [];
-
-    for (int i = 0; i < q.answers.length; i++) {
-      result.add(MapEntry("$suffix[$i]", q.answers[i].url));
-    }
-
-    return result;
-  }
-
-  Future<http.MultipartRequest> _formDataRequest({
-    required String testId,
-    required String activityId,
-    required List<QuestionTopicModel> questions,
-  }) async {
-    Directory appDocDirectory = await getApplicationDocumentsDirectory();
-
-    String url = submitHomeWorkV2EP();
-    http.MultipartRequest request =
-        http.MultipartRequest(RequestMethod.post, Uri.parse(url));
-    request.headers.addAll({
-      'Content-Type': 'multipart/form-data',
-      'Authorization': 'Bearer ${await Utils.instance().getAccessToken()}'
-    });
-
-    Map<String, String> formData = {};
-
-    formData.addEntries([MapEntry('test_id', testId)]);
-    formData.addEntries([MapEntry('activity_id', activityId)]);
-    formData.addEntries([const MapEntry('is_update', '0')]);
-
-    formData.addEntries([const MapEntry('os', "pc_flutter")]);
-    formData.addEntries([const MapEntry('app_version', '2.0.2')]);
-
-    for (QuestionTopicModel q in questions) {
-      String part = '';
-      switch (q.numPart) {
-        case 0:
-          {
-            part = "introduce";
-            break;
-          }
-        case 1:
-          {
-            part = "part1";
-            break;
-          }
-        case 2:
-          {
-            part = "part2";
-            break;
-          }
-        case 3:
-          {
-            part = "part3";
-            if (q.isFollowUp == 1) {
-              part = "followup";
-            }
-            break;
-          }
-      }
-
-      String prefix = "$part[${q.id}]";
-
-      List<MapEntry<String, String>> temp = _generateFormat(q, prefix);
-      if (temp.isNotEmpty) {
-        formData.addEntries(temp);
-      }
-
-      for (int i = 0; i < q.answers.length; i++) {
-        String path =
-            "${appDocDirectory.path}/${q.answers.elementAt(i).url.toString()}.wav";
-        File audioFile = File(path);
-
-        if (await audioFile.exists()) {
-          request.files.add(
-              await http.MultipartFile.fromPath("$prefix[$i]", audioFile.path));
-        }
-      }
-    }
-
-    request.fields.addAll(formData);
-
-    return request;
   }
 
   void handleEventBackButtonSystem({required bool isQuitTheTest}) {

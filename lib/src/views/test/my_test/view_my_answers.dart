@@ -137,6 +137,7 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
   Widget _buildQuestionList() {
     return Consumer<MyTestProvider>(builder: (context, provider, child) {
       return TestQuestionWidget(
+          isExam: false,
           testId: widget.activitiesModel.activityAnswer!.testId,
           questions: provider.questionsList,
           canPlayAnswer: true,
@@ -165,10 +166,8 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
     } else {
       String fileName = Utils.instance()
           .convertFileName(question.answers[question.repeatIndex].url);
-      String path = await FileStorageHelper.getFilePath(
-          fileName,
-          MediaType.audio,
-          widget.activitiesModel.activityAnswer!.testId.toString());
+      String path =
+          await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
       try {
         await _audioPlayer!.play(DeviceFileSource(path));
         await _audioPlayer!.setVolume(2.5);

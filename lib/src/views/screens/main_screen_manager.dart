@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
@@ -84,58 +85,92 @@ class _MainWidgetState extends State<MainWidget> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    InkWell(
-                      onTap: () {
-                        _provider.setCurrentScreen(ChangeNotifierProvider(
-                            create: (_) => UserAuthDetailProvider(),
-                            child: const UserAuthDetailStatus()));
-                      },
-                      child: const Text('User Authentication',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500)),
-                    ),
+                    // InkWell(
+                    //   onTap: () {
+                    //     _provider.setCurrentScreen(ChangeNotifierProvider(
+                    //         create: (_) => UserAuthDetailProvider(),
+                    //         child: const UserAuthDetailStatus()));
+                    //   },
+                    //   child: const Text('User Authentication',
+                    //       style: TextStyle(
+                    //           color: Colors.black,
+                    //           fontSize: 15,
+                    //           fontWeight: FontWeight.w500)),
+                    // ),
                     const SizedBox(width: 30),
                     InkWell(
                       onTap: () {
                         _provider.setCurrentScreen(const HomeWorksWidget());
                       },
-                      child: const Text('Homeworks',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppColors.defaultPurpleColor, width: 1)),
+                        child: const Text('Homeworks',
+                            style: TextStyle(
+                                color: AppColors.defaultPurpleColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500)),
+                      ),
                     ),
                     const SizedBox(width: 30),
-                    InkWell(
-                      onTap: () {
-                        _provider.setCurrentScreen(const PracticeScreen());
-                      },
-                      child: const Text('Practices',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500)),
-                    ),
-                    const SizedBox(width: 30),
+                    // InkWell(
+                    //   onTap: () {
+                    //     _provider.setCurrentScreen(const PracticeScreen());
+                    //   },
+                    //   child: const Text('Practices',
+                    //       style: TextStyle(
+                    //           color: Colors.black,
+                    //           fontSize: 15,
+                    //           fontWeight: FontWeight.w500)),
+                    // ),
+                    //const SizedBox(width: 30),
                     InkWell(
                       onTap: () {
                         _showConfirmLogOut();
                       },
-                      child: const Text('Logout',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppColors.defaultPurpleColor, width: 1)),
+                        child: const Text('Logout',
+                            style: TextStyle(
+                                color: AppColors.defaultPurpleColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500)),
+                      ),
                     ),
                     const SizedBox(width: 30),
                     FutureBuilder(
                         future: Utils.instance().getCurrentUser(),
                         builder: (BuildContext context,
                             AsyncSnapshot<UserDataModel?> snapshot) {
-                          return _getCircleAvatar(snapshot.data);
-                        })
+                          return (snapshot.data != null)
+                              ? Column(
+                                  children: [
+                                    _getCircleAvatar(snapshot.data),
+                                    SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                          snapshot
+                                              .data!.profileModel.displayName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500)),
+                                    )
+                                  ],
+                                )
+                              : const SizedBox();
+                        }),
                   ],
                 );
               })

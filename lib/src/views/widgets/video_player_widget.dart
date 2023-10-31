@@ -229,7 +229,7 @@ class _PlayerVideoAndPopPageState extends State<_PlayerVideoAndPopPage> {
                 child: VideoPlayer(_videoPlayerController),
               );
             } else {
-              return const Text('waiting for video to load');
+              return const Text('Waiting for video to load');
             }
           },
         ),

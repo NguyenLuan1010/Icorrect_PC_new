@@ -22,7 +22,7 @@ import 'package:http/http.dart' as http;
 
 abstract class TestRoomSimulatorContract {
   void playFileVideo(File normalFile, File slowFile);
-  void onCountDown(String strCount);
+  void onCountDown(String strCount, int count);
   void onFinishAnswer(bool isPart2);
   void onCountDownForCueCard(String strCount);
   void submitAnswersSuccess(AlertInfo alertInfo);
@@ -71,47 +71,34 @@ class TestRoomSimulatorPresenter {
       List<QuestionTopicModel> questions = getAllQuestionsTopic(topic);
 
       if (topic.files.isNotEmpty && topic.questionList.isNotEmpty) {
-        PlayListModel playListIntro = PlayListModel();
-        playListIntro.questionContent = PlayListType.introduce.name;
-        playListIntro.numPart = topic.numPart;
-        playListIntro.fileIntro =
-            topic.files.isNotEmpty ? topic.files.first.url : "";
+        PlayListModel playListIntro =
+            _setPlayListModel(topic, PlayListType.introduce);
+
         playList.add(playListIntro);
       }
 
       for (int j = 0; j < questions.length; j++) {
-        print('topic numpart : ${topic.numPart.toString()}');
-        PlayListModel playListModel = PlayListModel();
-        playListModel.numPart = topic.numPart;
-        playListModel.endOfTakeNote = topic.endOfTakeNote.url;
-        playListModel.endOfTest = topic.fileEndOfTest.url;
-        QuestionTopicModel question = questions.elementAt(j);
-        question.numPart = topic.numPart;
-        playListModel.questionContent = question.content;
-        playListModel.cueCard = question.cueCard;
-        playListModel.isFollowUp = question.isFollowUpQuestion();
-        List<FileTopicModel> files = question.files;
-        playListModel.questionTopicModel = question;
-        playListModel.fileQuestionNormal = files.first.url;
-        playListModel.fileQuestionSlow = files.length > 1
-            ? files.last.url
-            : playListModel.fileQuestionNormal;
+        QuestionTopicModel questionModel = questions.elementAt(j);
+        questionModel.numPart = topic.numPart;
+
+        PlayListModel playListModel = _setPlayListModel(
+            topic, PlayListType.question,
+            question: questionModel, testDetailModel: testDetailModel);
+
         playList.add(playListModel);
       }
 
       if (topic.endOfTakeNote.url.isNotEmpty && topic.questionList.isNotEmpty) {
-        PlayListModel playListEndOfTakeNote = PlayListModel();
-        playListEndOfTakeNote.endOfTakeNote = topic.endOfTakeNote.url;
-        playListEndOfTakeNote.questionContent = PlayListType.endOfTakeNote.name;
-        playListEndOfTakeNote.numPart = 2;
+        PlayListModel playListEndOfTakeNote = _setPlayListModel(
+            topic, PlayListType.endOfTakeNote,
+            testDetailModel: testDetailModel);
+
         playList.add(playListEndOfTakeNote);
       }
 
       if (topic.fileEndOfTest.url.isNotEmpty) {
-        PlayListModel playListEndOfTest = PlayListModel();
-        playListEndOfTest.endOfTest = topic.fileEndOfTest.url;
-        playListEndOfTest.questionContent = PlayListType.endOfTest.name;
-        playListEndOfTest.numPart = 3;
+        PlayListModel playListEndOfTest =
+            _setPlayListModel(topic, PlayListType.endOfTest);
         playList.add(playListEndOfTest);
       }
     }
@@ -119,6 +106,55 @@ class TestRoomSimulatorPresenter {
     playList.sort((a, b) => a.numPart.compareTo(b.numPart));
 
     return playList;
+  }
+
+  PlayListModel _setPlayListModel(TopicModel topic, PlayListType playListType,
+      {QuestionTopicModel? question, TestDetailModel? testDetailModel}) {
+    PlayListModel playListModel = PlayListModel();
+    if (testDetailModel != null) {
+      playListModel.firstRepeatSpeed = testDetailModel.firstRepeatSpeed;
+      playListModel.secondRepeatSpeed = testDetailModel.secondRepeatSpeed;
+      playListModel.normalSpeed = testDetailModel.normalSpeed;
+    }
+    if (playListType == PlayListType.introduce) {
+      playListModel.numPart = topic.numPart;
+      playListModel.questionContent = PlayListType.introduce.name;
+      playListModel.fileIntro =
+          topic.files.isNotEmpty ? topic.files.first.url : "";
+    } else if (playListType == PlayListType.endOfTakeNote) {
+      playListModel.numPart = PartOfTest.part2.get;
+      playListModel.endOfTakeNote = topic.endOfTakeNote.url;
+      playListModel.questionContent = PlayListType.endOfTakeNote.name;
+    } else if (playListType == PlayListType.endOfTest) {
+      playListModel.endOfTest = topic.fileEndOfTest.url;
+      playListModel.numPart = PartOfTest.part3.get;
+      playListModel.questionContent = PlayListType.endOfTest.name;
+    } else {
+      playListModel.numPart = topic.numPart;
+      playListModel.endOfTakeNote = topic.endOfTakeNote.url;
+      playListModel.endOfTest = topic.fileEndOfTest.url;
+      playListModel.questionContent = question != null ? question.content : '';
+      playListModel.cueCard = question != null ? question.cueCard : '';
+      playListModel.isFollowUp =
+          question != null ? question.isFollowUpQuestion() : false;
+      List<FileTopicModel> files = question != null ? question.files : [];
+      playListModel.questionTopicModel = question;
+      playListModel.fileQuestionNormal = files.first.url;
+      playListModel.fileQuestionSlow =
+          files.length > 1 ? files.last.url : playListModel.fileQuestionNormal;
+      List<FileTopicModel> filesImage = _getFilesImage(files);
+      playListModel.fileImage =
+          filesImage.isNotEmpty ? filesImage.first.url : '';
+    }
+
+    return playListModel;
+  }
+
+  List<FileTopicModel> _getFilesImage(List<FileTopicModel> files) {
+    return files
+        .where((element) =>
+            Utils.instance().mediaType(element.url) == MediaType.image)
+        .toList();
   }
 
   List<QuestionTopicModel> getAllQuestionsTopic(TopicModel topicModel) {
@@ -216,7 +252,7 @@ class TestRoomSimulatorPresenter {
       dynamic minuteStr = minutes.toString().padLeft(2, '0');
       dynamic secondStr = seconds.toString().padLeft(2, '0');
 
-      _view!.onCountDown("$minuteStr:$secondStr");
+      _view!.onCountDown("$minuteStr:$secondStr", count);
 
       if (count == 0 && !finishCountDown) {
         finishCountDown = true;

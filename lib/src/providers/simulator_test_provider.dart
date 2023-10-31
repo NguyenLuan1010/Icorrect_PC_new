@@ -20,7 +20,7 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   @override
   void notifyListeners() {
-    if (!isDisposed) { 
+    if (!isDisposed) {
       super.notifyListeners();
     }
   }
@@ -117,6 +117,7 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+  
   //Status of doing the test
   DoingStatus _doingStatus = DoingStatus.none;
   DoingStatus get doingStatus => _doingStatus;
@@ -281,7 +282,6 @@ class SimulatorTestProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   int _indexOfHeaderPart2 = 0;
   int get indexOfHeaderPart2 => _indexOfHeaderPart2;

@@ -11,7 +11,6 @@ import device_info_plus
 import file_selector_macos
 import flutter_desktop_audio_recorder
 import flutter_local_notifications
-import fvp
 import package_info_plus
 import path_provider_foundation
 import record_macos
@@ -19,6 +18,7 @@ import screen_retriever
 import shared_preferences_foundation
 import sqflite
 import video_player_macos
+import webview_cef
 import window_manager
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
@@ -28,7 +28,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
   FlutterDesktopAudioRecorderPlugin.register(with: registry.registrar(forPlugin: "FlutterDesktopAudioRecorderPlugin"))
   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
-  FvpPlugin.register(with: registry.registrar(forPlugin: "FvpPlugin"))
   FLTPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FLTPackageInfoPlusPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   RecordMacosPlugin.register(with: registry.registrar(forPlugin: "RecordMacosPlugin"))
@@ -36,5 +35,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
   FLTVideoPlayerPlugin.register(with: registry.registrar(forPlugin: "FLTVideoPlayerPlugin"))
+  WebviewCefPlugin.register(with: registry.registrar(forPlugin: "WebviewCefPlugin"))
   WindowManagerPlugin.register(with: registry.registrar(forPlugin: "WindowManagerPlugin"))
 }

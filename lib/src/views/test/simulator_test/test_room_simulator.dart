@@ -7,16 +7,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:icorrect_pc/core/camera_service.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/simulator_test_provider.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:icorrect_pc/src/views/dialogs/re_answer_dialog.dart';
+import 'package:icorrect_pc/src/views/dialogs/tip_question_dialog.dart';
+import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
 import 'package:icorrect_pc/src/views/widgets/empty_widget.dart';
 import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/video_simulator_widget.dart';
 import 'package:provider/provider.dart';
@@ -56,6 +61,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     implements TestRoomSimulatorContract {
   TestRoomProvider? _roomProvider;
   SimulatorTestProvider? _simulatorTestProvider;
+  AuthWidgetProvider? _authWidgetProvider;
+
   TestRoomSimulatorPresenter? _presenter;
 
   VideoPlayerController? _videoPlayerController;
@@ -64,6 +71,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   Record? _recordController;
   String _fileNameRecord = '';
   CircleLoading? _loading;
+  CameraService? _cameraService;
 
   double w = 0;
   double h = 0;
@@ -71,13 +79,19 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   @override
   void initState() {
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
     _audioPlayer = AudioPlayer();
     _recordController = Record();
     _loading = CircleLoading();
+    _cameraService = CameraService();
+
     _roomProvider = Provider.of<TestRoomProvider>(context, listen: false);
     _simulatorTestProvider =
         Provider.of<SimulatorTestProvider>(context, listen: false);
+    _authWidgetProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
     _presenter = TestRoomSimulatorPresenter(this);
+
     _prepareForTestRoom();
   }
 
@@ -88,7 +102,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           _presenter!.getPlayList(widget.testDetailModel);
       if (kDebugMode) {
         for (PlayListModel play in playLists) {
-          print("DEBUG : play list ${play.questionContent}");
+          print(
+              "DEBUG : play list ${play.questionContent} ,cue card: ${play.cueCard}");
         }
       }
 
@@ -101,8 +116,30 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     super.dispose();
+    if (_countDown != null) {
+      _countDown!.cancel();
+    }
+
+    if (_recordController != null && await _recordController!.isRecording()) {
+      _recordController!.stop();
+      _recordController!.dispose();
+    }
+
+    if (_videoPlayerController != null &&
+        _videoPlayerController!.value.isPlaying) {
+      _videoPlayerController!.pause();
+      _videoPlayerController!.dispose();
+    }
+
+    if (_audioPlayer != null) {
+      _audioPlayer!.dispose();
+    }
+
+    if (_cameraService != null) {
+      _cameraService!.disposeCurrentCamera();
+    }
   }
 
   @override
@@ -130,7 +167,15 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           Container(
             width: w,
             height: h / 2,
-            child: _buildQuestionList(),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            child: Stack(
+              children: [
+                widget.activitiesModel.isExam()
+                    ? _buildQuestionAndCameraPreview()
+                    : _buildQuestionList(),
+                _buildImageFrame()
+              ],
+            ),
           )
         ],
       ),
@@ -191,7 +236,11 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   @override
-  void playFileVideo(File normalFile, File slowFile) {
+  Future<void> playFileVideo(File normalFile, File slowFile) async {
+    PlayListModel playListModel = _roomProvider!.currentPlay;
+    String path = await FileStorageHelper.getFilePath(
+        playListModel.fileImage, MediaType.image, null);
+    _roomProvider!.setFileImage(File(path));
     _initVideoController(normalFile);
   }
 
@@ -201,11 +250,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
         _videoPlayerController!.value.isPlaying
             ? _videoPlayerController!.pause()
             : _videoPlayerController!.play();
+        setState(() {});
       });
 
-    if (_roomProvider!.repeatTimes > 1) {
-      _videoPlayerController!.setPlaybackSpeed(0.7);
-    }
+    _videoPlayerController!.setPlaybackSpeed(_getSpeedVideo());
 
     _roomProvider!.setPlayController(_videoPlayerController!);
     _roomProvider!.videoPlayController.addListener(() {
@@ -217,6 +265,9 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future _onVideoEnd() async {
+    if (!mounted) {
+      return;
+    }
     PlayListModel playListModel = _roomProvider!.currentPlay;
 
     if (playListModel.questionContent == PlayListType.introduce.name) {
@@ -224,7 +275,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     } else if (playListModel.cueCard.isNotEmpty) {
       _startCountDownCueCard();
     } else if (playListModel.questionContent == PlayListType.endOfTest.name ||
-        _roomProvider!.indexQuestion == _roomProvider!.questionLength) {
+        _roomProvider!.indexQuestion == _roomProvider!.questionLength &&
+            playListModel.numPart != PartOfTest.part2.get) {
       _onEndTheTest();
     } else {
       _startCountDownRecord();
@@ -232,12 +284,14 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   @override
-  void onCountDown(String strCount) {
+  void onCountDown(String strCount, int count) {
     _roomProvider!.setStrCountDown(strCount);
+    _roomProvider!.setCurrentCount(count);
   }
 
   @override
   void onCountDownForCueCard(String strCount) {
+    _roomProvider!.setStrCountDown(strCount);
     _roomProvider!.setStrCountCueCard(strCount);
   }
 
@@ -247,6 +301,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future<void> _onFinishAnswer() async {
+    _roomProvider!.clearImageFile();
     _recordController!.stop();
     _roomProvider!.setVisibleRecord(false);
     PlayListModel playListModel = _roomProvider!.currentPlay;
@@ -296,14 +351,19 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (null != _countDown) {
       _countDown!.cancel();
     }
-
     _recordAnswer();
 
+    _roomProvider!.setVisibleRecord(true);
     int countTime = Utils.instance().getRecordTime(_currentNumPart());
     _countDown = _presenter!.startCountDown(
         context: context, count: countTime, isPart2: _isPart2());
-    _roomProvider!.setVisibleRecord(true);
-    _roomProvider!.setStrCountDown("00:$countTime");
+
+    _roomProvider!.setCurrentCount(countTime);
+    if (_isPart2()) {
+      _roomProvider!.setStrCountDown("02:00");
+    } else {
+      _roomProvider!.setStrCountDown("00:$countTime");
+    }
   }
 
   void _startCountDownCueCard() {
@@ -314,7 +374,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     int countTime = Utils.instance().getRecordTime(_currentNumPart());
     _roomProvider!.setStrCountDown("00:$countTime");
     _countDown = _presenter!.startCountDownForCueCard(
-        context: context, count: 5, isPart2: _isPart2());
+        context: context, count: countTime, isPart2: _isPart2());
+    _roomProvider!.setCurrentCount(countTime);
     _roomProvider!.setVisibleCueCard(true);
   }
 
@@ -359,6 +420,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   void _onEndTheTest() {
+    _simulatorTestProvider!.setQuestionList(_roomProvider!.questionList);
     _roomProvider!
         .setCanReanswer(widget.activitiesModel.activityType == "homework");
     _roomProvider!.setCanPlayAnswer(true);
@@ -388,8 +450,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     String newFileName =
         '${await Utils.instance().generateAudioFileName()}.wav';
 
-    _fileNameRecord = await FileStorageHelper.getFilePath(
-        newFileName, MediaType.audio, widget.testDetailModel.testId.toString());
+    _fileNameRecord =
+        await FileStorageHelper.getFilePath(newFileName, MediaType.audio, null);
 
     if (await _recordController!.hasPermission()) {
       await _recordController!.start(
@@ -407,9 +469,17 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _roomProvider!.currentPlay.questionTopicModel.answers = answers;
   }
 
+  Widget _buildQuestionAndCameraPreview() {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Expanded(child: _buildQuestionList()),
+      Expanded(child: _cameraService!.buildPreview())
+    ]);
+  }
+
   Widget _buildQuestionList() {
     return Consumer<TestRoomProvider>(builder: (context, provider, child) {
       return TestQuestionWidget(
+          isExam: widget.activitiesModel.isExam(),
           testId: widget.testDetailModel.testId,
           questions: provider.questionList,
           canPlayAnswer: provider.canPlayAnswer,
@@ -418,7 +488,30 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           selectedQuestionIndex: provider.selectedQuestionIndex,
           playAnswerCallBack: _playAnswerCallBack,
           playReAnswerCallBack: _reanswerCallBack,
-          showTipCallBack: (q) {});
+          showTipCallBack: (q) {
+            _showTipQuestion(q);
+          });
+    });
+  }
+
+  void _showTipQuestion(QuestionTopicModel questionTopicModel) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return TipQuestionDialog(context, questionTopicModel);
+        });
+  }
+
+  Widget _buildImageFrame() {
+    return Consumer<TestRoomProvider>(builder: (context, provider, child) {
+      return (provider.fileImage.existsSync())
+          ? Container(
+              width: w,
+              padding: const EdgeInsets.all(40),
+              color: Colors.white,
+              child: Image.file(provider.fileImage),
+            )
+          : Container();
     });
   }
 
@@ -473,7 +566,6 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   @override
   void submitAnswersSuccess(AlertInfo alertInfo) {
-    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.success);
     _loading!.hide();
     showDialog(
         context: context,
@@ -481,12 +573,20 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           return MessageDialog(
               context: context, message: alertInfo.description);
         });
+
+    if (mounted) {
+      _authWidgetProvider!.setRefresh(true);
+      _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.success);
+    }
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
   ////////////////////////////CHECK VALUE FUNCTION//////////////////////////////
 
   bool _isPart2() {
     return _roomProvider!.currentPlay != PlayListModel() &&
-        _roomProvider!.currentPlay.cueCard.isNotEmpty;
+            _roomProvider!.currentPlay.cueCard.isNotEmpty ||
+        _roomProvider!.currentPlay.numPart == PartOfTest.part2.get;
   }
 
   int _currentNumPart() {
@@ -494,5 +594,17 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       return _roomProvider!.currentPlay.numPart;
     }
     return -1;
+  }
+
+  double _getSpeedVideo() {
+    PlayListModel playListModel = _roomProvider!.currentPlay;
+    switch (_roomProvider!.repeatTimes) {
+      case 1:
+        return playListModel.firstRepeatSpeed;
+      case 2:
+        return playListModel.secondRepeatSpeed;
+      default:
+        return playListModel.normalSpeed;
+    }
   }
 }

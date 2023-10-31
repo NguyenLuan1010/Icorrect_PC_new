@@ -98,6 +98,15 @@ class AuthWidgetProvider extends ChangeNotifier {
     }
   }
 
+  bool _isRefresh = false;
+  bool get isRefresh => _isRefresh;
+  void setRefresh(bool isRefresh) {
+    _isRefresh = isRefresh;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   List<dynamic> _myGridList = [];
   List<dynamic> get myGridList => _myGridList;
   void setMyGrid(dynamic item) {

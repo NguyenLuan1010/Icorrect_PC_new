@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:icorrect_pc/src/data_source/api_urls.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.dart';
@@ -17,6 +18,7 @@ import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/presenters/my_test_presenter.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
+import 'package:icorrect_pc/src/views/test/my_test/ai_response_widget.dart';
 import 'package:icorrect_pc/src/views/test/my_test/highlight_activities.dart';
 import 'package:icorrect_pc/src/views/test/my_test/other_activities.dart';
 import 'package:icorrect_pc/src/views/test/my_test/teacher_response.dart';
@@ -202,45 +204,53 @@ class _MyTestScreenState extends State<MyTestScreen>
   Widget _buildTabLayoutScreen(final tabs) {
     return Container(
         margin: const EdgeInsets.only(top: 30, left: 10, right: 10),
-        child: Expanded(
-          child: Scaffold(
-            backgroundColor: const Color.fromARGB(0, 255, 255, 255),
-            appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(40),
-                child: Container(
-                  margin: const EdgeInsets.only(left: 50, right: 600),
-                  child: DefaultTabController(
-                      initialIndex: 0,
-                      length: widget.homeWork.haveTeacherResponse() ? 5 : 4,
-                      child: TabBar(
-                          controller: _tabController,
-                          indicator: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(5),
-                                  topRight: Radius.circular(5)),
-                              border: Border.all(
-                                  color: AppColors.defaultGrayColor, width: 2)),
-                          indicatorColor: AppColors.defaultGrayColor,
-                          labelColor: AppColors.defaultGrayColor,
-                          unselectedLabelColor: AppColors.defaultGrayColor,
-                          tabs: tabs)),
-                )),
-            body: TabBarView(
-                controller: _tabController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  ViewMyAnswers(
-                      activitiesModel: widget.homeWork,
-                      provider: _provider!,
-                      clickUpdateReanswerCallBack: _onClickUpdateReanswer),
-                  TeacherResponseWidget(widget.homeWork, _provider!),
-                  HighLightHomeWorks(
-                      provider: _provider!, homeWorkModel: widget.homeWork),
-                  OtherHomeWorks(
-                      provider: _provider!, homeWorkModel: widget.homeWork),
-                  Container()
-                ]),
-          ),
+        child: Scaffold(
+          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+          appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(40),
+              child: Container(
+                margin: const EdgeInsets.only(left: 50, right: 600),
+                child: DefaultTabController(
+                    initialIndex: 0,
+                    length: widget.homeWork.haveTeacherResponse() ? 5 : 4,
+                    child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                            borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5)),
+                            border: Border.all(
+                                color: AppColors.defaultGrayColor, width: 2)),
+                        indicatorColor: AppColors.defaultGrayColor,
+                        labelColor: AppColors.defaultGrayColor,
+                        unselectedLabelColor: AppColors.defaultGrayColor,
+                        tabs: tabs)),
+              )),
+          body: TabBarView(
+              controller: _tabController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                ViewMyAnswers(
+                    activitiesModel: widget.homeWork,
+                    provider: _provider!,
+                    clickUpdateReanswerCallBack: _onClickUpdateReanswer),
+                TeacherResponseWidget(widget.homeWork, _provider!),
+                HighLightHomeWorks(
+                    provider: _provider!, homeWorkModel: widget.homeWork),
+                OtherHomeWorks(
+                    provider: _provider!, homeWorkModel: widget.homeWork),
+                FutureBuilder(
+                    future: aiResponseEP(
+                        widget.homeWork.activityAnswer!.aiOrder.toString()),
+                    builder: (_, snapshot) {
+                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                        return AIResponseWidget(
+                          url: snapshot.data ?? '',
+                        );
+                      }
+                      return const Text('Waiting for video to load');
+                    })
+              ]),
         ));
   }
 

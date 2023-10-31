@@ -21,6 +21,9 @@ class TestDetailModel {
   String? _status;
   String? _updateAt;
   String? _hasOrder;
+  double? _normalSpeed;
+  double? _firstRepeatSpeed;
+  double? _secondRepeatSpeed;
 
   TestDetailModel(
       {String? activityType,
@@ -35,7 +38,10 @@ class TestDetailModel {
       String? updateAt,
       String? hasOrder,
       TopicModel? part2,
-      TopicModel? part3}) {
+      TopicModel? part3,
+      double? normalSpeed,
+      double? firstRepeatSpeed,
+      double? secondRepeatSpeed}) {
     _activityType = activityType;
     _testOption = testOption;
     _introduce = introduce;
@@ -49,6 +55,9 @@ class TestDetailModel {
     _hasOrder = hasOrder;
     _part2 = part2;
     _part3 = part3;
+    _normalSpeed = normalSpeed;
+    _firstRepeatSpeed = firstRepeatSpeed;
+    _secondRepeatSpeed = secondRepeatSpeed;
   }
 
   String get activityType => _activityType ?? "";
@@ -77,6 +86,12 @@ class TestDetailModel {
   set part2(TopicModel part2) => _part2 = part2;
   TopicModel get part3 => _part3 ?? TopicModel();
   set part3(TopicModel part3) => _part3 = part3;
+  dynamic get normalSpeed => _normalSpeed ?? 0.0;
+  set normalSpeed(dynamic value) => _normalSpeed = value;
+  get firstRepeatSpeed => _firstRepeatSpeed ?? 0.0;
+  set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
+  get secondRepeatSpeed => _secondRepeatSpeed ?? 0.0;
+  set secondRepeatSpeed(value) => _secondRepeatSpeed = value;
 
   TestDetailModel.fromJson(Map<String, dynamic> json) {
     _activityType = json['activity_type'];
@@ -99,6 +114,10 @@ class TestDetailModel {
     _hasOrder = json['has_order'];
     _part2 = json['part2'] != null ? TopicModel.fromJson(json['part2']) : null;
     _part3 = json['part3'] != null ? TopicModel.fromJson(json['part3']) : null;
+
+    _normalSpeed = json['normal_speed'] + 0.0 ?? 0.0;
+    _firstRepeatSpeed = json['first_repeat_speed'] + 0.0 ?? 0.0;
+    _secondRepeatSpeed = json['second_repeat_speed'] + 0.0 ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {

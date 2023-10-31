@@ -5,6 +5,10 @@ class PlayListModel {
   String? _fileIntro;
   String? _fileQuestionNormal;
   String? _fileQuestionSlow;
+  double? _normalSpeed;
+  double? _firstRepeatSpeed;
+  double? _secondRepeatSpeed;
+  String? _fileImage;
   String? _questionContent;
   String? _cueCard;
   String? _endOfTakeNote;
@@ -12,6 +16,22 @@ class PlayListModel {
   int? _numPart;
   bool? _isFollowUp;
   int? _questionLength;
+
+  double get normalSpeed => _normalSpeed ?? 1.0;
+
+  set normalSpeed(double? value) => _normalSpeed = value;
+
+  double get firstRepeatSpeed => _firstRepeatSpeed ?? 0.85;
+
+  set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
+
+  double get secondRepeatSpeed => _secondRepeatSpeed ?? 0.75;
+
+  set secondRepeatSpeed(value) => _secondRepeatSpeed = value;
+
+  get fileImage => _fileImage ?? "";
+
+  set fileImage(value) => _fileImage = value;
 
   QuestionTopicModel? _questionTopicModel;
 

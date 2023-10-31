@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
   }
 
   void _autoLogin() async {
-    String token = await Utils.instance().getAccessToken();
+    String token = await Utils.instance().getAccessToken() ?? "";
     Timer(const Duration(milliseconds: 2000), () async {
       if (token.isNotEmpty) {
         Navigator.of(context).pushAndRemoveUntil(

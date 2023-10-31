@@ -9,7 +9,11 @@ import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.d
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/models/ui_models/download_info.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
+import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
+import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
 import 'package:icorrect_pc/src/views/test/simulator_test/test_room_simulator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -42,8 +46,10 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   SimulatorTestPresenter? _simulatorTestPresenter;
 
   SimulatorTestProvider? _simulatorTestProvider;
+  AuthWidgetProvider? _authWidgetProvider;
 
   Permission? _microPermission;
+  CircleLoading? _loading;
   PermissionStatus _microPermissionStatus = PermissionStatus.denied;
 
   StreamSubscription? connection;
@@ -73,16 +79,21 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     });
 
     super.initState();
+
+    _loading = CircleLoading();
     _simulatorTestProvider =
         Provider.of<SimulatorTestProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () {
+      _simulatorTestProvider!.resetAll();
+    });
+    _authWidgetProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
     _simulatorTestPresenter = SimulatorTestPresenter(this);
     _getTestDetail();
   }
 
   @override
   Widget build(BuildContext context) {
-    double h = MediaQuery.of(context).size.height;
-    double w = MediaQuery.of(context).size.width;
     return Scaffold(
         body: Stack(
       children: [
@@ -90,7 +101,20 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             children: [
-              BackButtonWidget(backButtonTapped: _backButtonTapped),
+              InkWell(
+                onTap: _backButtonTapped,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  child: const Icon(
+                    Icons.arrow_back_outlined,
+                    color: AppColors.defaultPurpleColor,
+                    size: 30,
+                  ),
+                ),
+              ),
               Text(widget.homeWorkModel.activityName,
                   style: const TextStyle(
                       color: AppColors.defaultPurpleColor,
@@ -114,11 +138,12 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void dispose() {
+    dispose();
+    super.dispose();
     connection!.cancel();
     _simulatorTestPresenter!.closeClientRequest();
     _simulatorTestPresenter!.resetAutoRequestDownloadTimes();
     _simulatorTestProvider!.resetAll();
-    super.dispose();
   }
 
   void _backButtonTapped() async {
@@ -127,6 +152,12 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       if (kDebugMode) {
         print("DEBUG: Status is submitting!");
       }
+      return;
+    }
+
+    if (_simulatorTestProvider!.submitStatus == SubmitStatus.success) {
+      _authWidgetProvider!.setRefresh(true);
+      Navigator.of(context).pop();
       return;
     }
 
@@ -197,6 +228,9 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                 hasCloseButton: false,
                 okButtonTapped: () {
                   //Submit
+                  _loading!.show(context);
+                  print(
+                      'list size : ${_simulatorTestProvider!.questionList.length}');
                   _simulatorTestProvider!
                       .updateSubmitStatus(SubmitStatus.submitting);
                   _simulatorTestPresenter!.submitTest(
@@ -284,13 +318,13 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                     testDetailModel: _simulatorTestProvider!.currentTestDetail,
                     simulatorTestPresenter: _simulatorTestPresenter!),
               ),
-              
-              Visibility(
-                visible: provider.submitStatus == SubmitStatus.submitting,
-                child: const DefaultLoadingIndicator(
-                  color: AppColors.defaultPurpleColor,
-                ),
-              ),
+
+              // Visibility(
+              //   visible: provider.submitStatus == SubmitStatus.submitting,
+              //   child: const DefaultLoadingIndicator(
+              //     color: AppColors.defaultPurpleColor,
+              //   ),
+              // ),
             ],
           ),
         );
@@ -497,6 +531,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onSubmitTestFail(String msg) {
+    _loading!.hide();
     _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.fail);
     showDialog(
         context: context,
@@ -509,16 +544,20 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onSubmitTestSuccess(String msg, ActivityAnswer activityAnswer) {
-    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.success);
-
+    _loading!.hide();
     showDialog(
         context: context,
         builder: (context) {
           return MessageDialog(context: context, message: msg);
         });
-
-    //Go to MyTest Screen
-    _simulatorTestPresenter!.gotoMyTestScreen(activityAnswer);
+    if (mounted) {
+      _authWidgetProvider!.setRefresh(true);
+      _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.success);
+    }
+    // //Go to MyTest Screen
+    // _simulatorTestPresenter!.gotoMyTestScreen(activityAnswer);
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
 
   @override

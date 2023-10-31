@@ -57,7 +57,12 @@ class _VideoSimulatorWidgetState extends State<VideoSimulatorWidget> {
                       borderRadius: BorderRadius.circular(10),
                       child: AspectRatio(
                           aspectRatio: 16 / 9,
-                          child: VideoPlayer(provider.videoPlayController)),
+                          child:
+                              provider.videoPlayController.value.isInitialized
+                                  ? VideoPlayer(provider.videoPlayController)
+                                  : const Image(
+                                      image: AssetImage(
+                                          AppAssets.img_video_play_holder))),
                     ),
                   ),
                   Image.asset(AppAssets.img_paste)

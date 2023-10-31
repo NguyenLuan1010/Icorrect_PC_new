@@ -19,6 +19,7 @@ import '../../../providers/simulator_test_provider.dart';
 class TestQuestionWidget extends StatelessWidget {
   TestQuestionWidget({
     super.key,
+    required this.isExam,
     required this.testId,
     required this.questions,
     required this.canReanswer,
@@ -31,7 +32,7 @@ class TestQuestionWidget extends StatelessWidget {
   });
 
   int testId, selectedQuestionIndex;
-  bool canReanswer, canPlayAnswer, isPlayingAnswer;
+  bool canReanswer, canPlayAnswer, isPlayingAnswer, isExam;
   List<QuestionTopicModel> questions;
   final Function(
           QuestionTopicModel questionTopicModel, int selectedQuestionIndex)
@@ -62,12 +63,19 @@ class TestQuestionWidget extends StatelessWidget {
       return Container(
         height: h,
         padding: const EdgeInsets.symmetric(vertical: 30),
-        child: MyGridView(
-            data: questions,
-            itemWidget: (dynamic itemModel, int index) {
-              QuestionTopicModel question = itemModel;
-              return _buildTestQuestionItem(context, question, index);
-            }),
+        child: isExam
+            ? ListView.builder(
+                itemCount: questions.length,
+                itemBuilder: (_, index) {
+                  QuestionTopicModel question = questions.elementAt(index);
+                  return _buildTestQuestionItem(context, question, index);
+                })
+            : MyGridView(
+                data: questions,
+                itemWidget: (dynamic itemModel, int index) {
+                  QuestionTopicModel question = itemModel;
+                  return _buildTestQuestionItem(context, question, index);
+                }),
       );
     }
   }
@@ -102,7 +110,7 @@ class TestQuestionWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  question.content,
+                  '${index + 1}. ${question.content}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
