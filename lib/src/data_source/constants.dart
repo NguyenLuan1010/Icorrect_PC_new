@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_colors.dart';
 import '../models/ui_models/alert_info.dart';
+import '../utils/utils.dart';
 
 enum ToastStatesType {
   success,
@@ -33,12 +34,30 @@ enum HandleWhenFinish {
   reviewingPlayTheQuestionType,
 }
 
+enum UserAuthStatus {
+  draft(0),
+  active(1),
+  lock(2),
+  reject(4),
+  waitingModelFile(3),
+  errorAuth(99);
+
+  const UserAuthStatus(this.get);
+
+  final int get;
+}
+
 enum VideoStatus { pause, playing, endVideo, start }
 
 enum VideoType {
   introVideoType,
   questionVideoType,
   endOfTestVideoType,
+}
+
+enum WarningStatus {
+  show,
+  hide,
 }
 
 enum PlayListType { introduce, endOfTakeNote, endOfTest, question }
@@ -277,6 +296,22 @@ class CustomSize {
 }
 
 class CustomTextStyle {
+  static TextStyle textWithCustomInfo({
+    required BuildContext context,
+    required Color color,
+    required double fontsSize,
+    required FontWeight fontWeight,
+  }) {
+    double size =
+        Utils.instance().fixSizeOfText(context: context, fontSize: fontsSize);
+
+    return TextStyle(
+      color: color,
+      fontWeight: fontWeight,
+      fontSize: size,
+    );
+  }
+
   static const TextStyle textBoldBlack_22 = TextStyle(
     color: AppColors.defaultBlackColor,
     fontWeight: FontWeight.w800,
@@ -389,6 +424,11 @@ class CustomTextStyle {
     color: AppColors.defaultWhiteColor,
     fontWeight: FontWeight.w400,
     fontSize: FontsSize.fontSize_15,
+  );
+  static const TextStyle textBlackBold_14 = TextStyle(
+    color: AppColors.black,
+    fontWeight: FontWeight.bold,
+    fontSize: FontsSize.fontSize_14,
   );
 
   static const TextStyle textGrey_14 = TextStyle(
@@ -680,9 +720,13 @@ class StringConstants {
       "Your password must be longer than 6 characters.";
   static const String password_max_lenght_message =
       "Your password must be shorter than 32 characters.";
+  static const String video_record_duration_less =
+      "Video duration is too short !";
   static const String video_record_duration_less_than_15s =
       "This video record must be greater than 15s";
-
+  static const String something_went_wrong_title = "Something went wrong !";
+  static const String limit_file_video_content =
+      "Your file size limit may have been exceeded.Please re-record the video!";
   //Error message
   static const String getting_app_config_information_error_message =
       "Has an error when getting app config information!";

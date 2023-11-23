@@ -8,6 +8,7 @@ import 'package:icorrect_pc/src/presenters/my_test_presenter.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:icorrect_pc/src/views/dialogs/tip_question_dialog.dart';
+import 'package:icorrect_pc/src/views/test/my_test/video_my_test_widget.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_assets.dart';
@@ -24,9 +25,11 @@ class ViewMyAnswers extends StatefulWidget {
   Function clickUpdateReanswerCallBack;
   ActivitiesModel activitiesModel;
   MyTestProvider provider;
+  TestDetailModel testDetailModel;
   ViewMyAnswers(
       {required this.clickUpdateReanswerCallBack,
       required this.activitiesModel,
+      required this.testDetailModel,
       required this.provider,
       super.key});
 
@@ -82,15 +85,12 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
             image: const DecorationImage(
                 image: AssetImage(AppAssets.bg_test_room), fit: BoxFit.cover)),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
+            Container(
               width: w / 3,
-              // child: VideoSimulatorWidget(
-              //     roomProvider: _roomProvider!,
-              //     onVideoEnd: () {
-              //       _onVideoEnd();
-              //     }),
+              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              child: VideoMyTestWidget(testDetailModel: widget.testDetailModel),
             ),
             Visibility(
                 visible: provider.reAnswerQuestions.isNotEmpty,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -13,6 +14,7 @@ import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
+import '../models/auth_models/video_record_exam_info.dart';
 import '../models/homework_models/new_api_135/activity_answer_model.dart';
 import '../models/simulator_test_models/file_topic_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
@@ -310,10 +312,42 @@ class SimulatorTestPresenter {
     _view!.onTryAgainToDownload();
   }
 
+  String randomVideoRecordExam(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.length > 1) {
+      List<VideoExamRecordInfo> prepareVideoForRandom = [];
+      for (int i = 0; i < videosSaved.length; i++) {
+        if (videosSaved[i].duration! >= 7) {
+          prepareVideoForRandom.add(videosSaved[i]);
+        }
+      }
+      if (prepareVideoForRandom.isEmpty) {
+        return _getMaxDurationVideo(videosSaved);
+      } else {
+        Random random = Random();
+        int elementRandom = random.nextInt(prepareVideoForRandom.length);
+        return prepareVideoForRandom[elementRandom].filePath ?? "";
+      }
+    } else {
+      return _getMaxDurationVideo(videosSaved);
+    }
+  }
+
+  String _getMaxDurationVideo(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.isNotEmpty) {
+      videosSaved.sort(((a, b) => a.duration!.compareTo(b.duration!)));
+      VideoExamRecordInfo maxValue = videosSaved.last;
+      return maxValue.filePath ?? '';
+    }
+    return '';
+  }
+
   Future<void> submitTest({
     required String testId,
     required String activityId,
     required List<QuestionTopicModel> questions,
+    required bool isExam,
+    File? videoConfirmFile,
+    List<Map<String, dynamic>>? logAction,
   }) async {
     assert(_view != null && _testRepository != null);
 
@@ -322,7 +356,10 @@ class SimulatorTestPresenter {
             testId: testId,
             activityId: activityId,
             questions: questions,
-            isUpdate: false);
+            isUpdate: false,
+            isExam: isExam,
+            videoConfirmFile: videoConfirmFile,
+            logAction: logAction);
 
     try {
       _testRepository!.submitTest(multiRequest).then((value) {

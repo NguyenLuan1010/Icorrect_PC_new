@@ -116,31 +116,36 @@ class ReAnswerDialog extends Dialog {
                   ),
                 )),
                 const SizedBox(width: 20),
-                Expanded(
-                    child: ElevatedButton(
-                  onPressed: () {
-                    _finishReAnswer(_question);
-                  },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green),
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                Consumer<ReAnswerProvider>(
+                    builder: (context, reAnswerProvider, child) {
+                  return Expanded(
+                      child: ElevatedButton(
+                    onPressed: () {
+                      _finishReAnswer(_question);
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: _canFinishReanswer()
+                          ? MaterialStateProperty.all<Color>(Colors.green)
+                          : MaterialStateProperty.all<Color>(
+                              const Color.fromARGB(255, 130, 227, 134)),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Text(
-                      "Finish",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: const Text(
+                        "Finish",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                )),
+                  ));
+                }),
                 const SizedBox(width: 20),
               ],
             )
@@ -151,11 +156,20 @@ class ReAnswerDialog extends Dialog {
   }
 
   void _finishReAnswer(QuestionTopicModel question) {
-    question.answers.last.url = _fileName;
-    _record.stop();
-    _countDown!.cancel();
-    _finishReanswerCallback(question);
-    Navigator.pop(_context);
+    if (_canFinishReanswer()) {
+      question.answers.last.url = _fileName;
+      question.reAnswerCount = question.reAnswerCount + 1;
+      _record.stop();
+      _countDown!.cancel();
+      _finishReanswerCallback(question);
+      Navigator.pop(_context);
+    }
+  }
+
+  bool _canFinishReanswer() {
+    int timeCounting =
+        Provider.of<ReAnswerProvider>(_context, listen: false).numCount;
+    return _timeRecord - timeCounting > 2;
   }
 
   void _cancelReAnswer() async {
@@ -173,14 +187,14 @@ class ReAnswerDialog extends Dialog {
       _countDown != null ? _countDown!.cancel() : '';
       _countDown = _countDownTimer(_context, _timeRecord, false);
       Provider.of<ReAnswerProvider>(_context, listen: false)
-          .setCountDown("00:$_timeRecord");
+          .setCountDown("00:$_timeRecord", _timeRecord);
     });
   }
 
   void _startRecord() async {
     _fileName = '${await Utils.instance().generateAudioFileName()}.wav';
     _filePath =
-        '${await FileStorageHelper.getFolderPath(MediaType.audio, _currentTestId)}'
+        '${await FileStorageHelper.getFolderPath(MediaType.audio, null)}'
         '\\$_fileName';
     if (await _record.hasPermission()) {
       await _record.start(
@@ -209,7 +223,7 @@ class ReAnswerDialog extends Dialog {
       dynamic secondStr = seconds.toString().padLeft(2, '0');
 
       Provider.of<ReAnswerProvider>(_context, listen: false)
-          .setCountDown("$minuteStr:$secondStr");
+          .setCountDown("$minuteStr:$secondStr", count);
 
       if (count == 0 && !finishCountDown) {
         finishCountDown = true;

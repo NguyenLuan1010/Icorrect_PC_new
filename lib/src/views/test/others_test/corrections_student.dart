@@ -1,36 +1,41 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:icorrect_pc/core/app_colors.dart';
-import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
-import 'package:icorrect_pc/src/models/my_test_models/result_response_model.dart';
-import 'package:icorrect_pc/src/models/my_test_models/skill_problem_model.dart';
-import 'package:icorrect_pc/src/providers/my_test_provider.dart';
-import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
+import 'package:icorrect_pc/src/models/my_test_models/student_result_model.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/student_test_detail_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../presenters/my_test_presenter.dart';
+import '../../../../core/app_colors.dart';
+import '../../../data_source/constants.dart';
+import '../../../models/homework_models/new_api_135/activities_model.dart';
+import '../../../models/my_test_models/result_response_model.dart';
+import '../../../models/my_test_models/skill_problem_model.dart';
 import '../../../presenters/response_presenter.dart';
-import '../../../providers/auth_widget_provider.dart';
+import '../../dialogs/circle_loading.dart';
 import '../../dialogs/example_problem_dialog.dart';
 import '../../widgets/gradient_border_painter.dart';
 import '../../widgets/nothing_widget.dart';
 
-class TeacherResponseWidget extends StatefulWidget {
+class CorrectionsStudent extends StatefulWidget {
+  CorrectionsStudent(
+      {required this.activitiesModel,
+      required this.studentResultModel,
+      required this.provider,
+      super.key});
   ActivitiesModel activitiesModel;
-  MyTestProvider provider;
-  TeacherResponseWidget(this.activitiesModel, this.provider, {super.key});
+  StudentResultModel studentResultModel;
+  StudentTestProvider provider;
 
   @override
-  State<TeacherResponseWidget> createState() => _TeacherResponseWidgetState();
+  State<CorrectionsStudent> createState() => _CorrectionsStudentState();
 }
 
-class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
-    with AutomaticKeepAliveClientMixin<TeacherResponseWidget>
+class _CorrectionsStudentState extends State<CorrectionsStudent>
     implements ResponseContracts {
   bool _selected = true;
   bool _visible = false;
-  double _widthBonus = 35;
+  final double _widthBonus = 35;
   ResponsePresenter? _presenter;
   CircleLoading? _loading;
 
@@ -51,7 +56,8 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     return buildResultTest();
   }
 
@@ -59,7 +65,7 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
     w = MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
     var radius = const Radius.circular(5);
-    return Consumer<MyTestProvider>(builder: (context, provider, child) {
+    return Consumer<StudentTestProvider>(builder: (context, provider, child) {
       ResultResponseModel responseModel = provider.responseModel;
       return Container(
         margin: const EdgeInsets.only(bottom: 30),
@@ -68,37 +74,54 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
             color: AppColors.opacity,
             borderRadius: BorderRadius.all(radius),
             border: Border.all(color: Colors.black, width: 2)),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6)),
-                    color: AppColors.defaultPurpleColor),
-                child: Text("Overall Score: ${responseModel.overallScore}",
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20)),
-              ),
-              const SizedBox(height: 5),
-              SizedBox(
-                width: w / 2,
-                child: Text(
-                  responseModel.overallComment,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
+        child: (widget.studentResultModel.haveResponse())
+            ? SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(6)),
+                          color: AppColors.defaultPurpleColor),
+                      child: Text(
+                          "Overall Score: ${responseModel.overallScore}",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20)),
+                    ),
+                    const SizedBox(height: 5),
+                    SizedBox(
+                      width: w / 2,
+                      child: Text(
+                        responseModel.overallComment,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    _resultListScreen(responseModel)
+                  ],
+                ),
+              )
+            : Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    StringConstants.test_correction_wait_response_message,
+                    textAlign: TextAlign.center,
+                    style: CustomTextStyle.textWithCustomInfo(
+                      context: context,
+                      color: AppColors.defaultBlackColor,
+                      fontsSize: FontsSize.fontSize_15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 30),
-              _resultListScreen(responseModel)
-            ],
-          ),
-        ),
       );
     });
   }

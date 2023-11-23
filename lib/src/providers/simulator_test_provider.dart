@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/models/auth_models/video_record_exam_info.dart';
 import 'package:video_player/video_player.dart';
 
 import '../data_source/constants.dart';
@@ -117,7 +118,6 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
-  
   //Status of doing the test
   DoingStatus _doingStatus = DoingStatus.none;
   DoingStatus get doingStatus => _doingStatus;
@@ -212,6 +212,34 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+  List<VideoExamRecordInfo> _videosRecorded = [];
+  List<VideoExamRecordInfo> get videosRecorded => _videosRecorded;
+  void setVideosRecorded(List<VideoExamRecordInfo> videos) {
+    if (_videosRecorded.isNotEmpty) {
+      _videosRecorded.clear();
+    }
+    _videosRecorded.addAll(videos);
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void addVideoRecorded(VideoExamRecordInfo video) {
+    _videosRecorded.add(video);
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void clearVideosRecorded() {
+    if (_videosRecorded.isNotEmpty) {
+      _videosRecorded.clear();
+    }
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   int _reviewingCurrentIndex = 0;
   int get reviewingCurrentIndex => _reviewingCurrentIndex;
   void updateReviewingCurrentIndex(int index) {
@@ -245,6 +273,13 @@ class SimulatorTestProvider extends ChangeNotifier {
     temp.repeatIndex = repeatIndex;
     _questionList.add(temp);
 
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void addQuestionToList(QuestionTopicModel questionTopic) {
+    _questionList.add(questionTopic);
     if (!isDisposed) {
       notifyListeners();
     }
@@ -414,7 +449,24 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+  final List<Map<String, dynamic>> _logActions = [];
+  List<Map<String, dynamic>> get logActions => _logActions;
+  void addLogActions(Map<String, dynamic> log) {
+    _logActions.add(log);
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void resetLogActions() {
+    _logActions.clear();
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   void resetAll() {
+    _logActions.clear();
     _needDownloadAgain = false;
     _isLoadingVideo = false;
     _answerList.clear();

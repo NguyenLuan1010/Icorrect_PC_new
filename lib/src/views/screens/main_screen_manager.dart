@@ -85,20 +85,29 @@ class _MainWidgetState extends State<MainWidget> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // InkWell(
-                    //   onTap: () {
-                    //     _provider.setCurrentScreen(ChangeNotifierProvider(
-                    //         create: (_) => UserAuthDetailProvider(),
-                    //         child: const UserAuthDetailStatus()));
-                    //   },
-                    //   child: const Text('User Authentication',
-                    //       style: TextStyle(
-                    //           color: Colors.black,
-                    //           fontSize: 15,
-                    //           fontWeight: FontWeight.w500)),
-                    // ),
+                    InkWell(
+                      splashColor: Colors.transparent,
+                      onTap: () {
+                        _provider
+                            .setCurrentScreen(const UserAuthDetailStatus());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppColors.defaultPurpleColor, width: 1)),
+                        child: const Text('Video Authentication',
+                            style: TextStyle(
+                                color: AppColors.defaultPurpleColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                    ),
                     const SizedBox(width: 30),
                     InkWell(
+                      splashColor: Colors.transparent,
                       onTap: () {
                         _provider.setCurrentScreen(const HomeWorksWidget());
                       },
@@ -117,17 +126,25 @@ class _MainWidgetState extends State<MainWidget> {
                       ),
                     ),
                     const SizedBox(width: 30),
-                    // InkWell(
-                    //   onTap: () {
-                    //     _provider.setCurrentScreen(const PracticeScreen());
-                    //   },
-                    //   child: const Text('Practices',
-                    //       style: TextStyle(
-                    //           color: Colors.black,
-                    //           fontSize: 15,
-                    //           fontWeight: FontWeight.w500)),
-                    // ),
-                    //const SizedBox(width: 30),
+                    InkWell(
+                      onTap: () {
+                        _provider.setCurrentScreen(const PracticeScreen());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppColors.defaultPurpleColor, width: 1)),
+                        child: const Text('Practices',
+                            style: TextStyle(
+                                color: AppColors.defaultPurpleColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                    const SizedBox(width: 30),
                     InkWell(
                       onTap: () {
                         _showConfirmLogOut();

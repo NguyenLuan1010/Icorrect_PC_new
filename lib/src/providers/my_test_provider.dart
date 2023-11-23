@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
+import 'package:video_player/video_player.dart';
 
 import '../data_source/constants.dart';
 import '../models/my_test_models/result_response_model.dart';
 import '../models/my_test_models/student_result_model.dart';
+import '../models/simulator_test_models/playlist_model.dart';
 import '../models/simulator_test_models/test_detail_model.dart';
 
 class MyTestProvider extends ChangeNotifier {
@@ -196,6 +198,110 @@ class MyTestProvider extends ChangeNotifier {
   List<StudentResultModel> get otherLightHomeWorks => _otherLightHomeWorks;
   void setOtherLightHomeWorks(List<StudentResultModel> homeworks) {
     _otherLightHomeWorks = homeworks;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  //Video my test
+  VideoPlayerController? _videoPlayerController;
+  VideoPlayerController get videoPlayController =>
+      _videoPlayerController ?? VideoPlayerController.networkUrl(Uri.parse(""));
+  void setPlayController(VideoPlayerController videoPlayerController) {
+    _videoPlayerController = videoPlayerController;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  PlayListModel _currentPlay = PlayListModel();
+  PlayListModel get currentPlay => _currentPlay;
+  void setCurrentPlay(PlayListModel play) {
+    _currentPlay = play;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  VideoStatus _videoStatus = VideoStatus.start;
+  VideoStatus get videoStatus => _videoStatus;
+  void setVideoStatus(VideoStatus videoStatus) {
+    _videoStatus = videoStatus;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _hideBlur = false;
+  bool get hideBlur => _hideBlur;
+  void setHideBlur(bool isHide) {
+    _hideBlur = isHide;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  List<PlayListModel> _playList = [];
+  List<PlayListModel> get playList => _playList;
+  void setPlayList(List<PlayListModel> playList) {
+    if (_playList.isNotEmpty) {
+      _playList.clear();
+    }
+    _playList.addAll(playList);
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _indexCurrentPlay = 0;
+  int get indexCurrentPlay => _indexCurrentPlay;
+  void setIndexCurrentPlay(int index) {
+    _indexCurrentPlay = index;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _showCueCard = false;
+  bool get showCueCard => _showCueCard;
+  void setShowCueCard(bool isShow) {
+    _showCueCard = isShow;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _showAnswerWave = false;
+  bool get showAnswerWave => _showAnswerWave;
+  void setShowAnswerWave(bool isShow) {
+    _showAnswerWave = isShow;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _questionLength = 1;
+  int get questionLength => _questionLength;
+  void setQuestionLength(int length) {
+    _questionLength = length;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _indexQuestion = 0;
+  int get indexQuestion => _indexQuestion;
+  void setIndexQuestion(int index) {
+    _indexQuestion = index;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  int _repeatTimes = 0;
+  int get repeatTimes => _repeatTimes;
+  void setRepeatTimes(int time) {
+    _repeatTimes = time;
     if (!isDisposed) {
       notifyListeners();
     }

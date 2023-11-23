@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +18,7 @@ import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
+import '../models/auth_models/video_record_exam_info.dart';
 import '../models/simulator_test_models/playlist_model.dart';
 import 'package:http/http.dart' as http;
 
@@ -135,10 +137,20 @@ class TestRoomSimulatorPresenter {
       playListModel.endOfTest = topic.fileEndOfTest.url;
       playListModel.questionContent = question != null ? question.content : '';
       playListModel.cueCard = question != null ? question.cueCard : '';
+      playListModel.questionId = question!.id;
       playListModel.isFollowUp =
           question != null ? question.isFollowUpQuestion() : false;
       List<FileTopicModel> files = question != null ? question.files : [];
       playListModel.questionTopicModel = question;
+      if (kDebugMode) {
+        print(
+            'question length: ${playListModel.questionTopicModel.answers.length}');
+        for (int i = 0;
+            i < playListModel.questionTopicModel.answers.length;
+            i++) {
+          print('answers: ${playListModel.questionTopicModel.answers[i].url}');
+        }
+      }
       playListModel.fileQuestionNormal = files.first.url;
       playListModel.fileQuestionSlow =
           files.length > 1 ? files.last.url : playListModel.fileQuestionNormal;
@@ -176,6 +188,7 @@ class TestRoomSimulatorPresenter {
   }
 
   Future playingIntroduce(String file) async {
+    assert(_view != null && _repository != null);
     bool isExist =
         await FileStorageHelper.checkExistFile(file, MediaType.video, null);
     if (isExist) {
@@ -189,6 +202,7 @@ class TestRoomSimulatorPresenter {
   }
 
   Future playingQuestion(String fileNormal, String fileSlow) async {
+    assert(_view != null && _repository != null);
     bool isExistFileNormal = await FileStorageHelper.checkExistFile(
         fileNormal, MediaType.video, null);
     bool isExistFileSlow =
@@ -208,6 +222,7 @@ class TestRoomSimulatorPresenter {
   }
 
   Future playingEndOfTakeNote(String file) async {
+    assert(_view != null && _repository != null);
     bool isExist =
         await FileStorageHelper.checkExistFile(file, MediaType.video, null);
     if (isExist) {
@@ -221,6 +236,7 @@ class TestRoomSimulatorPresenter {
   }
 
   Future playingEndOfTest(String file) async {
+    assert(_view != null && _repository != null);
     bool isExist =
         await FileStorageHelper.checkExistFile(file, MediaType.video, null);
     if (isExist) {
@@ -237,6 +253,7 @@ class TestRoomSimulatorPresenter {
       {required BuildContext context,
       required int count,
       required bool isPart2}) {
+    assert(_view != null && _repository != null);
     bool finishCountDown = false;
     const oneSec = Duration(seconds: 1);
     return Timer.periodic(oneSec, (Timer timer) {
@@ -289,10 +306,42 @@ class TestRoomSimulatorPresenter {
     });
   }
 
+  String randomVideoRecordExam(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.length > 1) {
+      List<VideoExamRecordInfo> prepareVideoForRandom = [];
+      for (int i = 0; i < videosSaved.length; i++) {
+        if (videosSaved[i].duration! >= 7) {
+          prepareVideoForRandom.add(videosSaved[i]);
+        }
+      }
+      if (prepareVideoForRandom.isEmpty) {
+        return _getMaxDurationVideo(videosSaved);
+      } else {
+        Random random = Random();
+        int elementRandom = random.nextInt(prepareVideoForRandom.length);
+        return prepareVideoForRandom[elementRandom].filePath ?? "";
+      }
+    } else {
+      return _getMaxDurationVideo(videosSaved);
+    }
+  }
+
+  String _getMaxDurationVideo(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.isNotEmpty) {
+      videosSaved.sort(((a, b) => a.duration!.compareTo(b.duration!)));
+      VideoExamRecordInfo maxValue = videosSaved.last;
+      return maxValue.filePath ?? '';
+    }
+    return '';
+  }
+
   Future submitMyTest(
       {required String testId,
       required String activityId,
-      required List<QuestionTopicModel> questionsList}) async {
+      required List<QuestionTopicModel> questionsList,
+      File? videoConfirmFile,
+      List<Map<String, dynamic>>? logAction,
+      required bool isExam}) async {
     assert(_view != null && _repository != null);
 
     http.MultipartRequest multiRequest = await Utils.instance()
@@ -300,9 +349,15 @@ class TestRoomSimulatorPresenter {
             testId: testId,
             activityId: activityId,
             questions: questionsList,
-            isUpdate: false);
+            isExam: isExam,
+            isUpdate: false,
+            videoConfirmFile: videoConfirmFile,
+            logAction: logAction);
     try {
       _repository!.submitTest(multiRequest).then((value) {
+        if (kDebugMode) {
+          print('VALUE : response : $value');
+        }
         Map<String, dynamic> json = jsonDecode(value) ?? {};
         if (kDebugMode) {
           print("DEBUG: error form: ${json.toString()}");

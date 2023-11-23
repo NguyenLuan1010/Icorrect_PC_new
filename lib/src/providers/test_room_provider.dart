@@ -29,7 +29,7 @@ class TestRoomProvider extends ChangeNotifier {
     _currentCount = 1000;
     _strCountCueCard = "";
     _currentQuestion = QuestionTopicModel();
-    _questionList.clear();
+   // _questionList.clear();
     _isVisibleCueCard = false;
     _isVisibleSaveTheTest = false;
     _isStartTest = false;
@@ -224,24 +224,24 @@ class TestRoomProvider extends ChangeNotifier {
     }
   }
 
-  List<QuestionTopicModel> _questionList = [];
-  List<QuestionTopicModel> get questionList => _questionList;
-  void addQuestionToList(QuestionTopicModel questionTopicModel) {
-    _questionList.add(questionTopicModel);
-    if (!isDisposed) {
-      notifyListeners();
-    }
-  }
+  // List<QuestionTopicModel> _questionList = [];
+  // List<QuestionTopicModel> get questionList => _questionList;
+  // void addQuestionToList(QuestionTopicModel questionTopicModel) {
+  //   _questionList.add(questionTopicModel);
+  //   if (!isDisposed) {
+  //     notifyListeners();
+  //   }
+  // }
 
-  void setQuestionList(List<QuestionTopicModel> questions) {
-    if (_questionList.isNotEmpty) {
-      _questionList.clear();
-    }
-    _questionList.addAll(questions);
-    if (!isDisposed) {
-      notifyListeners();
-    }
-  }
+  // void setQuestionList(List<QuestionTopicModel> questions) {
+  //   if (_questionList.isNotEmpty) {
+  //     _questionList.clear();
+  //   }
+  //   _questionList.addAll(questions);
+  //   if (!isDisposed) {
+  //     notifyListeners();
+  //   }
+  // }
 
   Queue<TopicModel> _topicsQueue = Queue();
   Queue<TopicModel> get topicQueue => _topicsQueue;

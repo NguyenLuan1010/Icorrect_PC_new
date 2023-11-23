@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import '../data_source/api_urls.dart';
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
@@ -15,34 +17,26 @@ import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/simulator_test_models/test_detail_model.dart';
 import '../models/simulator_test_models/topic_model.dart';
 import '../models/ui_models/alert_info.dart';
-import 'package:http/http.dart' as http;
-import 'package:dio/dio.dart';
-
 import '../utils/utils.dart';
 
-abstract class MyTestContract {
+abstract class OtherTestDetailContract {
   void getMyTestSuccess(TestDetailModel testDetailModel,
       List<QuestionTopicModel> questions, int total);
   void onDownloadSuccess(TestDetailModel testDetail, String nameFile,
       double percent, int index, int total);
   void downloadFilesFail(AlertInfo alertInfo);
   void getMyTestFail(AlertInfo alertInfo);
-  void finishCountDown();
-  void updateAnswersSuccess(String message);
-  void updateAnswerFail(AlertInfo info);
   void onReDownload();
   void onTryAgainToDownload();
 }
 
-class MyTestPresenter {
-  final MyTestContract? _view;
-  MyTestRepository? _repository;
-
-  MyTestPresenter(this._view) {
-    _repository = Injector().getMyTestRepository();
+class OtherTestDetailPresenter {
+  OtherTestDetailContract? _view;
+  MyTestRepository? _myTestRepository;
+  OtherTestDetailPresenter(this._view) {
+    _myTestRepository = Injector().getMyTestRepository();
   }
 
-  //http.Client? client;
   Dio? dio;
   final Map<String, String> headers = {
     'Accept': 'application/json',
@@ -74,13 +68,13 @@ class MyTestPresenter {
   }
 
   void getMyTest(String testId) {
-    assert(_view != null && _repository != null);
+    assert(_view != null && _myTestRepository != null);
 
     if (kDebugMode) {
       print('DEBUG: testId: ${testId.toString()}');
     }
 
-    _repository!.getMyTestDetail(testId).then((value) {
+    _myTestRepository!.getTestDetailWithId(testId).then((value) {
       Map<String, dynamic> json = jsonDecode(value) ?? {};
       if (json.isNotEmpty) {
         if (json['error_code'] == 200) {
@@ -305,6 +299,14 @@ class MyTestPresenter {
     }
   }
 
+  void tryAgainToDownload() async {
+    if (kDebugMode) {
+      print("DEBUG: MyTestPresenter tryAgainToDownload");
+    }
+
+    _view!.onTryAgainToDownload();
+  }
+
   void reDownloadAutomatic(
       TestDetailModel testDetail, List<FileTopicModel> filesTopic) {
     //Download again
@@ -321,52 +323,7 @@ class MyTestPresenter {
     }
   }
 
-  Future updateMyAnswer(
-      {required String testId,
-      required String activityId,
-      required List<QuestionTopicModel> reQuestions}) async {
-    assert(_view != null && _repository != null);
-
-    http.MultipartRequest multiRequest = await Utils.instance()
-        .formDataRequestSubmit(
-            testId: testId,
-            activityId: activityId,
-            questions: reQuestions,
-            isUpdate: true,
-            isExam: false);
-    try {
-      _repository!.updateAnswers(multiRequest).then((value) {
-        Map<String, dynamic> json = jsonDecode(value) ?? {};
-        if (kDebugMode) {
-          print("DEBUG: error form: ${json.toString()}");
-        }
-        if (json['error_code'] == 200 && json['status'] == 'success') {
-          _view!.updateAnswersSuccess('Save your answers successfully!');
-        } else {
-          _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
-        }
-      }).catchError((onError) {
-        print('catchError updateAnswerFail ${onError.toString()}');
-        _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
-      });
-    } on TimeoutException {
-      _view!.updateAnswerFail(AlertClass.timeOutUpdateAnswer);
-    } on SocketException {
-      _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
-    } on http.ClientException {
-      _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
-    }
-  }
-
-  void tryAgainToDownload() async {
-    if (kDebugMode) {
-      print("DEBUG: MyTestPresenter tryAgainToDownload");
-    }
-
-    _view!.onTryAgainToDownload();
-  }
-
-  void reDownloadFiles() {
+   void reDownloadFiles() {
     downloadFiles(testDetail!, filesTopic!);
   }
 }

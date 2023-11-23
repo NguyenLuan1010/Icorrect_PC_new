@@ -12,7 +12,7 @@ class AuthWidgetProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    isDisposed = true;
+    isDisposed = true; 
     super.dispose();
   }
 
@@ -89,14 +89,6 @@ class AuthWidgetProvider extends ChangeNotifier {
     _previousAction = "";
   }
 
-  VideoStatus _videoStatus = VideoStatus.start;
-  VideoStatus get videoStatus => _videoStatus;
-  void setVideoStatus(VideoStatus videoStatus) {
-    _videoStatus = videoStatus;
-    if (!isDisposed) {
-      notifyListeners();
-    }
-  }
 
   bool _isRefresh = false;
   bool get isRefresh => _isRefresh;
@@ -139,6 +131,17 @@ class AuthWidgetProvider extends ChangeNotifier {
   void clearMyGrid() {
     _gridList1 = [];
     _gridList2 = [];
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+
+  bool _playAudioExample = true;
+  bool get playAudioExample => _playAudioExample;
+
+  void setPlayAudioExample(bool visible) {
+    _playAudioExample = visible;
     if (!isDisposed) {
       notifyListeners();
     }

@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fdottedline_nullsafety/fdottedline__nullsafety.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/core/camera_service.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/homework_models/class_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/homework_model.dart';
@@ -19,6 +20,7 @@ import 'package:video_player/video_player.dart';
 import '../../../../core/app_colors.dart';
 import '../../../models/homework_models/new_api_135/new_class_model.dart';
 import '../../../presenters/home_presenter.dart';
+import '../../../providers/camera_preview_provider.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
 import '../../dialogs/message_alert.dart';
@@ -38,6 +40,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   CircleLoading? _loading;
   late HomeWorkPresenter _presenter;
+  CameraPreviewProvider? _cameraPreviewProvider;
 
   final List<String> _statusSelections = [
     'All',
@@ -53,6 +56,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     super.initState();
 
     _provider = Provider.of<HomeProvider>(context, listen: false);
+    _cameraPreviewProvider =
+        Provider.of<CameraPreviewProvider>(context, listen: false);
 
     _choosenStatus = _statusSelections.first;
     _loading = CircleLoading();
@@ -64,6 +69,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     Future.delayed(Duration.zero, () {
       _provider.clearData();
     });
+
+    CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
   }
 
   @override
@@ -393,6 +400,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   width: 100,
                   child: ElevatedButton(
                     onPressed: () {
+                      if (homeWork.isExam()) {
+                        CameraService.instance().initializeCamera(
+                            provider: _cameraPreviewProvider!);
+                      }
                       Navigations.instance()
                           .goToSimulatorTestRoom(context, homeWork);
                     },

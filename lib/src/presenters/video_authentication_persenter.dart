@@ -70,8 +70,13 @@ class VideoAuthenticationPresenter {
 
     multiRequest.files
         .add(await http.MultipartFile.fromPath('video', authFile.path));
+
     try {
       _repository!.submitAuth(multiRequest).then((value) {
+        if (value.isEmpty) {
+          _view!.submitAuthFail(StringConstants.limit_file_video_content);
+          return;
+        }
         Map<String, dynamic> json = jsonDecode(value) ?? {};
 
         if (kDebugMode) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/models/my_test_models/student_result_model.dart';
+import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:provider/provider.dart';
 
@@ -92,82 +93,89 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
   }
 
   Widget _othersItem(StudentResultModel results) {
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey, width: 2)),
-        child: Stack(
-          alignment: Alignment.centerRight,
-          children: [
-            Text(Utils.instance().scoreReponse(results)['score'],
-                style: TextStyle(
-                    color: Utils.instance().scoreReponse(results)['color'],
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: 170,
-                  margin: const EdgeInsets.only(right: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        padding: const EdgeInsets.all(0),
-                        child: const CircleAvatar(
-                          child: Image(
-                            image: AssetImage(AppAssets.default_avatar),
-                            fit: BoxFit.fill,
+    return InkWell(
+      hoverColor: Colors.transparent,
+      onTap: () {
+        Navigations.instance()
+            .goToOtherStudentTestScreen(context, results, widget.homeWorkModel);
+      },
+      child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey, width: 2)),
+          child: Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              Text(Utils.instance().scoreReponse(results)['score'],
+                  style: TextStyle(
+                      color: Utils.instance().scoreReponse(results)['color'],
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 170,
+                    margin: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          padding: const EdgeInsets.all(0),
+                          child: const CircleAvatar(
+                            child: Image(
+                              image: AssetImage(AppAssets.default_avatar),
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(results.students!.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Color.fromARGB(255, 92, 90, 90),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400))
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(results.activityResult!.name,
-                        style: const TextStyle(
-                            color: AppColors.purple,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Text('Time : ',
-                            style: TextStyle(
-                                color: AppColors.purple,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold)),
-                        Text(results.updateAt.toString(),
+                        Text(results.students!.name,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                color: AppColors.purple,
-                                fontSize: 15,
+                                color: Color.fromARGB(255, 92, 90, 90),
+                                fontSize: 16,
                                 fontWeight: FontWeight.w400))
                       ],
                     ),
-                  ],
-                )
-              ],
-            )
-          ],
-        ));
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(results.activityResult!.name,
+                          style: const TextStyle(
+                              color: AppColors.purple,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Text('Time : ',
+                              style: TextStyle(
+                                  color: AppColors.purple,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold)),
+                          Text(results.updateAt.toString(),
+                              style: const TextStyle(
+                                  color: AppColors.purple,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400))
+                        ],
+                      ),
+                    ],
+                  )
+                ],
+              )
+            ],
+          )),
+    );
   }
 
   @override

@@ -233,6 +233,7 @@ class _MyTestScreenState extends State<MyTestScreen>
                 ViewMyAnswers(
                     activitiesModel: widget.homeWork,
                     provider: _provider!,
+                    testDetailModel: _provider!.currentTestDetail,
                     clickUpdateReanswerCallBack: _onClickUpdateReanswer),
                 TeacherResponseWidget(widget.homeWork, _provider!),
                 HighLightHomeWorks(
@@ -260,6 +261,7 @@ class _MyTestScreenState extends State<MyTestScreen>
             ViewMyAnswers(
                 activitiesModel: widget.homeWork,
                 provider: _provider!,
+                testDetailModel: _provider!.currentTestDetail,
                 clickUpdateReanswerCallBack: _onClickUpdateReanswer),
             TeacherResponseWidget(widget.homeWork, _provider!),
             HighLightHomeWorks(
@@ -272,6 +274,7 @@ class _MyTestScreenState extends State<MyTestScreen>
             ViewMyAnswers(
                 activitiesModel: widget.homeWork,
                 provider: _provider!,
+                testDetailModel: _provider!.currentTestDetail,
                 clickUpdateReanswerCallBack: _onClickUpdateReanswer),
             HighLightHomeWorks(
                 provider: _provider!, homeWorkModel: widget.homeWork),
@@ -308,6 +311,12 @@ class _MyTestScreenState extends State<MyTestScreen>
   @override
   void downloadFilesFail(AlertInfo alertInfo) {
     // TODO: implement downloadFilesFail
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(
+              context: context, message: alertInfo.description);
+        });
     _loading!.hide();
   }
 

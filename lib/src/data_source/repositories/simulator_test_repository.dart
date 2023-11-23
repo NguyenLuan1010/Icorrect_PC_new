@@ -10,6 +10,7 @@ abstract class SimulatorTestRepository {
 }
 
 class SimulatorTestRepositoryImpl implements SimulatorTestRepository {
+  final int timeOutForSubmit = 60;
   @override
   Future<String> getTestDetail(String homeworkId, String distributeCode) {
     String url = '$apiDomain$getTestInfoEP';
@@ -27,7 +28,7 @@ class SimulatorTestRepositoryImpl implements SimulatorTestRepository {
             'device_id': '22344663212',
           },
         )
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForSubmit))
         .then((http.Response response) {
           final String jsonBody = response.body;
           return jsonBody;
@@ -38,11 +39,11 @@ class SimulatorTestRepositoryImpl implements SimulatorTestRepository {
   Future<String> submitTest(http.MultipartRequest multiRequest) async {
     return await multiRequest
         .send()
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForSubmit))
         .then((http.StreamedResponse streamResponse) async {
       if (streamResponse.statusCode == 200) {
         return await http.Response.fromStream(streamResponse)
-            .timeout(const Duration(seconds: 15))
+            .timeout(Duration(seconds: timeOutForSubmit))
             .then((http.Response response) {
           final String jsonBody = response.body;
           return jsonBody;

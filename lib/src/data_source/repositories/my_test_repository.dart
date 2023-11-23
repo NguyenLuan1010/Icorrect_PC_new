@@ -13,12 +13,13 @@ abstract class MyTestRepository {
 }
 
 class MyTestImpl implements MyTestRepository {
+  final int timeOutForMyTest = 20;
   @override
   Future<String> getMyTestDetail(String testId) {
     String url = myTestDetailEP(testId);
     return AppRepository.init()
         .sendRequest(RequestMethod.get, url, true)
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForMyTest))
         .then((http.Response response) {
       final String jsonBody = response.body;
       return jsonBody;
@@ -30,7 +31,7 @@ class MyTestImpl implements MyTestRepository {
     String url = responseEP(orderId);
     return AppRepository.init()
         .sendRequest(RequestMethod.get, url, true)
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForMyTest))
         .then((http.Response response) {
       final String jsonBody = response.body;
       return jsonBody;
@@ -43,7 +44,7 @@ class MyTestImpl implements MyTestRepository {
     String url = specialHomeWorksEP(email, activityId, status, example);
     return AppRepository.init()
         .sendRequest(RequestMethod.get, url, true)
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForMyTest))
         .then((http.Response response) {
       final String jsonBody = response.body;
       return jsonBody;
@@ -54,11 +55,11 @@ class MyTestImpl implements MyTestRepository {
   Future<String> updateAnswers(http.MultipartRequest multiRequest) async {
     return await multiRequest
         .send()
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForMyTest))
         .then((http.StreamedResponse streamResponse) async {
       if (streamResponse.statusCode == 200) {
         return await http.Response.fromStream(streamResponse)
-            .timeout(const Duration(seconds: 15))
+            .timeout(Duration(seconds: timeOutForMyTest))
             .then((http.Response response) {
           final String jsonBody = response.body;
           return jsonBody;
@@ -78,7 +79,7 @@ class MyTestImpl implements MyTestRepository {
     String url = getTestDetailWithIdEP(testId);
     return AppRepository.init()
         .sendRequest(RequestMethod.get, url, true)
-        .timeout(const Duration(seconds: 15))
+        .timeout(Duration(seconds: timeOutForMyTest))
         .then((http.Response response) {
       final String jsonBody = response.body;
       return jsonBody;

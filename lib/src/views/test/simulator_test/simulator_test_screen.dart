@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -17,12 +18,15 @@ import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
 import 'package:icorrect_pc/src/views/test/simulator_test/test_room_simulator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../../core/camera_service.dart';
 import '../../../data_source/constants.dart';
 import '../../../data_source/local/file_storage_helper.dart';
 import '../../../models/homework_models/new_api_135/activities_model.dart';
 import '../../../presenters/simulator_test_presenter.dart';
+import '../../../providers/camera_preview_provider.dart';
 import '../../../providers/simulator_test_provider.dart';
 import '../../../providers/test_room_provider.dart';
 import '../../dialogs/alert_dialog.dart';
@@ -47,6 +51,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   SimulatorTestProvider? _simulatorTestProvider;
   AuthWidgetProvider? _authWidgetProvider;
+  CameraPreviewProvider? _cameraPreviewProvider;
 
   Permission? _microPermission;
   CircleLoading? _loading;
@@ -81,8 +86,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     super.initState();
 
     _loading = CircleLoading();
+
     _simulatorTestProvider =
         Provider.of<SimulatorTestProvider>(context, listen: false);
+    _cameraPreviewProvider =
+        Provider.of<CameraPreviewProvider>(context, listen: false);
     Future.delayed(Duration.zero, () {
       _simulatorTestProvider!.resetAll();
     });
@@ -138,8 +146,9 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void dispose() {
-    dispose();
     super.dispose();
+    CameraService.instance()
+        .disposeCurrentCamera(provider: _cameraPreviewProvider!);
     connection!.cancel();
     _simulatorTestPresenter!.closeClientRequest();
     _simulatorTestPresenter!.resetAutoRequestDownloadTimes();
@@ -228,17 +237,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                 hasCloseButton: false,
                 okButtonTapped: () {
                   //Submit
-                  _loading!.show(context);
-                  print(
-                      'list size : ${_simulatorTestProvider!.questionList.length}');
-                  _simulatorTestProvider!
-                      .updateSubmitStatus(SubmitStatus.submitting);
-                  _simulatorTestPresenter!.submitTest(
-                    testId: _simulatorTestProvider!.currentTestDetail.testId
-                        .toString(),
-                    activityId: widget.homeWorkModel.activityId.toString(),
-                    questions: _simulatorTestProvider!.questionList,
-                  );
+                  _onSubmitTest();
                 },
                 cancelButtonTapped: () {
                   cancelButtonTapped = true;
@@ -256,6 +255,24 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           break;
         }
     }
+  }
+
+  Future _onSubmitTest() async {
+    _loading!.show(context);
+
+    String pathVideo = _simulatorTestPresenter!
+        .randomVideoRecordExam(_simulatorTestProvider!.videosRecorded);
+    if (kDebugMode) {
+      print("RECORDING_VIDEO : Video Recording saved at: $pathVideo");
+    }
+    _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.submitting);
+    _simulatorTestPresenter!.submitTest(
+        testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
+        activityId: widget.homeWorkModel.activityId.toString(),
+        questions: _simulatorTestProvider!.questionList,
+        isExam: widget.homeWorkModel.isExam(),
+        videoConfirmFile: File(pathVideo).existsSync() ? File(pathVideo) : null,
+        logAction: _simulatorTestProvider!.logActions);
   }
 
   Future<void> _deleteAllAnswer() async {
@@ -398,8 +415,6 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
     //Hide Loading view
     _simulatorTestProvider!.setDownloadProgressingStatus(false);
-
-    _simulatorTestProvider!.updateDoingStatus(DoingStatus.doing);
   }
 
   void _showConfirmDialog() {
@@ -539,7 +554,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           return MessageDialog(context: context, message: msg);
         });
     //Go to MyTest Screen
-    Navigator.of(context).pop();
+   // Navigator.of(context).pop();
   }
 
   @override

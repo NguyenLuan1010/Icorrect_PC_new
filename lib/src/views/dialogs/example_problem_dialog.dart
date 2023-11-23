@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/data_source/api_urls.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
 
 import 'package:provider/provider.dart';
@@ -15,7 +16,7 @@ import '../../models/my_test_models/skill_problem_model.dart';
 class ExampleProblemDialog extends Dialog {
   final BuildContext context;
   final SkillProblem problem;
-  final MyTestProvider provider;
+  final AuthWidgetProvider provider;
 
   ExampleProblemDialog(
       {required this.context,

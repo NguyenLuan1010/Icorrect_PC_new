@@ -10,12 +10,18 @@ class PlayListModel {
   double? _secondRepeatSpeed;
   String? _fileImage;
   String? _questionContent;
+  int? _questionId;
   String? _cueCard;
   String? _endOfTakeNote;
   String? _endOfTest;
   int? _numPart;
   bool? _isFollowUp;
   int? _questionLength;
+  QuestionTopicModel? _questionTopicModel;
+
+  int get questionId => _questionId ?? 0;
+
+  set questionId(int? value) => _questionId = value;
 
   double get normalSpeed => _normalSpeed ?? 1.0;
 
@@ -32,8 +38,6 @@ class PlayListModel {
   get fileImage => _fileImage ?? "";
 
   set fileImage(value) => _fileImage = value;
-
-  QuestionTopicModel? _questionTopicModel;
 
   get questionLength => _questionLength ?? 0;
 

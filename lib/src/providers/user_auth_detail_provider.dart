@@ -21,9 +21,10 @@ class UserAuthDetailProvider extends ChangeNotifier {
   }
 
   void clearData() {
+    _startReload = false;
     _startGetUserAuthDetail = false;
     _userAuthenDetailModel = UserAuthenDetailModel();
-   // _chewieController = null;
+    // _chewieController = null;
     if (!isDisposed) {
       notifyListeners();
     }
@@ -47,4 +48,21 @@ class UserAuthDetailProvider extends ChangeNotifier {
     }
   }
 
+  String _filePath = '';
+  String get filePathVideo => _filePath;
+  void setFileVideoAuth(String path) {
+    _filePath = path;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _startReload = false;
+  bool get startReload => _startReload;
+  void setStartReload(bool isReload) {
+    _startReload = isReload;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
 }

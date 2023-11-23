@@ -104,7 +104,7 @@ class StudentResultModel {
 
   set aiScore(value) => this._aiScore = value;
 
-  get students => this._students;
+  StudentModel get students => _students ?? StudentModel();
 
   set students(value) => this._students = value;
 
@@ -127,7 +127,7 @@ class StudentResultModel {
         _overallScore != "0.0";
   }
 
-    StudentResultModel.fromJson(Map<String, dynamic> item) {
+  StudentResultModel.fromJson(Map<String, dynamic> item) {
     StudentModel studentModel = StudentModel.fromJson(item['student']);
     ActivityResult activityResult = ActivityResult.fromJson(item['activity']);
     _id = item['id'] ?? 0;

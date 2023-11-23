@@ -276,6 +276,17 @@ class Utils {
     }
   }
 
+   double fixSizeOfText({
+    required BuildContext context,
+    required double fontSize,
+  }) {
+    MediaQueryData queryData = MediaQuery.of(context);
+    double customFontSize = fontSize;
+    double textScaleFactor = queryData.textScaleFactor;
+    double adjustedFontSize = customFontSize / textScaleFactor;
+    return adjustedFontSize;
+  }
+
   UserAuthenStatusUI getUserAuthenStatus(int status) {
     switch (status) {
       case 0:
@@ -521,12 +532,17 @@ class Utils {
     return "";
   }
 
-  Future<http.MultipartRequest> formDataRequestSubmit(
-      {required String testId,
-      required String activityId,
-      required List<QuestionTopicModel> questions,
-      required bool isUpdate}) async {
-    String url = submitHomeWorkV2EP();
+  Future<http.MultipartRequest> formDataRequestSubmit({
+    required String testId,
+    required String activityId,
+    required List<QuestionTopicModel> questions,
+    required bool isUpdate,
+    required bool isExam,
+    File? videoConfirmFile,
+    List<Map<String, dynamic>>? logAction,
+  }) async {
+    String url = isExam ? submitExam() : submitHomeWorkV2EP();
+
     http.MultipartRequest request =
         http.MultipartRequest(RequestMethod.post, Uri.parse(url));
     request.headers.addAll({
@@ -541,6 +557,15 @@ class Utils {
 
     formData.addEntries([const MapEntry('os', "pc_flutter")]);
     formData.addEntries([const MapEntry('app_version', '1.1.0')]);
+
+    if (null != logAction) {
+      if (logAction.isNotEmpty) {
+        formData.addEntries([MapEntry('log_action', jsonEncode(logAction))]);
+      } else {
+        formData.addEntries([const MapEntry('log_action', '[]')]);
+      }
+    }
+
     String format = '';
     String reanswerFormat = '';
     String endFormat = '';
@@ -581,12 +606,25 @@ class Utils {
         endFormat = '$format[$i]';
         File audioFile = File(await FileStorageHelper.getFilePath(
             q.answers.elementAt(i).url.toString(), MediaType.audio, null));
-
+        if (kDebugMode) {
+          print(
+              '$i .DEBUG: audio file submit : $audioFile, had exist: ${audioFile.existsSync()}');
+        }
         if (await audioFile.exists()) {
+          if (kDebugMode) {
+            formData.addEntries([MapEntry(endFormat, audioFile.path)]);
+          }
           request.files.add(
               await http.MultipartFile.fromPath(endFormat, audioFile.path));
         }
       }
+    }
+
+    if (null != videoConfirmFile) {
+      String fileName = videoConfirmFile.path.split('/').last;
+      formData.addEntries([MapEntry('video_confirm', fileName)]);
+      request.files.add(await http.MultipartFile.fromPath(
+          'video_confirm', videoConfirmFile.path));
     }
 
     request.fields.addAll(formData);
