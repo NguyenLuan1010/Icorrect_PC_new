@@ -121,27 +121,39 @@ class _ViewOtherStudentAnswersState extends State<ViewOtherStudentAnswers> {
 
   Future _playAnswerCallBack(QuestionTopicModel question, int index) async {
     bool isPlaying = widget.provider.isPlaying;
-    if (isPlaying) {
-      await _audioPlayer!.stop();
-      widget.provider.setSelectedQuestionIndex(index, false);
-    } else {
-      String fileName = Utils.instance()
-          .convertFileName(question.answers[question.repeatIndex].url);
-      String path =
-          await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
-      try {
-        await _audioPlayer!.play(DeviceFileSource(path));
-        await _audioPlayer!.setVolume(2.5);
-        _audioPlayer!.onPlayerComplete.listen((event) {
-          widget.provider.setSelectedQuestionIndex(index, false);
-        });
-      } on PlatformException catch (e) {
-        if (kDebugMode) {
-          print("DEBUG : Error Path play audio: $e");
-        }
+    if (widget.provider.selectedQuestionIndex != index) {
+      if (isPlaying) {
+        await _audioPlayer!.stop();
         widget.provider.setSelectedQuestionIndex(index, false);
       }
-      widget.provider.setSelectedQuestionIndex(index, true);
+      _startPlayAudio(question, index);
+    } else {
+      if (isPlaying) {
+        await _audioPlayer!.stop();
+        widget.provider.setSelectedQuestionIndex(index, false);
+      } else {
+        _startPlayAudio(question, index);
+      }
     }
+  }
+
+  void _startPlayAudio(QuestionTopicModel question, int index) async {
+    String fileName = Utils.instance()
+        .convertFileName(question.answers[question.repeatIndex].url);
+    String path =
+        await FileStorageHelper.getFilePath(fileName, MediaType.audio, null);
+    try {
+      await _audioPlayer!.play(DeviceFileSource(path));
+      await _audioPlayer!.setVolume(2.5);
+      _audioPlayer!.onPlayerComplete.listen((event) {
+        widget.provider.setSelectedQuestionIndex(index, false);
+      });
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print("DEBUG : Error Path play audio: $e");
+      }
+      widget.provider.setSelectedQuestionIndex(index, false);
+    }
+    widget.provider.setSelectedQuestionIndex(index, true);
   }
 }

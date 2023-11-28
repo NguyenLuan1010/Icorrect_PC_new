@@ -125,9 +125,10 @@ class ReAnswerDialog extends Dialog {
                     },
                     style: ButtonStyle(
                       backgroundColor: _canFinishReanswer()
-                          ? MaterialStateProperty.all<Color>(Colors.green)
+                          ? MaterialStateProperty.all<Color>(
+                              const Color.fromARGB(255, 11, 180, 16))
                           : MaterialStateProperty.all<Color>(
-                              const Color.fromARGB(255, 130, 227, 134)),
+                              const Color.fromARGB(255, 199, 221, 200)),
                       shape: MaterialStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -169,7 +170,7 @@ class ReAnswerDialog extends Dialog {
   bool _canFinishReanswer() {
     int timeCounting =
         Provider.of<ReAnswerProvider>(_context, listen: false).numCount;
-    return _timeRecord - timeCounting > 2;
+    return _timeRecord - timeCounting >= 2;
   }
 
   void _cancelReAnswer() async {

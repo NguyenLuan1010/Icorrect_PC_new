@@ -117,6 +117,10 @@ class TestRoomSimulatorPresenter {
       playListModel.firstRepeatSpeed = testDetailModel.firstRepeatSpeed;
       playListModel.secondRepeatSpeed = testDetailModel.secondRepeatSpeed;
       playListModel.normalSpeed = testDetailModel.normalSpeed;
+      playListModel.part1Time = testDetailModel.part1Time;
+      playListModel.part2Time = testDetailModel.part2Time;
+      playListModel.part3Time = testDetailModel.part3Time;
+      playListModel.takeNoteTime = testDetailModel.takeNoteTime;
     }
     if (playListType == PlayListType.introduce) {
       playListModel.numPart = topic.numPart;

@@ -54,7 +54,6 @@ class SimulatorTestPresenter {
     _autoRequestDownloadTimes += 1;
   }
 
-  // http.Client? client;
   Dio? dio;
   final Map<String, String> headers = {
     'Accept': 'application/json',

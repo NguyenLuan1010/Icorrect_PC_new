@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/playlist_model.dart';
@@ -97,6 +98,8 @@ class TestRecordWidget extends StatelessWidget {
   Widget _buildFinishButton(TestRoomProvider simulatorTestProvider,
       PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       onTap: () {
         if (!_lessThan2s(simulatorTestProvider, playListModel)) {
           finishAnswer(questionTopicModel);
@@ -108,8 +111,8 @@ class TestRecordWidget extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           color: _lessThan2s(simulatorTestProvider, playListModel)
-              ? const Color.fromARGB(255, 130, 227, 134)
-              : Colors.green,
+              ? const Color.fromARGB(255, 199, 221, 200)
+              : const Color.fromARGB(255, 11, 180, 16),
         ),
         alignment: Alignment.center,
         child: const Text(
@@ -127,6 +130,8 @@ class TestRecordWidget extends StatelessWidget {
   Widget _buildRepeatButton(TestRoomProvider simulatorTestProvider,
       PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       onTap: () {
         if (!_lessThan2s(simulatorTestProvider, playListModel)) {
           repeatQuestion(questionTopicModel);
@@ -156,8 +161,10 @@ class TestRecordWidget extends StatelessWidget {
   bool _lessThan2s(
       TestRoomProvider simulatorTestProvider, PlayListModel playListModel) {
     int countTime = Utils.instance().getRecordTime(playListModel.numPart);
-    print(
-        'counttime : $countTime, currentCount :${simulatorTestProvider.currentCount}');
-    return countTime - simulatorTestProvider.currentCount <= 2;
+    if (kDebugMode) {
+      print(
+          'counttime : $countTime, currentCount :${simulatorTestProvider.currentCount}');
+    }
+    return countTime - simulatorTestProvider.currentCount < 2;
   }
 }

@@ -83,7 +83,7 @@ class MyTestPresenter {
     _repository!.getMyTestDetail(testId).then((value) {
       Map<String, dynamic> json = jsonDecode(value) ?? {};
       if (json.isNotEmpty) {
-        if (json['error_code'] == 200) {
+        if (json['error_code'] == 200 && json['data'] != null) {
           Map<String, dynamic> dataMap = json['data'];
           TestDetailModel testDetailModel =
               TestDetailModel.fromMyTestJson(dataMap);

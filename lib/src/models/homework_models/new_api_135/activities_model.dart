@@ -72,6 +72,10 @@ class ActivitiesModel {
         _activityAnswer!.orderId.toString().isNotEmpty;
   }
 
+  bool haveAIResponse() {
+    return _activityAnswer != null && _activityAnswer!.aiOrder != 0;
+  }
+
   bool canReanswer() {
     if (_activityAnswer != null &&
             (_activityAnswer!.aiOrder != 0 || _activityAnswer!.orderId != 0) ||

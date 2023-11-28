@@ -61,6 +61,7 @@ class _MyTestScreenState extends State<MyTestScreen>
   bool isOffline = false;
   MyTestProvider? _provider;
   CircleLoading? _loading;
+  int _tabLength = 5;
 
   @override
   void initState() {
@@ -91,10 +92,21 @@ class _MyTestScreenState extends State<MyTestScreen>
     Future.delayed(Duration.zero, () {
       _provider!.clearData();
     });
-    _tabController = TabController(
-        length: widget.homeWork.haveTeacherResponse() ? 5 : 4, vsync: this);
-    if (!kIsWeb && Platform.isWindows) WindowsVideoPlayer.registerWith();
+    _setTabController();
     _getTestDetail();
+  }
+
+  void _setTabController() {
+    if (widget.homeWork.activityAnswer != null) {
+      if (!widget.homeWork.activityAnswer!.hasTeacherResponse()) {
+       _tabLength= _tabLength - 1;
+      }
+    }
+    if (!widget.homeWork.haveAIResponse()) {
+     _tabLength= _tabLength - 1;
+    }
+    _tabController = TabController(length: _tabLength, vsync: this);
+    if (!kIsWeb && Platform.isWindows) WindowsVideoPlayer.registerWith();
   }
 
   void _getTestDetail() async {
@@ -185,20 +197,20 @@ class _MyTestScreenState extends State<MyTestScreen>
   }
 
   _getTabs() {
-    return widget.homeWork.haveTeacherResponse()
-        ? [
-            const Tab(text: 'Test\'s Detail'),
-            const Tab(text: 'Response'),
-            const Tab(text: 'Highlights'),
-            const Tab(text: 'List Other'),
-            const Tab(text: 'AI Response'),
-          ]
-        : [
-            const Tab(text: 'Test\'s Detail'),
-            const Tab(text: 'Highlights'),
-            const Tab(text: 'List Other'),
-            const Tab(text: 'AI Response'),
-          ];
+    var tabs = [
+      const Tab(text: 'Test\'s Detail'),
+      const Tab(text: 'Highlights'),
+      const Tab(text: 'List Other'),
+    ];
+    if (widget.homeWork.activityAnswer != null) {
+      if (widget.homeWork.activityAnswer!.hasTeacherResponse()) {
+        tabs.add(const Tab(text: 'Response'));
+      }
+    }
+    if (widget.homeWork.haveAIResponse()) {
+      tabs.add(const Tab(text: 'AI Response'));
+    }
+    return tabs;
   }
 
   Widget _buildTabLayoutScreen(final tabs) {
@@ -212,7 +224,7 @@ class _MyTestScreenState extends State<MyTestScreen>
                 margin: const EdgeInsets.only(left: 50, right: 600),
                 child: DefaultTabController(
                     initialIndex: 0,
-                    length: widget.homeWork.haveTeacherResponse() ? 5 : 4,
+                    length: _tabLength,
                     child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
@@ -235,53 +247,28 @@ class _MyTestScreenState extends State<MyTestScreen>
                     provider: _provider!,
                     testDetailModel: _provider!.currentTestDetail,
                     clickUpdateReanswerCallBack: _onClickUpdateReanswer),
-                TeacherResponseWidget(widget.homeWork, _provider!),
+                if (widget.homeWork.activityAnswer != null)
+                  if (widget.homeWork.activityAnswer!.hasTeacherResponse())
+                    TeacherResponseWidget(widget.homeWork, _provider!),
                 HighLightHomeWorks(
                     provider: _provider!, homeWorkModel: widget.homeWork),
                 OtherHomeWorks(
                     provider: _provider!, homeWorkModel: widget.homeWork),
-                FutureBuilder(
-                    future: aiResponseEP(
-                        widget.homeWork.activityAnswer!.aiOrder.toString()),
-                    builder: (_, snapshot) {
-                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                        return AIResponseWidget(
-                          url: snapshot.data ?? '',
-                        );
-                      }
-                      return const Text('Waiting for video to load');
-                    })
+                if (widget.homeWork.haveAIResponse())
+                  FutureBuilder(
+                      future: aiResponseEP(
+                          widget.homeWork.activityAnswer!.aiOrder.toString()),
+                      builder: (_, snapshot) {
+                        if (snapshot.data != null &&
+                            snapshot.data!.isNotEmpty) {
+                          return AIResponseWidget(
+                            url: snapshot.data ?? '',
+                          );
+                        }
+                        return const Text('Waiting for video to load');
+                      })
               ]),
         ));
-  }
-
-  _getTabsItem() {
-    return widget.homeWork.haveTeacherResponse()
-        ? [
-            ViewMyAnswers(
-                activitiesModel: widget.homeWork,
-                provider: _provider!,
-                testDetailModel: _provider!.currentTestDetail,
-                clickUpdateReanswerCallBack: _onClickUpdateReanswer),
-            TeacherResponseWidget(widget.homeWork, _provider!),
-            HighLightHomeWorks(
-                provider: _provider!, homeWorkModel: widget.homeWork),
-            OtherHomeWorks(
-                provider: _provider!, homeWorkModel: widget.homeWork),
-            Container()
-          ]
-        : [
-            ViewMyAnswers(
-                activitiesModel: widget.homeWork,
-                provider: _provider!,
-                testDetailModel: _provider!.currentTestDetail,
-                clickUpdateReanswerCallBack: _onClickUpdateReanswer),
-            HighLightHomeWorks(
-                provider: _provider!, homeWorkModel: widget.homeWork),
-            OtherHomeWorks(
-                provider: _provider!, homeWorkModel: widget.homeWork),
-            Container()
-          ];
   }
 
   void _onClickUpdateReanswer() {

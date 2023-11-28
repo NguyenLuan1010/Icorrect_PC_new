@@ -201,10 +201,10 @@ class Utils {
   Map<String, dynamic> getHomeWorkStatus(
       ActivitiesModel homeWorkModel, String serverCurrentTime) {
     if (homeWorkModel.activityStatus == Status.loadedTest.get) {
-       return {
-          'title': 'Loaded Test',
-          'color': Colors.brown,
-        };
+      return {
+        'title': 'Loaded Test',
+        'color': Colors.brown,
+      };
     }
     if (null == homeWorkModel.activityAnswer) {
       bool timeCheck =
@@ -585,12 +585,12 @@ class Utils {
     return result;
   }
 
-  String formatTime(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = twoDigits(duration.inHours);
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return [if (duration.inHours > 0) hours, minutes, seconds].join(':');
+  String formattedTime({required int timeInSecond}) {
+    int sec = timeInSecond % 60;
+    int min = (timeInSecond / 60).floor();
+    String minute = min.toString().length <= 1 ? "0$min" : "$min";
+    String second = sec.toString().length <= 1 ? "0$sec" : "$sec";
+    return "$minute:$second";
   }
 
   Future<String> getAudioPathToPlay(
@@ -662,7 +662,7 @@ class Utils {
     formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
     formData.addEntries([MapEntry('activity_id', activityId)]);
 
-    formData.addEntries([const MapEntry('os', "pc_flutter_for_exam")]);
+    formData.addEntries([const MapEntry('os', "pc_flutter")]);
     formData.addEntries([const MapEntry('app_version', '1.1.0')]);
 
     if (null != logAction) {

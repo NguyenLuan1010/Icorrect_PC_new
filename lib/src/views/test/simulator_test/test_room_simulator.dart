@@ -6,7 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:icorrect_pc/core/app_colors.dart'; 
+import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/core/camera_service.dart';
 import 'package:icorrect_pc/core/compress_video.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
@@ -452,16 +452,15 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _recordAnswer();
 
     _roomProvider!.setVisibleRecord(true);
-    int countTime = Utils.instance().getRecordTime(_currentNumPart());
+    int countTime = _getCountTimeRecord();
+
     _countDown = _presenter!.startCountDown(
         context: context, count: countTime, isPart2: _isPart2());
 
     _roomProvider!.setCurrentCount(countTime);
-    if (_isPart2()) {
-      _roomProvider!.setStrCountDown("02:00");
-    } else {
-      _roomProvider!.setStrCountDown("00:$countTime");
-    }
+
+    String timeFormat = Utils.instance().formattedTime(timeInSecond: countTime);
+    _roomProvider!.setStrCountDown(timeFormat);
 
     CameraService.instance()
         .startRecording(cameraPreviewProvider: _cameraPreviewProvider!);
@@ -471,12 +470,17 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (null != _countDown) {
       _countDown!.cancel();
     }
-    _recordAnswer();
 
-    _roomProvider!.setStrCountDown("00:60");
+    PlayListModel playListModel = _roomProvider!.currentPlay;
+    _recordAnswer();
+    String timeFormat = Utils.instance()
+        .formattedTime(timeInSecond: playListModel.takeNoteTime);
+    _roomProvider!.setStrCountDown(timeFormat);
     _countDown = _presenter!.startCountDownForCueCard(
-        context: context, count: 3, isPart2: _isPart2());
-    _roomProvider!.setCurrentCount(60);
+        context: context,
+        count: playListModel.takeNoteTime,
+        isPart2: _isPart2());
+    _roomProvider!.setCurrentCount(playListModel.takeNoteTime);
     _roomProvider!.setVisibleCueCard(true);
   }
 
@@ -665,28 +669,47 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future _playAnswerCallBack(QuestionTopicModel question, int index) async {
-    print('index question: ${index.toString()}');
     bool isPlaying = _roomProvider!.isPlaying;
-    if (isPlaying) {
-      await _audioPlayer!.stop();
-      _roomProvider!.setSelectedQuestionIndex(index, false);
-    } else {
-      String path = await FileStorageHelper.getFilePath(
-          question.answers[question.repeatIndex].url, MediaType.audio, null);
-      try {
-        await _audioPlayer!.play(DeviceFileSource(path));
-        await _audioPlayer!.setVolume(2.5);
-        _audioPlayer!.onPlayerComplete.listen((event) {
-          _roomProvider!.setSelectedQuestionIndex(index, false);
-        });
-      } on PlatformException catch (e) {
-        print(e);
+    if (_roomProvider!.selectedQuestionIndex != index) {
+      if (isPlaying) {
+        await _audioPlayer!.stop();
+        _roomProvider!.setSelectedQuestionIndex(index, false);
       }
-      _roomProvider!.setSelectedQuestionIndex(index, true);
+      _startPlayAudio(question, index);
+    } else {
+      if (isPlaying) {
+        await _audioPlayer!.stop();
+        _roomProvider!.setSelectedQuestionIndex(index, false);
+      } else {
+        _startPlayAudio(question, index);
+      }
     }
   }
 
+  void _startPlayAudio(QuestionTopicModel question, int index) async {
+    String path = await FileStorageHelper.getFilePath(
+        question.answers[question.repeatIndex].url, MediaType.audio, null);
+    try {
+      await _audioPlayer!.play(DeviceFileSource(path));
+      await _audioPlayer!.setVolume(2.5);
+      _audioPlayer!.onPlayerComplete.listen((event) {
+        _roomProvider!.setSelectedQuestionIndex(index, false);
+      });
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+    _roomProvider!.setSelectedQuestionIndex(index, true);
+  }
+
   Future _reanswerCallBack(QuestionTopicModel question, int index) async {
+    bool isPlaying = _roomProvider!.isPlaying;
+    if (isPlaying) {
+      await _audioPlayer!.stop();
+      int indexQuestionPlaying = _roomProvider!.selectedQuestionIndex;
+      _roomProvider!.setSelectedQuestionIndex(indexQuestionPlaying, false);
+    }
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -730,10 +753,26 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
   ////////////////////////////CHECK VALUE FUNCTION//////////////////////////////
 
+  int _getCountTimeRecord() {
+    PlayListModel playListModel = _roomProvider!.currentPlay;
+    int countTime = playListModel.part1Time;
+    if (_isPart2()) {
+      countTime = playListModel.part2Time;
+    }
+    if (_isPart3()) {
+      countTime = playListModel.part3Time;
+    }
+    return countTime;
+  }
+
   bool _isPart2() {
     return _roomProvider!.currentPlay != PlayListModel() &&
             _roomProvider!.currentPlay.cueCard.isNotEmpty ||
         _roomProvider!.currentPlay.numPart == PartOfTest.part2.get;
+  }
+
+  bool _isPart3() {
+    return _roomProvider!.currentPlay.numPart == PartOfTest.part3.get;
   }
 
   int _currentNumPart() {

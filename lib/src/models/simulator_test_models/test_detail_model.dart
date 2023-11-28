@@ -24,6 +24,10 @@ class TestDetailModel {
   double? _normalSpeed;
   double? _firstRepeatSpeed;
   double? _secondRepeatSpeed;
+  int? _part1Time;
+  int? _part2Time;
+  int? _part3Time;
+  int? _takeNoteTime;
 
   TestDetailModel(
       {String? activityType,
@@ -86,12 +90,27 @@ class TestDetailModel {
   set part2(TopicModel part2) => _part2 = part2;
   TopicModel get part3 => _part3 ?? TopicModel();
   set part3(TopicModel part3) => _part3 = part3;
-  dynamic get normalSpeed => _normalSpeed ?? 0.0;
+  dynamic get normalSpeed => _normalSpeed ?? 1;
   set normalSpeed(dynamic value) => _normalSpeed = value;
-  get firstRepeatSpeed => _firstRepeatSpeed ?? 0.0;
+  get firstRepeatSpeed => _firstRepeatSpeed ?? 0.9;
   set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
-  get secondRepeatSpeed => _secondRepeatSpeed ?? 0.0;
+  get secondRepeatSpeed => _secondRepeatSpeed ?? 0.85;
   set secondRepeatSpeed(value) => _secondRepeatSpeed = value;
+  int get part1Time => _part1Time ?? 30;
+
+  set part1Time(int value) => _part1Time = value;
+
+  int get part2Time => _part2Time ?? 120;
+
+  set part2Time(value) => _part2Time = value;
+
+  int get part3Time => _part3Time ?? 45;
+
+  set part3Time(value) => _part3Time = value;
+
+  int get takeNoteTime => _takeNoteTime ?? 60;
+
+  set takeNoteTime(value) => _takeNoteTime = value;
 
   TestDetailModel.fromJson(Map<String, dynamic> json) {
     _activityType = json['activity_type'];
@@ -118,6 +137,10 @@ class TestDetailModel {
     _normalSpeed = json['normal_speed'] + 0.0 ?? 0.0;
     _firstRepeatSpeed = json['first_repeat_speed'] + 0.0 ?? 0.0;
     _secondRepeatSpeed = json['second_repeat_speed'] + 0.0 ?? 0.0;
+    _part1Time = json['part1_time'] ?? 30;
+    _part2Time = json['part2_time'] ?? 120;
+    _part3Time = json['part3_time'] ?? 45;
+    _takeNoteTime = json['take_note_time'] ?? 60;
   }
 
   Map<String, dynamic> toJson() {
