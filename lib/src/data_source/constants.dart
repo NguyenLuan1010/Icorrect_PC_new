@@ -740,6 +740,9 @@ class StringConstants {
       "An error occur, please try again later!";
   static const String common_error_messge =
       "An error occur, please try again later!";
+
+  static const String k_data = "data";
+  static const String connectivity_name_none = "none";
 }
 
 const int timeout = 60;

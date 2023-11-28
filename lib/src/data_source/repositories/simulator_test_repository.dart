@@ -23,7 +23,7 @@ class SimulatorTestRepositoryImpl implements SimulatorTestRepository {
           body: <String, String>{
             'activity_id': homeworkId,
             'distribute_code': distributeCode,
-            'platform': "pc_flutter",
+            'platform': "pc_flutter_for_exam",
             'app_version': '1.1.0',
             'device_id': '22344663212',
           },

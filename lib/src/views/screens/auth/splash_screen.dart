@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
       if (token.isNotEmpty) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (_) => const MainWidget(),
+            builder: (_) => MainWidget(),
           ),
           ModalRoute.withName('/'),
         );

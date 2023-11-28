@@ -1,14 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/models/ui_models/user_authen_status.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/providers/home_provider.dart';
+import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
 import 'package:icorrect_pc/src/views/dialogs/custom_alert_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/app_assets.dart';
+import '../../core/app_colors.dart';
 import '../data_source/api_urls.dart';
 import '../data_source/constants.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
@@ -23,10 +28,108 @@ import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import 'package:http/http.dart' as http;
 
+import '../views/widgets/drawer_items.dart';
+
 class Utils {
   Utils._();
   static final Utils _utils = Utils._();
   factory Utils.instance() => _utils;
+
+  Widget drawHeader(BuildContext context, UserDataModel user) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: CustomSize.size_30,
+        horizontal: CustomSize.size_10,
+      ),
+      color: AppColors.defaultPurpleColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: CustomSize.size_60,
+            height: CustomSize.size_60,
+            child: CircleAvatar(
+              child: Consumer<HomeProvider>(
+                  builder: (context, homeWorkProvider, child) {
+                return CachedNetworkImage(
+                  imageUrl:
+                      fileEP(homeWorkProvider.currentUser.profileModel.avatar),
+                  imageBuilder: (context, imageProvider) => Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(CustomSize.size_100),
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.cover,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.transparent,
+                          BlendMode.colorBurn,
+                        ),
+                      ),
+                    ),
+                  ),
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => CircleAvatar(
+                    child: Image.asset(
+                      AppAssets.default_avatar,
+                      width: CustomSize.size_40,
+                      height: CustomSize.size_40,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          Container(
+            width: CustomSize.size_200,
+            margin: const EdgeInsets.symmetric(
+              horizontal: CustomSize.size_10,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: CustomSize.size_10,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.profileModel.displayName.toString(),
+                  style: CustomTextStyle.textWithCustomInfo(
+                    context: context,
+                    color: AppColors.defaultAppColor,
+                    fontsSize: FontsSize.fontSize_15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  void toggleDrawer() async {
+    if (GlobalKey<ScaffoldState>().currentState != null) {
+      if (GlobalKey<ScaffoldState>().currentState!.isDrawerOpen) {
+        GlobalKey<ScaffoldState>().currentState!.openEndDrawer();
+      } else {
+        GlobalKey<ScaffoldState>().currentState!.openDrawer();
+      }
+    }
+  }
+
+  Widget navbar(
+      {required BuildContext context,
+      required MainWidgetProvider mainWidgetProvider}) {
+    return Drawer(
+      backgroundColor: AppColors.defaultWhiteColor,
+      child: navbarItems(
+          context: context,
+          provider: mainWidgetProvider),
+    );
+  }
 
   Future<String> getDeviceIdentifier() async {
     String deviceIdentifier = "unknown";
@@ -276,7 +379,7 @@ class Utils {
     }
   }
 
-   double fixSizeOfText({
+  double fixSizeOfText({
     required BuildContext context,
     required double fontSize,
   }) {
@@ -555,7 +658,7 @@ class Utils {
     formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
     formData.addEntries([MapEntry('activity_id', activityId)]);
 
-    formData.addEntries([const MapEntry('os', "pc_flutter")]);
+    formData.addEntries([const MapEntry('os', "pc_flutter_for_exam")]);
     formData.addEntries([const MapEntry('app_version', '1.1.0')]);
 
     if (null != logAction) {
@@ -663,6 +766,7 @@ class Utils {
         status: "",
         message: "",
         data: {});
+    // ignore: use_build_context_synchronously
     setPreviousAction(context, action);
 
     return log;
@@ -719,6 +823,38 @@ class Utils {
     return deviceName;
   }
 
+  void showConnectionErrorDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomAlertDialog(
+          title: StringConstants.dialog_title,
+          description: StringConstants.network_error_message,
+          okButtonTitle: StringConstants.ok_button_title,
+          cancelButtonTitle: null,
+          borderRadius: 8,
+          hasCloseButton: false,
+          okButtonTapped: () {
+            Navigator.of(context).pop();
+          },
+          cancelButtonTapped: null,
+        );
+      },
+    );
+  }
+
+  Future<bool> checkVideoFileExist(String path, MediaType mediaType) async {
+    bool result = await File(path).exists();
+    return result;
+  }
+
+  int getBeingOutTimeInSeconds(DateTime startTime, DateTime endTime) {
+    Duration diff = endTime.difference(startTime);
+    return diff.inSeconds;
+  }
+
+//////////////////////////////WRITE LOG FEATURE/////////////////////////////////
+
   Future<LogModel> createLog({
     required String action,
     required String previousAction,
@@ -733,7 +869,7 @@ class Utils {
     log.createdTime = getDateTimeNow();
     log.message = message;
     log.os = await getOS();
-    UserDataModel? currentUser = await getCurrentUser();
+    UserDataModel? currentUser = await Utils.instance().getCurrentUser();
     if (null == currentUser) {
       log.userId = 0;
     } else {
@@ -756,7 +892,7 @@ class Utils {
     if (null == log) return;
 
     if (null != data) {
-      log.addData(key: "data", value: jsonEncode(data));
+      log.addData(key: StringConstants.k_data, value: jsonEncode(data));
     }
 
     if (null != message) {
@@ -767,7 +903,7 @@ class Utils {
   }
 
   void addLog(LogModel log, String status) {
-    if (status != "none") {
+    if (status != StringConstants.connectivity_name_none) {
       //NOT Action log
       DateTime createdTime =
           DateTime.fromMillisecondsSinceEpoch(log.createdTime);
@@ -820,35 +956,5 @@ class Utils {
         print("DEBUG: write log into file failed");
       }
     }
-  }
-
-  void showConnectionErrorDialog(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomAlertDialog(
-          title: StringConstants.dialog_title,
-          description: StringConstants.network_error_message,
-          okButtonTitle: StringConstants.ok_button_title,
-          cancelButtonTitle: null,
-          borderRadius: 8,
-          hasCloseButton: false,
-          okButtonTapped: () {
-            Navigator.of(context).pop();
-          },
-          cancelButtonTapped: null,
-        );
-      },
-    );
-  }
-
-  Future<bool> checkVideoFileExist(String path, MediaType mediaType) async {
-    bool result = await File(path).exists();
-    return result;
-  }
-
-  int getBeingOutTimeInSeconds(DateTime startTime, DateTime endTime) {
-    Duration diff = endTime.difference(startTime);
-    return diff.inSeconds;
   }
 }

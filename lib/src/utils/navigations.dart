@@ -39,7 +39,7 @@ class Navigations {
 
   void goToMainWidget(BuildContext context) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const MainWidget()));
+        context, MaterialPageRoute(builder: (context) => MainWidget()));
   }
 
   void goToSimulatorTestRoom(

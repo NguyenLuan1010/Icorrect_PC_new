@@ -19,7 +19,8 @@ import '../../data_source/api_urls.dart';
 import '../../data_source/constants.dart';
 
 class MainWidget extends StatefulWidget {
-  const MainWidget({super.key});
+  final scaffoldKey = GlobalScaffoldKey.homeScreenScaffoldKey;
+  MainWidget({super.key});
 
   @override
   State<MainWidget> createState() => _MainWidgetState();
@@ -31,7 +32,7 @@ class _MainWidgetState extends State<MainWidget> {
   var LOGOUT_ACTION_TAB = 'LOGOUT_ACTION_TAB';
 
   late MainWidgetProvider _provider;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -42,7 +43,7 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   void dispose() {
     super.dispose();
-    _provider.dispose();
+    // _provider.dispose();
   }
 
   @override
@@ -58,6 +59,9 @@ class _MainWidgetState extends State<MainWidget> {
           ),
           child: _mainItem(),
         ),
+        drawer: Utils.instance()
+            .navbar(context: context, mainWidgetProvider: _provider),
+        drawerEnableOpenDragGesture: false,
       ),
     );
   }
@@ -79,118 +83,39 @@ class _MainWidgetState extends State<MainWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Image(
-                  width: 170, image: AssetImage(AppAssets.img_logo_app)),
               Consumer<MainWidgetProvider>(builder: (context, appState, child) {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: () {
-                        _provider
-                            .setCurrentScreen(const UserAuthDetailStatus());
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: AppColors.defaultPurpleColor, width: 1)),
-                        child: const Text('Video Authentication',
-                            style: TextStyle(
-                                color: AppColors.defaultPurpleColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                    const SizedBox(width: 30),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: () {
-                        _provider.setCurrentScreen(const HomeWorksWidget());
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: AppColors.defaultPurpleColor, width: 1)),
-                        child: const Text('Homeworks',
-                            style: TextStyle(
-                                color: AppColors.defaultPurpleColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                    const SizedBox(width: 30),
-                    InkWell(
-                      onTap: () {
-                        _provider.setCurrentScreen(const PracticeScreen());
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: AppColors.defaultPurpleColor, width: 1)),
-                        child: const Text('Practices',
-                            style: TextStyle(
-                                color: AppColors.defaultPurpleColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                    const SizedBox(width: 30),
-                    InkWell(
-                      onTap: () {
-                        _showConfirmLogOut();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: AppColors.defaultPurpleColor, width: 1)),
-                        child: const Text('Logout',
-                            style: TextStyle(
-                                color: AppColors.defaultPurpleColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500)),
-                      ),
-                    ),
                     const SizedBox(width: 30),
                     FutureBuilder(
                         future: Utils.instance().getCurrentUser(),
                         builder: (BuildContext context,
                             AsyncSnapshot<UserDataModel?> snapshot) {
                           return (snapshot.data != null)
-                              ? Column(
-                                  children: [
-                                    _getCircleAvatar(snapshot.data),
-                                    SizedBox(
-                                      width: 200,
-                                      child: Text(
-                                          snapshot
-                                              .data!.profileModel.displayName,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500)),
-                                    )
-                                  ],
+                              ? InkWell(
+                                  hoverColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  onTap: () {
+                                    _scaffoldKey.currentState!.openDrawer();
+                                  },
+                                  child: Row(
+                                    children: [
+                                      _getCircleAvatar(snapshot.data),
+                                      const SizedBox(width: 10),
+                                      const Icon(Icons.menu,
+                                          color: AppColors.defaultPurpleColor,
+                                          size: 25)
+                                    ],
+                                  ),
                                 )
                               : const SizedBox();
                         }),
                   ],
                 );
-              })
+              }),
+              const Image(
+                  width: 170, image: AssetImage(AppAssets.img_logo_app)),
             ],
           ),
         ),
@@ -259,24 +184,6 @@ class _MainWidgetState extends State<MainWidget> {
         }),
       ),
     );
-  }
-
-  void _showConfirmLogOut() {
-    showDialog(
-        context: context,
-        builder: (_) {
-          return ConfirmDialogWidget(
-              title: "Notification",
-              message: "Are you sure to logout ?",
-              cancelButtonTitle: "Cancel",
-              okButtonTitle: "Logout",
-              cancelButtonTapped: () {},
-              okButtonTapped: () {
-                Utils.instance().clearCurrentUser();
-                Utils.instance().setAccessToken('');
-                Navigations.instance().goToAuthWidget(context);
-              });
-        });
   }
 
   Widget _body() {

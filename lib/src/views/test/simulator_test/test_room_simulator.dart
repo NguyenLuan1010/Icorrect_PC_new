@@ -254,9 +254,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
             margin: const EdgeInsets.symmetric(horizontal: 20),
             child: Stack(
               children: [
-                widget.activitiesModel.isExam()
-                    ? _buildQuestionAndCameraPreview()
-                    : _buildQuestionList(),
+                // widget.activitiesModel.isExam()
+                //     ? _buildQuestionAndCameraPreview()
+                //     : _buildQuestionList(),
+                _buildQuestionList(),
                 _buildImageFrame()
               ],
             ),

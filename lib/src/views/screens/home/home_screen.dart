@@ -400,10 +400,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   width: 100,
                   child: ElevatedButton(
                     onPressed: () {
-                      if (homeWork.isExam()) {
-                        CameraService.instance().initializeCamera(
-                            provider: _cameraPreviewProvider!);
-                      }
+                      // if (homeWork.isExam()) {
+                      //   CameraService.instance().initializeCamera(
+                      //       provider: _cameraPreviewProvider!);
+                      // }
                       Navigations.instance()
                           .goToSimulatorTestRoom(context, homeWork);
                     },
