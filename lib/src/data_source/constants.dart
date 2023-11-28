@@ -744,6 +744,9 @@ class StringConstants {
 
   static const String k_data = "data";
   static const String connectivity_name_none = "none";
+  static const String k_test = "test";
+  static const String k_error_code = "error_code";
+  static const String k_access_token = "access_token";
 }
 
 const int timeout = 60;

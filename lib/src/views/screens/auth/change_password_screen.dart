@@ -5,6 +5,8 @@ import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../presenters/change_password_presenter.dart';
+import '../../dialogs/message_alert.dart';
 import '../home/home_screen.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -14,18 +16,21 @@ class ChangePasswordScreen extends StatefulWidget {
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+class _ChangePasswordScreenState extends State<ChangePasswordScreen>
+    implements ChangePasswordViewContract {
   bool _passVisibility = true;
   final _txtOldPasswordController = TextEditingController();
   final _txtNewPasswordController = TextEditingController();
   final _txtConfirmPasswordController = TextEditingController();
   CircleLoading? _loading;
   MainWidgetProvider? _mainWidgetProvider;
+  ChangePasswordPresenter? _changePasswordPresenter;
 
   @override
   void initState() {
     super.initState();
     _loading = CircleLoading();
+    _changePasswordPresenter = ChangePasswordPresenter(this);
     _mainWidgetProvider =
         Provider.of<MainWidgetProvider>(context, listen: false);
   }
@@ -64,7 +69,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               width: w / 3,
               child: ElevatedButton(
                 onPressed: () {
-                  _loading?.show(context);
+                  _onClickSaveChange();
                 },
                 style: ButtonStyle(
                     backgroundColor:
@@ -145,5 +150,64 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         )
       ],
     );
+  }
+
+  void _onClickSaveChange() {
+    _loading?.show(context);
+    String messageVerification = _getMessageVerification();
+    if (messageVerification.isNotEmpty) {
+      _loading!.hide();
+      showDialog(
+          context: context,
+          builder: (context) {
+            return MessageDialog(
+                context: context, message: messageVerification);
+          });
+      return;
+    }
+
+    String oldPassword = _txtOldPasswordController.text.trim();
+    String newPassword = _txtNewPasswordController.text.trim();
+    String confirmPassword = _txtConfirmPasswordController.text.trim();
+
+    _changePasswordPresenter!
+        .changePassword(context, oldPassword, newPassword, confirmPassword);
+  }
+
+  String _getMessageVerification() {
+    String oldPassword = _txtOldPasswordController.text.trim();
+    String newPassword = _txtNewPasswordController.text.trim();
+    String confirmPassword = _txtConfirmPasswordController.text.trim();
+    if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      return "Please complete all information";
+    }
+    if (newPassword != confirmPassword) {
+      return "Password and Confirm Password do not match";
+    }
+    return "";
+  }
+
+  @override
+  void onChangePasswordComplete() {
+    _loading!.hide();
+    _txtOldPasswordController.clear();
+    _txtNewPasswordController.clear();
+    _txtConfirmPasswordController.clear();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(
+              context: context, message: "Change password successfully !");
+        });
+  }
+
+  @override
+  void onChangePasswordError(String message) {
+    _loading!.hide();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return MessageDialog(context: context, message: message);
+        });
   }
 }
