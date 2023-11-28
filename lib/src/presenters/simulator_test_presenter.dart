@@ -234,6 +234,9 @@ class SimulatorTestPresenter {
               }
 
               String url = downloadFileEP(fileNameForDownload);
+              if (dio == null) {
+                return;
+              }
 
               dio!.head(url).timeout(const Duration(seconds: 10));
               // use client.get as you would http.get

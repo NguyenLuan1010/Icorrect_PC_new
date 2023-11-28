@@ -12,9 +12,11 @@ import 'package:provider/provider.dart';
 import '../../../../core/app_colors.dart';
 import '../../../data_source/constants.dart';
 import '../../../data_source/local/file_storage_helper.dart';
+import '../../../models/simulator_test_models/file_topic_model.dart';
 import '../../../models/simulator_test_models/question_topic_model.dart';
 import '../../../providers/play_answer_provider.dart';
 import '../../../providers/simulator_test_provider.dart';
+import '../../dialogs/focus_image_dialog.dart';
 
 class TestQuestionWidget extends StatelessWidget {
   TestQuestionWidget({
@@ -63,25 +65,19 @@ class TestQuestionWidget extends StatelessWidget {
       return Container(
         height: h,
         padding: const EdgeInsets.symmetric(vertical: 30),
-        // child: isExam
-        //     ? ListView.builder(
-        //         itemCount: questions.length,
-        //         itemBuilder: (_, index) {
-        //           QuestionTopicModel question = questions.elementAt(index);
-        //           return _buildTestQuestionItem(context, question, index);
-        //         })
-        //     : MyGridView(
-        //         data: questions,
-        //         itemWidget: (dynamic itemModel, int index) {
-        //           QuestionTopicModel question = itemModel;
-        //           return _buildTestQuestionItem(context, question, index);
-        //         }),
-        child: MyGridView(
-            data: questions,
-            itemWidget: (dynamic itemModel, int index) {
-              QuestionTopicModel question = itemModel;
-              return _buildTestQuestionItem(context, question, index);
-            }),
+        child: isExam
+            ? ListView.builder(
+                itemCount: questions.length,
+                itemBuilder: (_, index) {
+                  QuestionTopicModel question = questions.elementAt(index);
+                  return _buildTestQuestionItem(context, question, index);
+                })
+            : MyGridView(
+                data: questions,
+                itemWidget: (dynamic itemModel, int index) {
+                  QuestionTopicModel question = itemModel;
+                  return _buildTestQuestionItem(context, question, index);
+                }),
       );
     }
   }
@@ -104,9 +100,11 @@ class TestQuestionWidget extends StatelessWidget {
       iconPath = AppAssets.img_play;
     }
 
+    Future<String> imagePath = _getImagePath(question);
+
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,7 +114,7 @@ class TestQuestionWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${index + 1}. ${question.content}',
+                  question.content,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
@@ -136,80 +134,116 @@ class TestQuestionWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  !hasCueCard
-                      ? SizedBox(
-                          width: w,
-                          child: Text(
-                            "${index + 1}. $questionStr",
-                            overflow: TextOverflow.clip,
-                            style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        )
-                      : const SizedBox(),
-                  const SizedBox(height: 5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                  if (canPlayAnswer)
+                    InkWell(
+                      onTap: () {
+                        playAnswerCallBack(question, index);
+                      },
+                      child: Image(
+                        image: AssetImage(iconPath),
+                        width: 50,
+                        height: 50,
+                      ),
+                    ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      !hasCueCard
+                          ? SizedBox(
+                              width: w,
+                              child: Text(
+                                questionStr,
+                                overflow: TextOverflow.clip,
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )
+                          : const SizedBox(),
+                      const SizedBox(height: 5),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          if (canReanswer)
-                            InkWell(
-                              onTap: () {
-                                playReAnswerCallBack(question, index);
-                              },
-                              child: const Text(
-                                "Re-answer",
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          Visibility(
-                            visible: question.tips.isNotEmpty,
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              if (canReanswer)
                                 InkWell(
                                   onTap: () {
-                                    showTipCallBack(question);
+                                    playReAnswerCallBack(question, index);
                                   },
                                   child: const Text(
-                                    "View tips",
+                                    "Re-answer",
                                     style: TextStyle(
-                                        color: Colors.amber,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500),
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              Visibility(
+                                visible: question.tips.isNotEmpty,
+                                child: Row(
+                                  children: [
+                                    const SizedBox(width: 20),
+                                    InkWell(
+                                      onTap: () {
+                                        showTipCallBack(question);
+                                      },
+                                      child: const Text(
+                                        "View tips",
+                                        style: TextStyle(
+                                            color: Colors.amber,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
-              if (canPlayAnswer)
-                InkWell(
-                  onTap: () {
-                    playAnswerCallBack(question, index);
-                  },
-                  child: Image(
-                    image: AssetImage(iconPath),
-                    width: 50,
-                    height: 50,
-                  ),
-                )
+              FutureBuilder(
+                  future: imagePath,
+                  builder: (context, AsyncSnapshot<String?> snapshot) {
+                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                      return InkWell(
+                        splashColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return FocusImageDialog(
+                                    context, snapshot.data ?? "");
+                              });
+                        },
+                        child: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: AppColors.defaultPurpleColor),
+                                borderRadius: BorderRadius.circular(10)),
+                            width: 80,
+                            height: 50,
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  File(snapshot.data ?? ''),
+                                ))),
+                      );
+                    }
+                    return Container();
+                  })
             ],
           ),
           const SizedBox(height: 5),
@@ -221,5 +255,22 @@ class TestQuestionWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<String> _getImagePath(QuestionTopicModel questionTopicModel) async {
+    List<FileTopicModel> filesImage = _getFilesImage(questionTopicModel.files);
+    if (filesImage.isNotEmpty) {
+      String fileName = filesImage.first.url;
+      return await FileStorageHelper.getFilePath(
+          fileName, MediaType.image, null);
+    }
+    return "";
+  }
+
+  List<FileTopicModel> _getFilesImage(List<FileTopicModel> files) {
+    return files
+        .where((element) =>
+            Utils.instance().mediaType(element.url) == MediaType.image)
+        .toList();
   }
 }

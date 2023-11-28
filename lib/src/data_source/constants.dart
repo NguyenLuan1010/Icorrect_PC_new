@@ -68,6 +68,7 @@ enum Status {
   outOfDate(-2),
   submitted(1),
   notComplete(0),
+  loadedTest(99),
   trueStatus(1),
   falseStatus(0),
   highLight(1),

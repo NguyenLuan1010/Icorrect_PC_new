@@ -125,9 +125,7 @@ class Utils {
       required MainWidgetProvider mainWidgetProvider}) {
     return Drawer(
       backgroundColor: AppColors.defaultWhiteColor,
-      child: navbarItems(
-          context: context,
-          provider: mainWidgetProvider),
+      child: navbarItems(context: context, provider: mainWidgetProvider),
     );
   }
 
@@ -202,6 +200,12 @@ class Utils {
 
   Map<String, dynamic> getHomeWorkStatus(
       ActivitiesModel homeWorkModel, String serverCurrentTime) {
+    if (homeWorkModel.activityStatus == Status.loadedTest.get) {
+       return {
+          'title': 'Loaded Test',
+          'color': Colors.brown,
+        };
+    }
     if (null == homeWorkModel.activityAnswer) {
       bool timeCheck =
           isExpired(homeWorkModel.activityEndTime, serverCurrentTime);

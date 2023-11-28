@@ -23,6 +23,7 @@ import '../../../presenters/home_presenter.dart';
 import '../../../providers/camera_preview_provider.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
+import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
 import '../../widgets/nothing_widget.dart';
 
@@ -395,17 +396,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
             ],
           ),
           (activityStatus == Status.notComplete.get ||
-                  activityStatus == Status.outOfDate.get)
+                  activityStatus == Status.outOfDate.get ||
+                  homeWork.activityStatus == Status.loadedTest.get)
               ? SizedBox(
                   width: 100,
                   child: ElevatedButton(
                     onPressed: () {
-                      // if (homeWork.isExam()) {
-                      //   CameraService.instance().initializeCamera(
-                      //       provider: _cameraPreviewProvider!);
-                      // }
-                      Navigations.instance()
-                          .goToSimulatorTestRoom(context, homeWork);
+                      _onClickStartTest(homeWork);
                     },
                     style: ButtonStyle(
                         backgroundColor:
@@ -459,6 +456,35 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
       return Utils.instance()
           .getHomeWorkStatus(activitiesModel, _provider.currentTime)['color'];
     }
+  }
+
+  void _onClickStartTest(ActivitiesModel homeWork) {
+    if (homeWork.activityStatus == Status.loadedTest.get) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomAlertDialog(
+            title: "Notification",
+            description:
+                "This test is loaded but not completed. Please contact admin to reset it !",
+            okButtonTitle: "OK",
+            cancelButtonTitle: null,
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              Navigator.of(context).pop();
+            },
+            cancelButtonTapped: null,
+          );
+        },
+      );
+      return;
+    }
+    if (homeWork.isExam()) {
+      CameraService.instance()
+          .initializeCamera(provider: _cameraPreviewProvider!);
+    }
+    Navigations.instance().goToSimulatorTestRoom(context, homeWork);
   }
 
   @override

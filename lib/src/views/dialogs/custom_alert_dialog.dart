@@ -48,6 +48,16 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
               ),
               child: Stack(
                 children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 5, right: 5),
+                    alignment: Alignment.topRight,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Icon(Icons.cancel_outlined),
+                    ),
+                  ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,6 +84,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                       const SizedBox(height: 5),
                       const Divider(
                         thickness: 0.5,
+                        color: AppColors.defaultPurpleColor,
                       ),
                       SizedBox(
                         width: MediaQuery.of(context).size.width,
@@ -84,6 +95,9 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                                     MainAxisAlignment.spaceAround,
                                 children: [
                                   InkWell(
+                                    splashColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
                                     borderRadius: BorderRadius.only(
                                       bottomLeft:
                                           Radius.circular(widget.borderRadius),
@@ -107,11 +121,13 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                                     ),
                                   ),
                                   InkWell(
+                                    splashColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
                                     borderRadius: BorderRadius.only(
                                       bottomRight:
                                           Radius.circular(widget.borderRadius),
                                     ),
-                                    highlightColor: Colors.grey[200],
                                     onTap: () {
                                       Navigator.of(context).pop();
                                       widget.okButtonTapped!();
