@@ -46,7 +46,7 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
     _provider = Provider.of<UserAuthDetailProvider>(context, listen: false);
     _cameraPreviewProvider =
         Provider.of<CameraPreviewProvider>(context, listen: false);
-    CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
+    // CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
     _getUserAuthDetail();
   }
 
@@ -207,8 +207,8 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
                     .userAuthenDetailModel.videosAuthDetail.isNotEmpty) {
                   _showConfirmBeforeRecord();
                 } else {
-                  CameraService.instance()
-                      .initializeCamera(provider: _cameraPreviewProvider!);
+                  // CameraService.instance()
+                  //     .initializeCamera(provider: _cameraPreviewProvider!);
                   showDialog(
                     context: context,
                     barrierDismissible: false,
@@ -289,8 +289,8 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
           okButtonTitle: StringConstants.ok_button_title,
           cancelButtonTapped: () {},
           okButtonTapped: () {
-            CameraService.instance()
-                .initializeCamera(provider: _cameraPreviewProvider!);
+            // CameraService.instance()
+            //     .initializeCamera(provider: _cameraPreviewProvider!);
             showDialog(
               context: context,
               barrierDismissible: false,

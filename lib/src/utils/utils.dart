@@ -610,6 +610,12 @@ class Utils {
     return path;
   }
 
+  Future<String> createNewFilePath(String fileName) async {
+    String folderPath = await FileStorageHelper.getExternalDocumentPath();
+    String path = "$folderPath/$fileName";
+    return path;
+  }
+
   Future<String> generateAudioFileName() async {
     DateTime dateTime = DateTime.now();
     String timeNow =
@@ -662,7 +668,7 @@ class Utils {
     formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
     formData.addEntries([MapEntry('activity_id', activityId)]);
 
-    formData.addEntries([const MapEntry('os', "pc_flutter")]);
+    formData.addEntries([const MapEntry('os', "pc_flutter_for_exam")]);
     formData.addEntries([const MapEntry('app_version', '1.1.0')]);
 
     if (null != logAction) {

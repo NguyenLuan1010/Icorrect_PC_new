@@ -17,7 +17,7 @@ class _CueCardWidgetState extends State<CueCardWidget> {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height / 2.5;
 
-    return Consumer<TestRoomProvider>(
+    return Consumer<SimulatorTestProvider>(
       builder: (context, provider, child) {
         if (provider.isVisibleCueCard &&
             provider.currentPlay.cueCard.isNotEmpty) {

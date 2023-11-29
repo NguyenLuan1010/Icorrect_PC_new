@@ -15,25 +15,29 @@ class SaveTheTestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TestRoomProvider>(
+    return Consumer<SimulatorTestProvider>(
       builder: (context, simulatorTestProvider, child) {
         return Visibility(
-          visible: simulatorTestProvider.isVisibleSaveTheTest,
+          visible: simulatorTestProvider.isVisibleSaveTheTest ||
+              simulatorTestProvider.reanswersList.isNotEmpty,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Image(
-                  image: AssetImage(AppAssets.img_completed), width: 150),
-              const Text('Congratulations',
+              Image(
+                  image: AssetImage(_getImage(simulatorTestProvider)),
+                  width: 150),
+              Text(_getTitle(simulatorTestProvider),
                   style: TextStyle(
                       fontSize: 33,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green)),
+                      color: simulatorTestProvider.reanswersList.isNotEmpty
+                          ? AppColors.defaultPurpleColor
+                          : Colors.green)),
               const SizedBox(height: 10),
-              const Text(
-                "You have completed the speaking test ",
-                style: TextStyle(
+              Text(
+                _getContent(simulatorTestProvider),
+                style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: AppColors.defaultGrayColor),
@@ -47,9 +51,9 @@ class SaveTheTestWidget extends StatelessWidget {
                     _onClickSaveTheTest();
                   },
                   style: ButtonCustom.init().buttonPurple20(),
-                  child: const Text(
-                    "Save the test",
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    _getTitleButton(simulatorTestProvider),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               )
@@ -58,5 +62,29 @@ class SaveTheTestWidget extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _getImage(SimulatorTestProvider provider) {
+    return provider.reanswersList.isNotEmpty
+        ? AppAssets.img_QA
+        : AppAssets.img_completed;
+  }
+
+  String _getTitle(SimulatorTestProvider provider) {
+    return provider.reanswersList.isNotEmpty
+        ? "Reanswer Questions"
+        : "Congratulations";
+  }
+
+  String _getContent(SimulatorTestProvider provider) {
+    return provider.reanswersList.isNotEmpty
+        ? "You just answered the question again."
+        : "You have completed the speaking test";
+  }
+
+  String _getTitleButton(SimulatorTestProvider provider) {
+    return provider.reanswersList.isNotEmpty
+        ? "Update your answers"
+        : "Save the test";
   }
 }

@@ -94,7 +94,7 @@ class _MyTestScreenState extends State<MyTestScreen>
     });
     _setTabController();
     _getTestDetail();
-  }
+  } 
 
   void _setTabController() {
     if (widget.homeWork.activityAnswer != null) {

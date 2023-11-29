@@ -345,6 +345,7 @@ class TestRoomSimulatorPresenter {
       required List<QuestionTopicModel> questionsList,
       File? videoConfirmFile,
       List<Map<String, dynamic>>? logAction,
+      required bool isUpdate,
       required bool isExam}) async {
     assert(_view != null && _repository != null);
 
@@ -354,7 +355,7 @@ class TestRoomSimulatorPresenter {
             activityId: activityId,
             questions: questionsList,
             isExam: isExam,
-            isUpdate: false,
+            isUpdate: isUpdate,
             videoConfirmFile: videoConfirmFile,
             logAction: logAction);
     try {

@@ -14,22 +14,24 @@ import '../../../providers/simulator_test_provider.dart';
 import '../../../providers/timer_provider.dart';
 
 class TestRecordWidget extends StatelessWidget {
-  const TestRecordWidget(
-      {super.key, required this.finishAnswer, required this.repeatQuestion});
+  const TestRecordWidget({
+    super.key,
+    required this.finishAnswer,
+    required this.repeatQuestion,
+    required this.simulatorTestProvider
+  });
 
   final Function(QuestionTopicModel questionTopicModel) finishAnswer;
   final Function(QuestionTopicModel questionTopicModel) repeatQuestion;
+  final SimulatorTestProvider simulatorTestProvider;
 
   @override
   Widget build(BuildContext context) {
     double w = MediaQuery.of(context).size.width;
 
-    TestRoomProvider simulatorTestProvider =
-        Provider.of<TestRoomProvider>(context, listen: false);
-
     QuestionTopicModel currentQuestion = simulatorTestProvider.currentQuestion;
 
-    return Consumer<TestRoomProvider>(builder: (context, provider, _) {
+    return Consumer<SimulatorTestProvider>(builder: (context, provider, _) {
       PlayListModel playListModel = provider.currentPlay;
       bool enableRepeat = ((playListModel.numPart == PartOfTest.part1.get ||
               playListModel.numPart == PartOfTest.part3.get) &&
@@ -55,7 +57,7 @@ class TestRecordWidget extends StatelessWidget {
                     height: 100,
                   ),
                   const SizedBox(height: 5),
-                  Consumer<TestRoomProvider>(builder: (context, provider, _) {
+                  Consumer<SimulatorTestProvider>(builder: (context, provider, _) {
                     return Text(
                       provider.strCountDown,
                       style: const TextStyle(
@@ -95,7 +97,7 @@ class TestRecordWidget extends StatelessWidget {
     });
   }
 
-  Widget _buildFinishButton(TestRoomProvider simulatorTestProvider,
+  Widget _buildFinishButton(SimulatorTestProvider simulatorTestProvider,
       PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
       splashColor: Colors.transparent,
@@ -127,7 +129,7 @@ class TestRecordWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildRepeatButton(TestRoomProvider simulatorTestProvider,
+  Widget _buildRepeatButton(SimulatorTestProvider simulatorTestProvider,
       PlayListModel playListModel, QuestionTopicModel questionTopicModel) {
     return InkWell(
       splashColor: Colors.transparent,
@@ -159,7 +161,7 @@ class TestRecordWidget extends StatelessWidget {
   }
 
   bool _lessThan2s(
-      TestRoomProvider simulatorTestProvider, PlayListModel playListModel) {
+      SimulatorTestProvider simulatorTestProvider, PlayListModel playListModel) {
     int countTime = Utils.instance().getRecordTime(playListModel.numPart);
     if (kDebugMode) {
       print(

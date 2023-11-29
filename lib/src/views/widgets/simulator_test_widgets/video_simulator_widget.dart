@@ -9,13 +9,13 @@ import 'package:video_player/video_player.dart';
 import 'package:video_player_win/video_player_win.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../providers/simulator_test_provider.dart';
 
 class VideoSimulatorWidget extends StatefulWidget {
-  TestRoomProvider roomProvider;
   Function onVideoEnd;
 
   VideoSimulatorWidget(
-      {super.key, required this.roomProvider, required this.onVideoEnd});
+      {super.key, required this.onVideoEnd});
 
   @override
   State<VideoSimulatorWidget> createState() => _VideoSimulatorWidgetState();
@@ -30,7 +30,7 @@ class _VideoSimulatorWidgetState extends State<VideoSimulatorWidget> {
   }
 
   Widget _buildVideoSimulator() {
-    return Consumer<TestRoomProvider>(builder: (context, provider, child) {
+    return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
       return Column(
         children: [
           Expanded(

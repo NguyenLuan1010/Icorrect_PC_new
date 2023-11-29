@@ -53,8 +53,8 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
   void dispose() {
     super.dispose();
     windowManager.removeListener(this);
-    CameraService.instance()
-        .disposeCurrentCamera(provider: widget.cameraPreviewProvider);
+    // CameraService.instance()
+    //     .disposeCurrentCamera(provider: widget.cameraPreviewProvider);
   }
 
   @override

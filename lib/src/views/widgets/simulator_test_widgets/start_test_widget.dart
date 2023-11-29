@@ -4,6 +4,7 @@ import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
+import '../../../providers/simulator_test_provider.dart';
 import '../../../providers/test_room_provider.dart';
 
 class StartTestWidget extends StatelessWidget {
@@ -12,7 +13,7 @@ class StartTestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TestRoomProvider>(builder: (context, provider, child) {
+    return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
       return Visibility(
           visible: !provider.isStartTest,
           child: Column(

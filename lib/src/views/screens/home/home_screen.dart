@@ -71,7 +71,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
       _provider.clearData();
     });
 
-    CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
+    // CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
   }
 
   @override
@@ -481,8 +481,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
       return;
     }
     if (homeWork.isExam()) {
-      CameraService.instance()
-          .initializeCamera(provider: _cameraPreviewProvider!);
+      // CameraService.instance()
+      //     .initializeCamera(provider: _cameraPreviewProvider!);
     }
     Navigations.instance().goToSimulatorTestRoom(context, homeWork);
   }

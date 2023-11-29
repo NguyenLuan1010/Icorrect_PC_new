@@ -171,17 +171,10 @@ class OtherTestDetailPresenter {
     return filesTopic;
   }
 
-  Future<http.Response> _sendRequest(String name) async {
-    String url = downloadFileEP(name);
-    return await AppRepository.init()
-        .sendRequest(RequestMethod.get, url, false)
-        .timeout(const Duration(seconds: 10));
-  }
-
   //Check file is exist using file_storage
   Future<bool> _isExist(String fileName, MediaType mediaType) async {
-    bool isExist = await FileStorageHelper.checkExistFile(
-        fileName, mediaType, testDetail!.testId.toString());
+    bool isExist =
+        await FileStorageHelper.checkExistFile(fileName, mediaType, null);
     return isExist;
   }
 
@@ -323,7 +316,7 @@ class OtherTestDetailPresenter {
     }
   }
 
-   void reDownloadFiles() {
+  void reDownloadFiles() {
     downloadFiles(testDetail!, filesTopic!);
   }
 }

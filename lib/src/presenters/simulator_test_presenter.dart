@@ -348,6 +348,7 @@ class SimulatorTestPresenter {
     required String activityId,
     required List<QuestionTopicModel> questions,
     required bool isExam,
+    required bool isUpdate,
     File? videoConfirmFile,
     List<Map<String, dynamic>>? logAction,
   }) async {
@@ -358,7 +359,7 @@ class SimulatorTestPresenter {
             testId: testId,
             activityId: activityId,
             questions: questions,
-            isUpdate: false,
+            isUpdate: isUpdate,
             isExam: isExam,
             videoConfirmFile: videoConfirmFile,
             logAction: logAction);
