@@ -83,7 +83,8 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
   void _getTestDetail() async {
     _loading!.show(context);
     await _presenter!.initializeData();
-    _presenter!.getMyTest(widget.resultModel.testId.toString());
+    _presenter!.getMyTest(context, widget.homeWork.activityId.toString(),
+        widget.resultModel.testId.toString());
   }
 
   @override
@@ -292,7 +293,8 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
         if (null == _presenter!.dio) {
           _presenter!.initializeData();
         }
-        _presenter!.reDownloadFiles();
+        _presenter!
+            .reDownloadFiles(context, widget.homeWork.activityId.toString());
       }
     }
   }

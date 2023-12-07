@@ -10,6 +10,7 @@ import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/app_repository.dart';
 import '../data_source/repositories/my_test_repository.dart';
+import '../models/log_models/log_model.dart';
 import '../models/simulator_test_models/file_topic_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/simulator_test_models/test_detail_model.dart';
@@ -73,17 +74,35 @@ class MyTestPresenter {
     }
   }
 
-  void getMyTest(String testId) {
+  Future<void> getMyTest(
+      BuildContext context, String activityId, String testId) async {
     assert(_view != null && _repository != null);
 
     if (kDebugMode) {
       print('DEBUG: testId: ${testId.toString()}');
     }
 
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetMyTestDetail);
+    }
+
     _repository!.getMyTestDetail(testId).then((value) {
       Map<String, dynamic> json = jsonDecode(value) ?? {};
+      if (kDebugMode) {
+        print('DEBUG: getMyTestDetail : $value');
+      }
       if (json.isNotEmpty) {
         if (json['error_code'] == 200 && json['data'] != null) {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: null,
+            status: LogEvent.success,
+          );
+
           Map<String, dynamic> dataMap = json['data'];
           TestDetailModel testDetailModel =
               TestDetailModel.fromMyTestJson(dataMap);
@@ -94,21 +113,39 @@ class MyTestPresenter {
 
           filesTopic = _prepareFileTopicListForDownload(testDetailModel);
 
-          downloadFiles(testDetailModel, tempFilesTopic);
+          downloadFiles(context, testDetailModel, tempFilesTopic, activityId);
 
           _view!.getMyTestSuccess(testDetailModel,
               _getQuestionsAnswer(testDetailModel), tempFilesTopic.length);
         } else {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message:
+                "Loading my test detail error: ${json[StringConstants.k_error_code]}${json[StringConstants.k_status]}",
+            status: LogEvent.failed,
+          );
           _view!.getMyTestFail(AlertClass.notResponseLoadTestAlert);
         }
       } else {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: "Loading my test detail error",
+          status: LogEvent.failed,
+        );
         _view!.getMyTestFail(AlertClass.getTestDetailAlert);
       }
     }).catchError((onError) {
-      if (kDebugMode) {
-        print("DEBUG: fail meomoe");
-      }
-
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: onError.toString(),
+        status: LogEvent.failed,
+      );
       _view!.getMyTestFail(AlertClass.getTestDetailAlert);
     });
   }
@@ -224,7 +261,11 @@ class MyTestPresenter {
   }
 
   Future downloadFiles(
-      TestDetailModel testDetail, List<FileTopicModel> filesTopic) async {
+    BuildContext context,
+    TestDetailModel testDetail,
+    List<FileTopicModel> filesTopic,
+    String activityId,
+  ) async {
     if (null != dio) {
       loop:
       for (int index = 0; index < filesTopic.length; index++) {
@@ -234,6 +275,25 @@ class MyTestPresenter {
             Utils.instance().reConvertFileName(fileTopic);
 
         if (filesTopic.isNotEmpty) {
+          LogModel? log;
+          if (context.mounted) {
+            log = await Utils.instance().prepareToCreateLog(context,
+                action: LogEvent.callApiDownloadFile);
+            Map<String, dynamic> fileDownloadInfo = {
+              StringConstants.k_test_id: testDetail.testId.toString(),
+              StringConstants.k_file_name: fileTopic,
+              StringConstants.k_file_path: downloadFileEP(fileNameForDownload),
+            };
+
+            if (activityId.isNotEmpty) {
+              fileDownloadInfo.addEntries(
+                  [MapEntry(StringConstants.k_activity_id, activityId)]);
+            }
+            log.addData(
+                key: StringConstants.k_file_download_info,
+                value: json.encode(fileDownloadInfo));
+          }
+
           String fileType = Utils.instance().fileType(fileTopic);
 
           if (_mediaType(fileType) == MediaType.audio) {
@@ -268,20 +328,25 @@ class MyTestPresenter {
                     index + 1, filesTopic.length);
               } else {
                 _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-                reDownloadAutomatic(testDetail, filesTopic);
+                // ignore: use_build_context_synchronously
+                reDownloadAutomatic(
+                    context, testDetail, filesTopic, activityId);
                 break loop;
               }
             } on TimeoutException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic, activityId);
               break loop;
             } on SocketException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic, activityId);
               break loop;
             } on http.ClientException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic, activityId);
               break loop;
             }
           } else {
@@ -298,14 +363,14 @@ class MyTestPresenter {
     }
   }
 
-  void reDownloadAutomatic(
-      TestDetailModel testDetail, List<FileTopicModel> filesTopic) {
+  void reDownloadAutomatic(BuildContext context, TestDetailModel testDetail,
+      List<FileTopicModel> filesTopic, String activityId) {
     //Download again
     if (autoRequestDownloadTimes <= 3) {
       if (kDebugMode) {
         print("DEBUG: request to download in times: $autoRequestDownloadTimes");
       }
-      downloadFiles(testDetail, filesTopic);
+      downloadFiles(context, testDetail, filesTopic, activityId);
       increaseAutoRequestDownloadTimes();
     } else {
       //Close old download request
@@ -315,10 +380,20 @@ class MyTestPresenter {
   }
 
   Future updateMyAnswer(
-      {required String testId,
+      {required BuildContext context,
+      required String testId,
       required String activityId,
       required List<QuestionTopicModel> reQuestions}) async {
     assert(_view != null && _repository != null);
+
+    //Add log
+    LogModel? log;
+    Map<String, dynamic> dataLog = {};
+
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiUpdateMyAnswer);
+    }
 
     http.MultipartRequest multiRequest = await Utils.instance()
         .formDataRequestSubmit(
@@ -334,19 +409,63 @@ class MyTestPresenter {
           print("DEBUG: error form: ${json.toString()}");
         }
         if (json['error_code'] == 200 && json['status'] == 'success') {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: null,
+            status: LogEvent.success,
+          );
           _view!.updateAnswersSuccess('Save your answers successfully!');
         } else {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: StringConstants.update_answer_error_message,
+            status: LogEvent.failed,
+          );
           _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
         }
       }).catchError((onError) {
-        print('catchError updateAnswerFail ${onError.toString()}');
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: dataLog,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
+        if (kDebugMode) {
+          print('catchError updateAnswerFail ${onError.toString()}');
+        }
         _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
       });
     } on TimeoutException {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: "TimeoutException: Has an error when update my answer!",
+        status: LogEvent.failed,
+      );
       _view!.updateAnswerFail(AlertClass.timeOutUpdateAnswer);
     } on SocketException {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: "SocketException: Has an error when update my answer!",
+        status: LogEvent.failed,
+      );
       _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
     } on http.ClientException {
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: "ClientException: Has an error when update my answer!",
+        status: LogEvent.failed,
+      );
+
       _view!.updateAnswerFail(AlertClass.errorWhenUpdateAnswer);
     }
   }
@@ -359,7 +478,7 @@ class MyTestPresenter {
     _view!.onTryAgainToDownload();
   }
 
-  void reDownloadFiles() {
-    downloadFiles(testDetail!, filesTopic!);
+  void reDownloadFiles(BuildContext context, String activityId) {
+    downloadFiles(context, testDetail!, filesTopic!, activityId);
   }
 }

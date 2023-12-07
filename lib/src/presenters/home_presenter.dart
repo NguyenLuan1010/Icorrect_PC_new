@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/repositories/auth_repository.dart';
@@ -11,6 +12,7 @@ import '../models/homework_models/class_model.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
+import '../models/log_models/log_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import '../utils/utils.dart';
 import 'package:http/http.dart' as http;
@@ -34,8 +36,13 @@ class HomeWorkPresenter {
     _homeWorkRepository = Injector().getHomeWorkRepository();
   }
 
-  void getListHomeWork() async {
+  void getListHomeWork(BuildContext context) async {
     assert(_view != null && _homeWorkRepository != null);
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetListHomework);
+    }
     try {
       UserDataModel? currentUser = await Utils.instance().getCurrentUser();
       if (currentUser == null) {
@@ -58,24 +65,67 @@ class HomeWorkPresenter {
               await _generateListNewClass(dataMap['data']);
           List<ActivitiesModel> homeworks =
               await _generateListHomeWork(classes);
+
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: null,
+            status: LogEvent.success,
+          );
           _view!.onGetListHomeworkComplete(
               homeworks, classes, dataMap['current_time']);
         } else {
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message:
+                "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}",
+            status: LogEvent.failed,
+          );
           _view!.onGetListHomeworkError(
               "Have Error: ${dataMap['error_code']}${dataMap['status']}");
         }
       }).catchError(
         // ignore: invalid_return_type_for_catch_error
-        (onError) => _view!.onGetListHomeworkError(onError.toString()),
+        (onError) {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: null,
+            message: onError.toString(),
+            status: LogEvent.failed,
+          );
+          _view!.onGetListHomeworkError(onError.toString());
+        },
       );
     } on TimeoutException {
-      _view!.onGetListHomeworkError("Time Out : Please check your internet !");
+      String message = "Time Out : Please check your internet !";
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(message);
     } on http.ClientException {
-      _view!.onGetListHomeworkError(
-          "Client Exception: Please check your internet !");
+      String message = "Client Exception: Please check your internet !";
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(message);
     } on SocketException {
-      _view!.onGetListHomeworkError(
-          "Socket Exception: Please check your internet !");
+      String message = "Socket Exception: Please check your internet !";
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(message);
     }
   }
 

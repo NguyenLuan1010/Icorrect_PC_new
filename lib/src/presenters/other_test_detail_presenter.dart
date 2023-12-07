@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../data_source/api_urls.dart';
@@ -12,6 +15,7 @@ import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/app_repository.dart';
 import '../data_source/repositories/my_test_repository.dart';
+import '../models/log_models/log_model.dart';
 import '../models/simulator_test_models/file_topic_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/simulator_test_models/test_detail_model.dart';
@@ -67,17 +71,31 @@ class OtherTestDetailPresenter {
     }
   }
 
-  void getMyTest(String testId) {
+  void getMyTest(BuildContext context, String activityId, String testId) async {
     assert(_view != null && _myTestRepository != null);
 
     if (kDebugMode) {
-      print('DEBUG: testId: ${testId.toString()}');
+      print(
+          'DEBUG:activityId: ${activityId.toString()}, testId: ${testId.toString()}');
+    }
+
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance().prepareToCreateLog(context,
+          action: LogEvent.callApiGetOtherTestDetail);
     }
 
     _myTestRepository!.getTestDetailWithId(testId).then((value) {
       Map<String, dynamic> json = jsonDecode(value) ?? {};
       if (json.isNotEmpty) {
         if (json['error_code'] == 200) {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: null,
+            status: LogEvent.success,
+          );
           Map<String, dynamic> dataMap = json['data'];
           TestDetailModel testDetailModel =
               TestDetailModel.fromMyTestJson(dataMap);
@@ -88,21 +106,40 @@ class OtherTestDetailPresenter {
 
           filesTopic = _prepareFileTopicListForDownload(testDetailModel);
 
-          downloadFiles(testDetailModel, tempFilesTopic);
+          downloadFiles(context, activityId, testDetailModel, tempFilesTopic);
 
           _view!.getMyTestSuccess(testDetailModel,
               _getQuestionsAnswer(testDetailModel), tempFilesTopic.length);
         } else {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message:
+                "Loading other test detail error: ${json[StringConstants.k_error_code]}"
+                "${json[StringConstants.k_status]}",
+            status: LogEvent.failed,
+          );
           _view!.getMyTestFail(AlertClass.notResponseLoadTestAlert);
         }
       } else {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: "Loading my test detail error",
+          status: LogEvent.failed,
+        );
         _view!.getMyTestFail(AlertClass.getTestDetailAlert);
       }
     }).catchError((onError) {
-      if (kDebugMode) {
-        print("DEBUG: fail meomoe");
-      }
-
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: onError.toString(),
+        status: LogEvent.failed,
+      );
       _view!.getMyTestFail(AlertClass.getTestDetailAlert);
     });
   }
@@ -217,7 +254,7 @@ class OtherTestDetailPresenter {
     _view!.downloadFilesFail(alertInfo);
   }
 
-  Future downloadFiles(
+  Future downloadFiles(BuildContext context, String activityId,
       TestDetailModel testDetail, List<FileTopicModel> filesTopic) async {
     if (null != dio) {
       loop:
@@ -228,6 +265,24 @@ class OtherTestDetailPresenter {
             Utils.instance().reConvertFileName(fileTopic);
 
         if (filesTopic.isNotEmpty) {
+          LogModel? log;
+          if (context.mounted) {
+            log = await Utils.instance().prepareToCreateLog(context,
+                action: LogEvent.callApiDownloadFile);
+            Map<String, dynamic> fileDownloadInfo = {
+              StringConstants.k_test_id: testDetail.testId.toString(),
+              StringConstants.k_file_name: fileTopic,
+              StringConstants.k_file_path: downloadFileEP(fileNameForDownload),
+            };
+
+            if (activityId.isNotEmpty) {
+              fileDownloadInfo.addEntries(
+                  [MapEntry(StringConstants.k_activity_id, activityId)]);
+            }
+            log.addData(
+                key: StringConstants.k_file_download_info,
+                value: json.encode(fileDownloadInfo));
+          }
           String fileType = Utils.instance().fileType(fileTopic);
 
           if (_mediaType(fileType) == MediaType.audio) {
@@ -262,20 +317,21 @@ class OtherTestDetailPresenter {
                     index + 1, filesTopic.length);
               } else {
                 _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-                reDownloadAutomatic(testDetail, filesTopic);
+                reDownloadAutomatic(
+                    context, activityId, testDetail, filesTopic);
                 break loop;
               }
             } on TimeoutException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              reDownloadAutomatic(context, activityId, testDetail, filesTopic);
               break loop;
             } on SocketException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              reDownloadAutomatic(context, activityId, testDetail, filesTopic);
               break loop;
             } on http.ClientException {
               _view!.downloadFilesFail(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              reDownloadAutomatic(context, activityId, testDetail, filesTopic);
               break loop;
             }
           } else {
@@ -300,14 +356,14 @@ class OtherTestDetailPresenter {
     _view!.onTryAgainToDownload();
   }
 
-  void reDownloadAutomatic(
+  void reDownloadAutomatic(BuildContext context, String activityId,
       TestDetailModel testDetail, List<FileTopicModel> filesTopic) {
     //Download again
     if (autoRequestDownloadTimes <= 3) {
       if (kDebugMode) {
         print("DEBUG: request to download in times: $autoRequestDownloadTimes");
       }
-      downloadFiles(testDetail, filesTopic);
+      downloadFiles(context, activityId, testDetail, filesTopic);
       increaseAutoRequestDownloadTimes();
     } else {
       //Close old download request
@@ -316,7 +372,10 @@ class OtherTestDetailPresenter {
     }
   }
 
-  void reDownloadFiles() {
-    downloadFiles(testDetail!, filesTopic!);
+  void reDownloadFiles(
+    BuildContext context,
+    String activityId,
+  ) {
+    downloadFiles(context, activityId, testDetail!, filesTopic!);
   }
 }

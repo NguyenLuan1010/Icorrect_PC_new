@@ -94,16 +94,16 @@ class _MyTestScreenState extends State<MyTestScreen>
     });
     _setTabController();
     _getTestDetail();
-  } 
+  }
 
   void _setTabController() {
     if (widget.homeWork.activityAnswer != null) {
       if (!widget.homeWork.activityAnswer!.hasTeacherResponse()) {
-       _tabLength= _tabLength - 1;
+        _tabLength = _tabLength - 1;
       }
     }
     if (!widget.homeWork.haveAIResponse()) {
-     _tabLength= _tabLength - 1;
+      _tabLength = _tabLength - 1;
     }
     _tabController = TabController(length: _tabLength, vsync: this);
     if (!kIsWeb && Platform.isWindows) WindowsVideoPlayer.registerWith();
@@ -112,8 +112,10 @@ class _MyTestScreenState extends State<MyTestScreen>
   void _getTestDetail() async {
     _loading!.show(context);
     await _myTestPresenter!.initializeData();
-    _myTestPresenter!
-        .getMyTest(widget.homeWork.activityAnswer!.testId.toString());
+    _myTestPresenter!.getMyTest(
+        context,
+        widget.homeWork.activityAnswer!.activityId.toString(),
+        widget.homeWork.activityAnswer!.testId.toString());
   }
 
   @override
@@ -274,9 +276,11 @@ class _MyTestScreenState extends State<MyTestScreen>
   void _onClickUpdateReanswer() {
     _loading!.show(context);
     _myTestPresenter!.updateMyAnswer(
-        testId: widget.homeWork.activityAnswer!.testId.toString(),
-        activityId: widget.homeWork.activityId.toString(),
-        reQuestions: _provider!.reAnswerQuestions);
+      context: context,
+      testId: widget.homeWork.activityAnswer!.testId.toString(),
+      activityId: widget.homeWork.activityId.toString(),
+      reQuestions: _provider!.reAnswerQuestions,
+    );
   }
 
   Widget _buildDownloadAgain() {
@@ -428,7 +432,8 @@ class _MyTestScreenState extends State<MyTestScreen>
         if (null == _myTestPresenter!.dio) {
           _myTestPresenter!.initializeData();
         }
-        _myTestPresenter!.reDownloadFiles();
+        _myTestPresenter!.reDownloadFiles(
+            context, widget.homeWork.activityAnswer!.activityId.toString());
       }
     }
   }

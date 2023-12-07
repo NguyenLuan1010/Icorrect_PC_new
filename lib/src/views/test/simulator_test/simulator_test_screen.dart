@@ -32,6 +32,7 @@ import '../../../presenters/simulator_test_presenter.dart';
 import '../../../providers/camera_preview_provider.dart';
 import '../../../providers/simulator_test_provider.dart';
 import '../../../providers/test_room_provider.dart';
+import '../../../utils/utils.dart';
 import '../../dialogs/alert_dialog.dart';
 import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
@@ -301,6 +302,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
     if (_simulatorTestProvider!.reanswersList.isNotEmpty) {
       _simulatorTestPresenter!.submitTest(
+          context: context,
           testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
           activityId: widget.homeWorkModel.activityId.toString(),
           questions: _simulatorTestProvider!.reanswersList,
@@ -315,6 +317,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       }
       _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.submitting);
       _simulatorTestPresenter!.submitTest(
+          context: context,
           testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
           activityId: widget.homeWorkModel.activityId.toString(),
           questions: _simulatorTestProvider!.questionList,
@@ -506,7 +509,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   void _getTestDetail() async {
     await _simulatorTestPresenter!.initializeData();
     _simulatorTestPresenter!
-        .getTestDetail(widget.homeWorkModel.activityId.toString());
+        .getTestDetail(context, widget.homeWorkModel.activityId.toString());
   }
 
   void _startToDoTest() {
@@ -646,6 +649,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onSubmitTestFail(String msg) {
+    Utils.instance().sendLog();
     _loading!.hide();
     _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.fail);
     showDialog(
@@ -659,6 +663,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onSubmitTestSuccess(String msg, ActivityAnswer activityAnswer) {
+    Utils.instance().sendLog();
     _loading!.hide();
     showDialog(
         context: context,
@@ -688,7 +693,8 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
         if (null == _simulatorTestPresenter!.dio) {
           _simulatorTestPresenter!.initializeData();
         }
-        _simulatorTestPresenter!.reDownloadFiles();
+        _simulatorTestPresenter!.reDownloadFiles(
+            context, widget.homeWorkModel.activityId.toString());
       }
     }
   }

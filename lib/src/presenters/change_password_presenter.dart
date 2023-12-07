@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/repositories/auth_repository.dart';
+import '../models/log_models/log_model.dart';
 import '../utils/utils.dart';
 
 abstract class ChangePasswordViewContract {
@@ -29,16 +30,16 @@ class ChangePasswordPresenter {
     String confirmNewPassword,
   ) async {
     assert(_view != null && _authRepository != null);
-    // LogModel? log;
-    // if (context.mounted) {
-    //   //Add action log
-    //   LogModel actionLog = await Utils.prepareToCreateLog(context,
-    //       action: LogEvent.actionChangePassword);
-    //   Utils.addLog(actionLog, LogEvent.none);
+    LogModel? log;
+    if (context.mounted) {
+      //Add action log
+      LogModel actionLog = await Utils.instance().prepareToCreateLog(context,
+          action: LogEvent.actionChangePassword);
+      Utils.instance().addLog(actionLog, LogEvent.none);
 
-    //   log = await Utils.prepareToCreateLog(context,
-    //       action: LogEvent.callApiChangePassword);
-    // }
+      log = await Utils.instance().prepareToCreateLog(context,
+          action: LogEvent.callApiChangePassword);
+    }
 
     _authRepository!
         .changePassword(oldPassword, newPassword, confirmNewPassword)
@@ -50,23 +51,23 @@ class ChangePasswordPresenter {
         Utils.instance().setAccessToken(token);
 
         //Add log
-        // Utils.prepareLogData(
-        //   log: log,
-        //   data: jsonDecode(value),
-        //   message: dataMap[StringConstants.k_message],
-        //   status: LogEvent.success,
-        // );
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: dataMap[StringConstants.k_message],
+          status: LogEvent.success,
+        );
 
         _view!.onChangePasswordComplete();
       } else {
         //Add log
-        // Utils.prepareLogData(
-        //   log: log,
-        //   data: null,
-        //   message:
-        //       "Change password error: ${dataMap['error_code']}${dataMap['status']}",
-        //   status: LogEvent.failed,
-        // );
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message:
+              "Change password error: ${dataMap['error_code']}${dataMap['status']}",
+          status: LogEvent.failed,
+        );
 
         _view!.onChangePasswordError("An error occur. Please try again !");
       }
@@ -74,12 +75,12 @@ class ChangePasswordPresenter {
       // ignore: invalid_return_type_for_catch_error
       (onError) {
         //Add log
-        // Utils.prepareLogData(
-        //   log: log,
-        //   data: null,
-        //   message: onError.toString(),
-        //   status: LogEvent.failed,
-        // );
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
 
         _view!.onChangePasswordError("An error occur. Please try again !");
       },

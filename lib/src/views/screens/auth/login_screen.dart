@@ -213,7 +213,7 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
     String password = _txtPasswordController.text.toLowerCase().trim();
 
     LoginPresenter presenter = LoginPresenter(this);
-    presenter.login(email, password);
+    presenter.login(context,email, password);
   }
 
   @override

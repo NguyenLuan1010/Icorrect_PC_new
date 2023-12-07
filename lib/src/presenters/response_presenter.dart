@@ -1,8 +1,14 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/repositories/my_test_repository.dart';
+import '../models/log_models/log_model.dart';
 import '../models/my_test_models/result_response_model.dart';
+import '../utils/utils.dart';
 
 abstract class ResponseContracts {
   void getSuccessResponse(ResultResponseModel responseModel);
@@ -17,21 +23,51 @@ class ResponsePresenter {
     _repository = Injector().getMyTestRepository();
   }
 
-  void getResponse(String orderId) async {
+  void getResponse(BuildContext context, String orderId) async {
     assert(_view != null && _repository != null);
-
+    //Add log
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetResponse);
+    }
     _repository!.getResponse(orderId).then((value) {
       Map<String, dynamic> dataMap = jsonDecode(value) ?? {};
-      print(dataMap.toString());
+      if (kDebugMode) {
+        print(dataMap.toString());
+      }
       if (dataMap.isNotEmpty) {
         ResultResponseModel responseModel =
             ResultResponseModel.fromJson(dataMap);
+
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: null,
+          status: LogEvent.success,
+        );
+
         _view!.getSuccessResponse(responseModel);
       } else {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: "Loading result response fail!",
+          status: LogEvent.failed,
+        );
         _view!.getErrorResponse('Loading result response fail !');
       }
-    }).catchError((onError) =>
-        // ignore: invalid_return_type_for_catch_error
-        _view!.getErrorResponse("Can't load response :${onError.toString()}"));
+    }).catchError((onError) {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: onError.toString(),
+        status: LogEvent.failed,
+      );
+      _view!.getErrorResponse("Can't load response :${onError.toString()}");
+    });
   }
 }

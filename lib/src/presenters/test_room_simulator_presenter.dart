@@ -19,6 +19,7 @@ import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
 import '../models/auth_models/video_record_exam_info.dart';
+import '../models/log_models/log_model.dart';
 import '../models/simulator_test_models/playlist_model.dart';
 import 'package:http/http.dart' as http;
 
@@ -340,7 +341,8 @@ class TestRoomSimulatorPresenter {
   }
 
   Future submitMyTest(
-      {required String testId,
+      {required BuildContext context,
+      required String testId,
       required String activityId,
       required List<QuestionTopicModel> questionsList,
       File? videoConfirmFile,
@@ -348,6 +350,15 @@ class TestRoomSimulatorPresenter {
       required bool isUpdate,
       required bool isExam}) async {
     assert(_view != null && _repository != null);
+
+    //Add log
+    LogModel? log;
+    Map<String, dynamic> dataLog = {};
+
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiSubmitTest);
+    }
 
     http.MultipartRequest multiRequest = await Utils.instance()
         .formDataRequestSubmit(
@@ -368,21 +379,66 @@ class TestRoomSimulatorPresenter {
           print("DEBUG: error form: ${json.toString()}");
         }
         if (json['error_code'] == 200) {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: null,
+            status: LogEvent.success,
+          );
           _view!.submitAnswersSuccess(AlertClass.submitTestSuccess);
         } else {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: StringConstants.submit_test_error_message,
+            status: LogEvent.failed,
+          );
           _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
         }
       }).catchError((onError) {
         if (kDebugMode) {
           print('catchError updateAnswerFail ${onError.toString()}');
         }
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: dataLog,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
+
+        // ignore: invalid_return_type_for_catch_error
         _view!.submitAnswerFail(AlertClass.failToSubmitAndContactAdmin);
       });
     } on TimeoutException {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_timeout,
+        status: LogEvent.failed,
+      );
       _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
     } on SocketException {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_socket,
+        status: LogEvent.failed,
+      );
+
       _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
     } on http.ClientException {
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_client,
+        status: LogEvent.failed,
+      );
       _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
     }
   }

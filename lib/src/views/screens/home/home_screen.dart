@@ -19,6 +19,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../../core/app_colors.dart';
 import '../../../models/homework_models/new_api_135/new_class_model.dart';
+import '../../../models/log_models/log_model.dart';
 import '../../../presenters/home_presenter.dart';
 import '../../../providers/camera_preview_provider.dart';
 import '../../../utils/utils.dart';
@@ -65,12 +66,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
     _loading?.show(context);
     _presenter = HomeWorkPresenter(this);
-    _presenter.getListHomeWork();
+    _presenter.getListHomeWork(context);
 
     Future.delayed(Duration.zero, () {
       _provider.clearData();
     });
 
+    Utils.instance().sendLog();
     // CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
   }
 
@@ -88,7 +90,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _loading?.show(context);
           _provider.setStatusActivity("All");
-          _presenter.getListHomeWork();
+          _presenter.getListHomeWork(context);
           provider.setRefresh(false);
         });
       }
@@ -261,7 +263,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                         onTap: () {
                           _loading?.show(context);
                           _provider.setStatusActivity("All");
-                          _presenter.getListHomeWork();
+                          _presenter.getListHomeWork(context);
                         },
                         child: const SizedBox(
                           width: 120,
@@ -401,8 +403,16 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               ? SizedBox(
                   width: 100,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       _onClickStartTest(homeWork);
+                      //Add action log
+                      LogModel actionLog = await Utils.instance()
+                          .prepareToCreateLog(context,
+                              action: LogEvent.actionClickOnHomeworkItem);
+                      actionLog.addData(
+                          key: StringConstants.k_activity_id,
+                          value: homeWork.activityId.toString());
+                      Utils.instance().addLog(actionLog, LogEvent.none);
                     },
                     style: ButtonStyle(
                         backgroundColor:
@@ -418,8 +428,16 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               : SizedBox(
                   width: 100,
                   child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigations.instance().goToMyTest(context, homeWork);
+                        //Add action log
+                        LogModel actionLog = await Utils.instance()
+                            .prepareToCreateLog(context,
+                                action: LogEvent.actionClickOnHomeworkItem);
+                        actionLog.addData(
+                            key: StringConstants.k_activity_id,
+                            value: homeWork.activityId.toString());
+                        Utils.instance().addLog(actionLog, LogEvent.none);
                       },
                       style: ButtonStyle(
                           backgroundColor:

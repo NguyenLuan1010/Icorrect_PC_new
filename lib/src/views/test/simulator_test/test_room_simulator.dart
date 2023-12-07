@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart' as AudioPlayers;
@@ -38,6 +39,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../../../core/app_assets.dart';
 import '../../../data_source/local/file_storage_helper.dart';
 import '../../../models/homework_models/new_api_135/activities_model.dart';
+import '../../../models/log_models/log_model.dart';
 import '../../../models/simulator_test_models/file_topic_model.dart';
 import '../../../models/simulator_test_models/test_detail_model.dart';
 import '../../../presenters/simulator_test_presenter.dart';
@@ -314,7 +316,34 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     );
   }
 
+  void _createLog(
+      {required String action, required Map<String, dynamic>? data}) async {
+    if (context.mounted) {
+      //Add action log
+      LogModel actionLog =
+          await Utils.instance().prepareToCreateLog(context, action: action);
+      if (null != data) {
+        if (data.isNotEmpty) {
+          actionLog.addData(
+              key: StringConstants.k_data, value: jsonEncode(data));
+        }
+      }
+      Utils.instance().addLog(actionLog, LogEvent.none);
+    }
+  }
+
   void _onClickStartTest() {
+    Map<String, dynamic> info = {
+      StringConstants.k_test_id:
+          widget.simulatorTestProvider.currentTestDetail.testId.toString(),
+    };
+    if (widget.activitiesModel != null) {
+      info.addEntries([
+        MapEntry(StringConstants.k_activity_id,
+            widget.activitiesModel.activityId.toString())
+      ]);
+    }
+    _createLog(action: LogEvent.actionStartToDoTest, data: info);
     _startDoingTest();
   }
 
@@ -335,6 +364,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
             : _videoPlayerController!.play();
         setState(() {});
       });
+
+    //   Map<String, dynamic> info = {
+    //   StringConstants.k_file_id: file.id.toString(),
+    //   StringConstants.k_file_url: file.path,
+    // };
+    // _createLog(action: LogEvent.actionPlayVideoQuestion, data: info);
 
     _videoPlayerController!.setPlaybackSpeed(_getSpeedVideo());
 
@@ -399,8 +434,17 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     //           filePath: savedFile.path,
     //           duration: totalCount - countTime));
     //     });
+
     PlayListModel playListModel = widget.simulatorTestProvider.currentPlay;
     if (playListModel.questionTopicModel.id != 0) {
+      Map<String, dynamic> info = {
+        StringConstants.k_question_id:
+            playListModel.questionTopicModel.id.toString(),
+        StringConstants.k_question_content:
+            playListModel.questionTopicModel.content,
+      };
+      _createLog(action: LogEvent.actionFinishAnswer, data: info);
+
       playListModel.questionTopicModel.repeatIndex =
           playListModel.questionTopicModel.answers.isNotEmpty
               ? playListModel.questionTopicModel.answers.length - 1
@@ -425,6 +469,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     }
 
     QuestionTopicModel question = playListModel.questionTopicModel;
+    Map<String, dynamic> info = {
+      StringConstants.k_question_id: question.id.toString(),
+      StringConstants.k_question_content: question.content,
+    };
+    _createLog(action: LogEvent.actionRepeatQuestion, data: info);
+
     QuestionTopicModel repeatQuestion = question.copyWith(
         id: question.id,
         content: "Ask for repeat question",
@@ -491,6 +541,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   void _startDoingTest() {
     PlayListModel playModel = widget.simulatorTestProvider.playList.first;
     _presenter!.playingIntroduce(playModel.fileIntro);
+    
     widget.simulatorTestProvider.updateDoingStatus(DoingStatus.doing);
   }
 
@@ -580,6 +631,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.submitting);
     _loading!.show(context);
     _presenter!.submitMyTest(
+        context: context,
         testId: widget.testDetailModel.testId.toString(),
         activityId: widget.activitiesModel.activityId.toString(),
         // questionsList: widget.simulatorTestProvider.questionList,
@@ -594,6 +646,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _loading!.show(context);
     if (widget.simulatorTestProvider.reanswersList.isNotEmpty) {
       _presenter!.submitMyTest(
+          context: context,
           testId: widget.testDetailModel.testId.toString(),
           activityId: widget.activitiesModel.activityId.toString(),
           questionsList: widget.simulatorTestProvider.reanswersList,
@@ -601,6 +654,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
           isExam: widget.activitiesModel.isExam());
     } else {
       _presenter!.submitMyTest(
+          context: context,
           testId: widget.testDetailModel.testId.toString(),
           activityId: widget.activitiesModel.activityId.toString(),
           questionsList: widget.simulatorTestProvider.questionList,
@@ -611,28 +665,48 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future<void> _recordAnswer() async {
-    String newFileName =
-        '${await Utils.instance().generateAudioFileName()}.wav';
+    try {
+      String newFileName =
+          '${await Utils.instance().generateAudioFileName()}.wav';
 
-    _fileNameRecord =
-        await FileStorageHelper.getFilePath(newFileName, MediaType.audio, null);
+      _fileNameRecord = await FileStorageHelper.getFilePath(
+          newFileName, MediaType.audio, null);
 
-    if (await _recordController!.hasPermission()) {
-      await _recordController!.start(
-        path: _fileNameRecord,
-        encoder: Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
-        bitRate: 128000,
-        numChannels: 1,
-        samplingRate: 44100,
+      if (await _recordController!.hasPermission()) {
+        await _recordController!.start(
+          path: _fileNameRecord,
+          encoder:
+              Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
+          bitRate: 128000,
+          numChannels: 1,
+          samplingRate: 44100,
+        );
+      }
+
+      List<FileTopicModel> answers =
+          widget.simulatorTestProvider.currentPlay.questionTopicModel.answers;
+      answers.add(
+          FileTopicModel.fromJson({'id': 0, 'url': newFileName, 'type': 0}));
+      widget.simulatorTestProvider.currentPlay.questionTopicModel.answers =
+          answers;
+    } catch (e) {
+      //Add log
+      LogModel? log;
+      Map<String, dynamic>? dataLog = {};
+
+      if (context.mounted) {
+        log = await Utils.instance().prepareToCreateLog(context,
+            action: LogEvent.crash_bug_audio_record);
+      }
+
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: e.toString(),
+        status: LogEvent.failed,
       );
     }
-
-    List<FileTopicModel> answers =
-        widget.simulatorTestProvider.currentPlay.questionTopicModel.answers;
-    answers
-        .add(FileTopicModel.fromJson({'id': 0, 'url': newFileName, 'type': 0}));
-    widget.simulatorTestProvider.currentPlay.questionTopicModel.answers =
-        answers;
   }
 
   Widget _buildQuestionAndCameraPreview() {
@@ -749,6 +823,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   @override
   void submitAnswerFail(AlertInfo alertInfo) {
+    Utils.instance().sendLog();
     widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.fail);
     _loading!.hide();
     showDialog(
@@ -761,6 +836,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   @override
   void submitAnswersSuccess(AlertInfo alertInfo) {
+    Utils.instance().sendLog();
     _loading!.hide();
     showDialog(
         context: context,

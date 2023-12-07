@@ -162,6 +162,7 @@ Widget navbarItems(
                     okButtonTitle: "Logout",
                     cancelButtonTapped: () {},
                     okButtonTapped: () {
+                      Utils.instance().sendLog();
                       Utils.instance().clearCurrentUser();
                       Utils.instance().setAccessToken('');
                       Navigations.instance().goToAuthWidget(context);

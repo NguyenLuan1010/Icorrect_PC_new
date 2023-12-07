@@ -504,9 +504,13 @@ class LogEvent {
       'call_api_get_response'; //'${toolDomain}api/response?order_id=$orderId';
   static const String callApiGetSpecialHomework =
       'call_api_get_special_homework'; //specialHomeWorksEP
+  static const String callApiGetOtherTestDetail =
+      'call_api_get_other_test_detail';
   static const String callApiGetUserAuthDetail =
       'call_api_get_user_auth_detail';
   static const String callApiSubmitAuth = 'call_api_submit_auth';
+  static const String callApiTestPosition = 'call_api_test_position';
+  static const String crash_bug_audio_record = 'crash_bug_audio_record';
 
   //Action log event
   static const String actionLogin = 'action_login';
@@ -522,6 +526,10 @@ class LogEvent {
   static const String actionRepeatQuestion = 'action_repeat_question';
   static const String actionSubmitTest = 'action_submit_test';
   static const String actionUpdateAnswer = 'action_update_answer';
+  static const String compressVideoFile = 'compress_video_file';
+  static const String checkConnection = 'check_connection';
+  static const String imageDownload = 'image_download';
+  static const String createVideoSource = 'create_video_source';
 }
 
 const sendLogsTask = "com.csupporter.sendlogtask";
@@ -691,6 +699,8 @@ class StringConstants {
   static const String error_auth_title = "Error Authentication";
   static const String error_auth_content =
       "An error occurs during verification,please contact ICorrect support";
+  static const String log_connection_error_message =
+      'Your internet is not connect!';
 
   //Warning Message
   static const String choose_filter_message =
@@ -739,14 +749,71 @@ class StringConstants {
       "An error occur. Please check your connection!";
   static const String submit_test_error_messge =
       "An error occur, please try again later!";
-  static const String common_error_messge =
+  static const String common_error_message =
       "An error occur, please try again later!";
+  static const String update_answer_error_message =
+      "An error when update your answers. Please try again !";
+  static const String submit_test_error_message =
+      "Has an error when submit this test. Please try again later!";
+  static const String submit_test_error_timeout =
+      "TimeoutException: Has an error when submit this test!";
+  static const String submit_test_error_socket =
+      "SocketException: Has an error when submit this test!";
+  static const String submit_test_error_client =
+      "ClientException: Has an error when submit this test!";
+  static const String get_special_homework_error_message =
+      "GetSpecialHomeWorks: result fail!";
 
+  //keywords
+  static const String k_email = "email";
+  static const String k_password = "password";
+  static const String k_device_id = "device_id";
+  static const String k_app_version = "app_version";
+  static const String k_os = "os";
+  static const String k_old_password = "password_old";
+  static const String k_confirmation_password = "password_confirmation";
+  static const String k_status = "status";
+  static const String k_activity_id = "activity_id";
+  static const String k_distribute_code = "distribute_code";
+  static const String k_platform = "platform";
+  static const String k_title = "title";
+  static const String k_color = "color";
+  static const String k_score = "score";
   static const String k_data = "data";
-  static const String connectivity_name_none = "none";
   static const String k_test = "test";
   static const String k_error_code = "error_code";
   static const String k_access_token = "access_token";
+  static const String k_message = "message";
+  static const String k_current_time = "current_time";
+  static const String k_content_type = "Content-Type";
+  static const String k_authorization = "Authorization";
+  static const String k_test_id = "test_id";
+  static const String k_is_update = "is_update";
+  static const String k_accept = "'Accept'";
+  static const String k_file_name = "file_name";
+  static const String k_file_path = "file_path";
+  static const String k_file_download_info = "file_download_info";
+  static const String k_response = "response";
+  static const String k_request_data = "request_data";
+  static const String k_image_url = "image_url";
+  static const String k_log_action = "log_action";
+  static const String k_video_confirm = "video_confirm";
+  static const String k_question_id = "question_id";
+  static const String k_question_text = "question_text";
+  static const String k_type = "type";
+  static const String k_time = "time";
+  static const String k_question_content = "question_content";
+  static const String k_file_id = "file_id";
+  static const String k_file_url = "file_url";
+  static const String k_api_url = "api_url";
+  static const String k_secretkey = "secretkey";
+  static const String k_refresh = "refresh";
+  static const String k_topic_type = "topic_type[]";
+  static const String k_test_option = "option";
+  static const String k_required_topic = "required_topic[]";
+  static const String k_is_predict = "is_predict";
+
+  static const String connectivity_name_none = "none";
 }
 
 const int timeout = 60;

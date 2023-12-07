@@ -47,6 +47,7 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
       if (homeWorks.isEmpty) {
         _loading!.show(context);
         _presenter!.getSpecialHomeWorks(
+            context: context,
             email: userDataModel.userInfoModel.email.toString(),
             activityId: widget.homeWorkModel.activityId.toString(),
             status: Status.allHomework.get,

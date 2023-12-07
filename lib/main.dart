@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => ReAnswerProvider()),
           ChangeNotifierProvider(create: (_) => PlayAnswerProvider()),
           ChangeNotifierProvider(create: (_) => TimerProvider()),
-          ChangeNotifierProvider(create: (_) => TestRoomProvider()),
           ChangeNotifierProvider(create: (_) => MyTestProvider()),
           ChangeNotifierProvider(create: (_) => CameraPreviewProvider()),
           ChangeNotifierProvider(create: (_) => UserAuthDetailProvider()),

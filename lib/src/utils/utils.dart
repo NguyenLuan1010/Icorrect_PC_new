@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:icorrect_pc/src/models/ui_models/user_authen_status.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
@@ -753,86 +754,6 @@ class Utils {
     return MediaQuery.of(context).size.height;
   }
 
-  String getPreviousAction(BuildContext context) {
-    String previousAction = "";
-    AuthWidgetProvider authProvider =
-        Provider.of<AuthWidgetProvider>(context, listen: false);
-    previousAction = authProvider.previousAction;
-    return previousAction;
-  }
-
-  void setPreviousAction(BuildContext context, String action) {
-    AuthWidgetProvider authProvider =
-        Provider.of<AuthWidgetProvider>(context, listen: false);
-    authProvider.setPreviousAction(action);
-  }
-
-  Future<LogModel> prepareToCreateLog(BuildContext context,
-      {required String action}) async {
-    String previousAction = getPreviousAction(context);
-    LogModel log = await createLog(
-        action: action,
-        previousAction: previousAction,
-        status: "",
-        message: "",
-        data: {});
-    // ignore: use_build_context_synchronously
-    setPreviousAction(context, action);
-
-    return log;
-  }
-
-  Future<void> deleteLogFile() async {
-    //Check logs file is exist
-    String folderPath = await FileStorageHelper.getExternalDocumentPath();
-    String path = "$folderPath/flutter_logs.txt";
-    File file = File(path);
-
-    try {
-      if (await file.exists()) {
-        await file.delete();
-        if (kDebugMode) {
-          print("DEBUG: Delete log file success");
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("DEBUG: Delete log file error: ${e.toString()}");
-      }
-    }
-  }
-
-  int getDateTimeNow() {
-    return DateTime.now().millisecondsSinceEpoch;
-  }
-
-  Future<String> getOSVersion() async {
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    String version = "";
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      version =
-          '${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt})';
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      version = iosInfo.systemVersion;
-    }
-    return version;
-  }
-
-  Future<String> getDeviceName() async {
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    String deviceName = "";
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      deviceName = androidInfo.model;
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      deviceName = iosInfo.utsname.machine;
-    }
-    return deviceName;
-  }
-
   void showConnectionErrorDialog(BuildContext context) async {
     await showDialog(
       context: context,
@@ -966,5 +887,175 @@ class Utils {
         print("DEBUG: write log into file failed");
       }
     }
+  }
+
+  void addConnectionErrorLog(BuildContext context) async {
+    LogModel? log;
+    if (context.mounted) {
+      log = await prepareToCreateLog(context, action: LogEvent.checkConnection);
+    }
+
+    //Add log
+    prepareLogData(
+      log: log,
+      data: null,
+      message: StringConstants.log_connection_error_message,
+      status: LogEvent.failed,
+    );
+  }
+
+  String getPreviousAction(BuildContext context) {
+    String previousAction = "";
+    AuthWidgetProvider authProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
+    previousAction = authProvider.previousAction;
+    return previousAction;
+  }
+
+  void setPreviousAction(BuildContext context, String action) {
+    AuthWidgetProvider authProvider =
+        Provider.of<AuthWidgetProvider>(context, listen: false);
+    authProvider.setPreviousAction(action);
+  }
+
+  Future<LogModel> prepareToCreateLog(BuildContext context,
+      {required String action}) async {
+    String previousAction = getPreviousAction(context);
+    LogModel log = await createLog(
+        action: action,
+        previousAction: previousAction,
+        status: "",
+        message: "",
+        data: {});
+    // ignore: use_build_context_synchronously
+    setPreviousAction(context, action);
+
+    return log;
+  }
+
+  Future<void> deleteLogFile() async {
+    //Check logs file is exist
+    String folderPath = await FileStorageHelper.getExternalDocumentPath();
+    String path = "$folderPath/flutter_logs.txt";
+    File file = File(path);
+
+    try {
+      if (await file.exists()) {
+        await file.delete();
+        if (kDebugMode) {
+          print("DEBUG: Delete log file success");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("DEBUG: Delete log file error: ${e.toString()}");
+      }
+    }
+  }
+
+  int getDateTimeNow() {
+    return DateTime.now().millisecondsSinceEpoch;
+  }
+
+  Future<String> getOSVersion() async {
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String version = "";
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      version =
+          '${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt})';
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      version = iosInfo.systemVersion;
+    } else if (Platform.isWindows) {
+      final windowsInfo = await deviceInfo.windowsInfo;
+      // version = 'Computer Name: ${windowsInfo.computerName},'
+      //     '\n Display Version: ${windowsInfo.displayVersion},'
+      //     '\n Product Name: ${windowsInfo.productName}';
+      version = windowsInfo.productName;
+    }
+    return version;
+  }
+
+  Future<String> getDeviceName() async {
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String deviceName = "";
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      deviceName = androidInfo.model;
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      deviceName = iosInfo.utsname.machine;
+    } else if (Platform.isWindows) {
+      final windowsInfo = await deviceInfo.windowsInfo;
+      deviceName = windowsInfo.computerName;
+    }
+    return deviceName;
+  }
+
+  Future<bool> sendLog() async {
+    //Check logs file is exist
+    String folderPath = await FileStorageHelper.getExternalDocumentPath();
+    String path = "$folderPath/flutter_logs.txt";
+    if (kDebugMode) {
+      print("DEBUG: log file path = $path");
+    }
+
+    bool isExistFile = await File(path).exists();
+
+    if (!isExistFile) {
+      if (kDebugMode) {
+        print("DEBUG: Not have logs at moment");
+      }
+      return false;
+    }
+
+    //Get log api info
+    String logApiUrl =
+        await AppSharedPref.instance().getString(key: AppSharedKeys.logApiUrl);
+    String secretkey =
+        await AppSharedPref.instance().getString(key: AppSharedKeys.secretkey);
+
+    if (logApiUrl.isEmpty || secretkey.isEmpty) {
+      if (kDebugMode) {
+        print("DEBUG: Not have logs at moment");
+      }
+      return false;
+    }
+
+    http.MultipartRequest request =
+        http.MultipartRequest(RequestMethod.post, Uri.parse(logApiUrl));
+
+    Map<String, String> formData = {};
+    formData.addEntries([MapEntry("secretkey", secretkey)]);
+    formData.addEntries([const MapEntry("file", "flutter_logs.txt")]);
+    request.fields.addAll(formData);
+    request.files.add(
+      http.MultipartFile(
+        "file",
+        File(path).readAsBytes().asStream(),
+        File(path).lengthSync(),
+        filename: 'flutter_logs.txt',
+      ),
+    );
+
+    try {
+      var res = await request.send();
+      if (res.statusCode == 200) {
+        if (kDebugMode) {
+          print("DEBUG: send log success kDebugMode");
+        }
+        deleteLogFile();
+      } else {
+        if (kDebugMode) {
+          print("DEBUG: send log failed  - kDebugMode");
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("DEBUG: THROW ERROR PUSH LOG : ${e.toString()}");
+      }
+    }
+    return true;
   }
 }
