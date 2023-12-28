@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../../utils/define_object.dart';
 import '../api_urls.dart';
 import 'app_repository.dart';
 import 'package:http/http.dart' as http;
@@ -26,7 +25,7 @@ class HomeWorkRepositoryImpl implements HomeWorkRepository {
           url,
           true,
         )
-        .timeout(const Duration(seconds: 15))
+        .timeout(const Duration(seconds: 20))
         .then((http.Response response) {
       return response.body;
     });

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/presenters/login_presenter.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/views/screens/auth/register_screen.dart';
@@ -11,7 +12,6 @@ import '../../../../core/app_colors.dart';
 import '../../../data_source/local/app_shared_preferences_keys.dart';
 import '../../../data_source/local/app_shared_references.dart';
 import '../../../utils/Navigations.dart';
-import '../../../utils/define_object.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
 import '../../dialogs/message_alert.dart';
@@ -47,7 +47,6 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   void dispose() {
     dispose();
     super.dispose();
-    _provider.dispose();
   }
 
   @override
@@ -88,9 +87,12 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
                         MaterialStateProperty.all<Color>(AppColors.purple),
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(13)))),
-                child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Sign In", style: TextStyle(fontSize: 17))),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                        Utils.instance().multiLanguage(
+                            StringConstants.sign_in_button_title),
+                        style: const TextStyle(fontSize: 17))),
               ),
             )
           ],
@@ -103,7 +105,7 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Email',
+        const Text(StringConstants.email,
             style: TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,
@@ -122,8 +124,8 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Password',
-            style: TextStyle(
+        Text(Utils.instance().multiLanguage(StringConstants.password),
+            style: const TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,
                 fontWeight: FontWeight.bold)),
@@ -170,9 +172,10 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
       children: [
         Row(
           children: [
-            const Text(
-              'You don not have an account',
-              style: TextStyle(
+            Text(
+              Utils.instance()
+                  .multiLanguage(StringConstants.you_not_have_account),
+              style: const TextStyle(
                   color: Colors.black,
                   fontSize: 13,
                   fontWeight: FontWeight.w400),
@@ -182,9 +185,9 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
               onTap: () {
                 _provider.setCurrentScreen(const RegisterWidget());
               },
-              child: const Text(
-                'Register',
-                style: TextStyle(
+              child: Text(
+                Utils.instance().multiLanguage(StringConstants.register),
+                style: const TextStyle(
                     decoration: TextDecoration.underline,
                     fontWeight: FontWeight.bold,
                     fontSize: 17),
@@ -196,9 +199,10 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
           onTap: () {
             _provider.setCurrentScreen(const ForgotPasswordWidget());
           },
-          child: const Text(
-            'Forgot password ?',
-            style: TextStyle(
+          child: Text(
+            Utils.instance()
+                .multiLanguage(StringConstants.forgot_password_button_title),
+            style: const TextStyle(
                 decoration: TextDecoration.underline,
                 color: Colors.black,
                 fontSize: 13,
@@ -210,15 +214,15 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   }
 
   void _onPressLogin() {
-    String email = _txtEmailController.text.trim();
-    String password = _txtPasswordController.text.trim();
+    String email = _txtEmailController.text.toLowerCase().trim();
+    String password = _txtPasswordController.text.toLowerCase().trim();
 
     LoginPresenter presenter = LoginPresenter(this);
-    presenter.login(email, password);
+    presenter.login(context, email, password);
   }
 
   @override
-  void onLoginComplete() {
+  void onLoginComplete() {  
     _loading?.hide();
     Navigations.instance().goToMainWidget(context);
   }
@@ -226,10 +230,14 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   @override
   void onLoginError(String message) {
     _loading?.hide();
+    if (message == StringConstants.login_wrong_message) {
+      message =
+          Utils.instance().multiLanguage(StringConstants.login_wrong_message);
+    }
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
   }
 }

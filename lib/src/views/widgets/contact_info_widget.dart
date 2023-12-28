@@ -47,8 +47,8 @@ class _ContactInfoWidgetState extends State<ContactInfoWidget> {
             '${_packageInfo.appName} version ${_packageInfo.version}',
             style: CustomTextStyle.textGrey_14,
           ),
-          const Text(
-            'Contact: support@ielts-correction.com',
+          Text(
+            '${Utils.instance().multiLanguage(StringConstants.contact)}: support@ielts-correction.com',
             style: CustomTextStyle.textGrey_14,
           ),
           const SizedBox(

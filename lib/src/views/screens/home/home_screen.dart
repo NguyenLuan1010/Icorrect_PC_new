@@ -1,24 +1,31 @@
 import 'dart:collection';
 
-import 'package:fdottedline_nullsafety/fdottedline__nullsafety.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/core/camera_service.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/homework_models/class_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/homework_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
+import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
-import 'package:icorrect_pc/src/utils/define_object.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
-import 'package:icorrect_pc/src/views/widgets/simulator_test_widget/download_progressing_widget.dart';
+import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/download_progressing_widget.dart';
 
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../core/app_colors.dart';
 import '../../../models/homework_models/new_api_135/new_class_model.dart';
+import '../../../models/log_models/log_model.dart';
 import '../../../presenters/home_presenter.dart';
+import '../../../providers/camera_preview_provider.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
+import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
 import '../../widgets/nothing_widget.dart';
 
@@ -31,52 +38,66 @@ class HomeWorksWidget extends StatefulWidget {
 
 class _HomeWorksWidgetState extends State<HomeWorksWidget>
     implements HomeWorkViewContract {
+  double w = 0, h = 0;
   late HomeProvider _provider;
   String _choosenStatus = '';
 
   CircleLoading? _loading;
   late HomeWorkPresenter _presenter;
-
-  final List<String> _statusSelections = [
-    'All',
-    'Submitted',
-    'Corrected',
-    'Not Completed',
-    'Late',
-    'Out of date'
-  ];
+  CameraPreviewProvider? _cameraPreviewProvider;
 
   @override
   void initState() {
     super.initState();
 
     _provider = Provider.of<HomeProvider>(context, listen: false);
+    _cameraPreviewProvider =
+        Provider.of<CameraPreviewProvider>(context, listen: false);
 
-    _choosenStatus = _statusSelections.first;
+    _choosenStatus = _provider.statusSelections.first;
     _loading = CircleLoading();
 
     _loading?.show(context);
     _presenter = HomeWorkPresenter(this);
-    _presenter.getListHomeWork();
+    _presenter.getListHomeWork(context);
 
     Future.delayed(Duration.zero, () {
       _provider.clearData();
     });
+
+    Utils.instance().sendLog();
+    // CameraService.instance().fetchCameras(provider: _cameraPreviewProvider!);
   }
 
   @override
   void dispose() {
     dispose();
-    super.dispose();
+    super.dispose(); 
     _provider.dispose();
+    _loading!.hide();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _buildWidget();
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
+    return Consumer<AuthWidgetProvider>(builder: (context, provider, child) {
+      if (provider.isRefresh) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _loading?.show(context);
+          _provider.setStatusActivity(
+              Utils.instance().multiLanguage(StringConstants.all));
+          _presenter.getListHomeWork(context);
+          provider.setRefresh(false);
+        });
+      }
+      return (w < SizeLayout.HomeScreenTabletSize)
+          ? _buildTabletLayout()
+          : _buildDesktopLayout();
+    });
   }
 
-  Widget _buildWidget() {
+  Widget _buildDesktopLayout() {
     return Container(
       alignment: Alignment.center,
       child: SingleChildScrollView(
@@ -95,6 +116,26 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     );
   }
 
+  Widget _buildTabletLayout() {
+    return Container(
+      alignment: Alignment.center,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+                height: 200,
+                margin: const EdgeInsets.symmetric(horizontal: 170),
+                child: Column(
+                  children: [_builClassFilter(), _buildStatusFilter()],
+                )),
+            _buildHomeworkList()
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _builClassFilter() {
     return Expanded(
         child: Consumer<HomeProvider>(builder: (context, provider, child) {
@@ -103,8 +144,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Class Filter",
-                  style: TextStyle(
+              Text(Utils.instance().multiLanguage(StringConstants.class_filter),
+                  style: const TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               DropdownButtonFormField<NewClassModel>(
@@ -119,11 +160,20 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   );
                 }).toList(),
                 onChanged: (NewClassModel? newValue) {
-                  _provider.setClassSelection(newValue!);
+                  if (kDebugMode) {
+                    print("DEBUG: ${newValue!.name}");
+                  }
+                  provider.setClassSelection(newValue!);
                   List<ActivitiesModel> activities =
-                      _presenter.filterActivities(newValue.id,
-                          provider.activitiesList, provider.statusActivity,_provider.currentTime);
-                  _provider.setActivitiesFilter(activities);
+                      _presenter.filterActivities(
+                          newValue.id,
+                          newValue.activities,
+                          provider.statusActivity,
+                          provider.currentTime);
+                  if (kDebugMode) {
+                    print("DEBUG: activities: ${activities.length}");
+                  }
+                  provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
                   contentPadding:
@@ -155,13 +205,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Status Filter',
-                  style: TextStyle(
+              Text(
+                  Utils.instance().multiLanguage(StringConstants.status_filter),
+                  style: const TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: provider.statusActivity,
-                items: _statusSelections.map((String value) {
+                items: provider.statusSelections.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(
@@ -171,11 +222,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
-                  _provider.setStatusActivity(newValue!);
+                  provider.setStatusActivity(newValue!);
                   List<ActivitiesModel> activities =
-                      _presenter.filterActivities(provider.classSelected.id,
-                          provider.activitiesList, newValue,_provider.currentTime);
-                  _provider.setActivitiesFilter(activities);
+                      _presenter.filterActivities(
+                          provider.classSelected.id,
+                          provider.activitiesList,
+                          newValue,
+                          provider.currentTime);
+                  provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
                   contentPadding:
@@ -206,13 +260,12 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         width: w,
         margin: const EdgeInsets.only(top: 20, left: 100, right: 100),
         child: Consumer<HomeProvider>(builder: (context, provider, child) {
-          return FDottedLine(
+          return DottedBorder(
+              borderType: BorderType.RRect,
+              radius: const Radius.circular(25),
+              dashPattern: [6, 3, 6, 3],
+              strokeWidth: 2,
               color: AppColors.defaultPurpleColor,
-              strokeWidth: 2.0,
-              dottedLength: 10.0,
-              width: w,
-              space: 6.0,
-              corner: FDottedLineCorner.all(20),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
@@ -233,49 +286,89 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                     const SizedBox(height: 10),
                     InkWell(
                         onTap: () {
-                          _provider.setStatusActivity("All");
                           _loading?.show(context);
-                          _presenter.getListHomeWork();
+                          _provider.setStatusActivity(Utils.instance()
+                              .multiLanguage(StringConstants.all));
+                          _presenter.getListHomeWork(context);
                         },
-                        child: Container(
+                        child: SizedBox(
                           width: 120,
-                          child: const Row(
+                          child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Icon(Icons.refresh_rounded),
-                                SizedBox(width: 5),
-                                Text('Refresh Data',
-                                    style: TextStyle(
+                                const Icon(Icons.refresh_rounded),
+                                const SizedBox(width: 5),
+                                Text(
+                                    Utils.instance().multiLanguage(
+                                        StringConstants.refresh_data),
+                                    style: const TextStyle(
                                       color: AppColors.purple,
                                       fontSize: 16,
                                     )),
                               ]),
                         )),
-                    SingleChildScrollView(
-                        child: Container(
-                      height: height,
-                      margin: const EdgeInsets.only(top: 10, bottom: 10),
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: (provider.activitiesFilter.isNotEmpty)
-                          ? Center(
-                              child: GridView.count(
-                              crossAxisCount: 2,
-                              childAspectRatio: 7,
-                              crossAxisSpacing: 1,
-                              mainAxisSpacing: 1,
-                              children: provider.activitiesFilter
-                                  .map((data) => _questionItem(data))
-                                  .toList(),
-                            ))
-                          : NothingWidget.init().buildNothingWidget(
-                              'Nothing your homeworks in here',
-                              widthSize: 180,
-                              heightSize: 180),
-                    ))
+                    if (w < SizeLayout.HomeScreenTabletSize)
+                      _buildTabletList()
+                    else
+                      _buildDesktopList()
                   ],
                 ),
               ));
         }));
+  }
+
+  Widget _buildDesktopList() {
+    double height = 450;
+    return Consumer<HomeProvider>(builder: (context, provider, child) {
+      return SingleChildScrollView(
+          child: Container(
+        height: height,
+        margin: const EdgeInsets.only(top: 10, bottom: 10),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: (provider.activitiesFilter.isNotEmpty)
+            ? Center(
+                child: GridView.count(
+                crossAxisCount: 2,
+                childAspectRatio: 7,
+                crossAxisSpacing: 1,
+                mainAxisSpacing: 1,
+                children: provider.activitiesFilter
+                    .map((data) => _questionItem(data))
+                    .toList(),
+              ))
+            : NothingWidget.init().buildNothingWidget(
+                Utils.instance()
+                    .multiLanguage(StringConstants.nothing_your_homework),
+                widthSize: 180,
+                heightSize: 180),
+      ));
+    });
+  }
+
+  Widget _buildTabletList() {
+    double height = 450;
+    return Consumer<HomeProvider>(builder: (context, provider, child) {
+      return SingleChildScrollView(
+          child: Container(
+        height: height,
+        margin: const EdgeInsets.only(top: 10, bottom: 10),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: (provider.activitiesFilter.isNotEmpty)
+            ? Center(
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: provider.activitiesFilter.length,
+                    itemBuilder: (context, index) {
+                      return _questionItem(
+                          provider.activitiesFilter.elementAt(index));
+                    }))
+            : NothingWidget.init().buildNothingWidget(
+                Utils.instance()
+                    .multiLanguage(StringConstants.nothing_your_homework),
+                widthSize: 180,
+                heightSize: 180),
+      ));
+    });
   }
 
   Widget _questionItem(ActivitiesModel homeWork) {
@@ -309,9 +402,9 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Part",
+                    Text(Utils.instance().multiLanguage(StringConstants.part),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: AppColors.purple,
                             fontWeight: FontWeight.w400,
                             fontSize: 8)),
@@ -330,13 +423,36 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                      width: 300,
-                      child: Text(homeWork.activityName.toString(),
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 17, color: Colors.black))),
+                      width: w / 4,
+                      child: Row(
+                        children: [
+                          (homeWork.isExam())
+                              ? Text(
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.test_status),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold))
+                              : Container(),
+                          SizedBox(
+                            width: w / 7,
+                            child: Text(homeWork.activityName.toString(),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 17, color: Colors.black)),
+                          )
+                        ],
+                      )),
                   Row(
                     children: [
+                      Text(
+                          '${Utils.instance().multiLanguage(StringConstants.time_end_title)}: ',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
                       Text(
                           (homeWork.activityEndTime.isNotEmpty)
                               ? homeWork.activityEndTime.toString()
@@ -357,33 +473,48 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
               ),
             ],
           ),
-          (activityStatus == Status.NOT_COMPLETED.get ||
-                  activityStatus == Status.OUT_OF_DATE.get)
+          (activityStatus == Status.notComplete.get ||
+                  activityStatus == Status.outOfDate.get ||
+                  homeWork.activityStatus == Status.loadedTest.get)
               ? SizedBox(
                   width: 100,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigations.instance()
-                          .goToSimulatorTestRoom(context, homeWork);
+                    onPressed: () async {
+                      _onClickStartTest(homeWork);
+                      //Add action log
+                      LogModel actionLog = await Utils.instance()
+                          .prepareToCreateLog(context,
+                              action: LogEvent.actionClickOnHomeworkItem);
+                      actionLog.addData(
+                          key: StringConstants.k_activity_id,
+                          value: homeWork.activityId.toString());
+                      Utils.instance().addLog(actionLog, LogEvent.none);
                     },
                     style: ButtonStyle(
                         backgroundColor:
                             MaterialStateProperty.all<Color>(AppColors.purple),
                         shape: MaterialStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)))),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Text("Start"),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(Utils.instance()
+                          .multiLanguage(StringConstants.start_title)),
                     ),
                   ),
                 )
               : SizedBox(
                   width: 100,
                   child: ElevatedButton(
-                      onPressed: () {
-                        // print('homework id: ${homeWork.id.toString()}');
-                        // _provider.setCurrentMainWidget(
-                        //     ResultTestWidget(homeWork: homeWork));
+                      onPressed: () async {
+                        Navigations.instance().goToMyTest(context, homeWork);
+                        //Add action log
+                        LogModel actionLog = await Utils.instance()
+                            .prepareToCreateLog(context,
+                                action: LogEvent.actionClickOnHomeworkItem);
+                        actionLog.addData(
+                            key: StringConstants.k_activity_id,
+                            value: homeWork.activityId.toString());
+                        Utils.instance().addLog(actionLog, LogEvent.none);
                       },
                       style: ButtonStyle(
                           backgroundColor:
@@ -391,9 +522,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                           shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5)))),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Text("Details"),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(Utils.instance()
+                            .multiLanguage(StringConstants.detail_title)),
                       )),
                 )
         ],
@@ -406,7 +538,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         .getHomeWorkStatus(activitiesModel, _provider.currentTime)['title'];
     String aiStatus = Utils.instance().haveAiResponse(activitiesModel);
     if (aiStatus.isNotEmpty) {
-      return "${status == 'Corrected' ? '$status &' : ''}$aiStatus";
+      return "${status == Utils.instance().multiLanguage(StringConstants.corrected) ? '$status &' : ''}$aiStatus";
     } else {
       return status;
     }
@@ -417,8 +549,39 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     if (aiStatus.isNotEmpty) {
       return const Color.fromARGB(255, 12, 201, 110);
     } else {
-      return Utils.instance().getHomeWorkStatus(activitiesModel,_provider.currentTime)['color'];
+      return Utils.instance()
+          .getHomeWorkStatus(activitiesModel, _provider.currentTime)['color'];
     }
+  }
+
+  void _onClickStartTest(ActivitiesModel homeWork) {
+    if (homeWork.activityStatus == Status.loadedTest.get) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomAlertDialog(
+            title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+            description: Utils.instance()
+                .multiLanguage(StringConstants.loaded_test_warning_message),
+            okButtonTitle: StringConstants.ok_button_title,
+            cancelButtonTitle: null,
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              Navigator.of(context).pop();
+            },
+            cancelButtonTapped: null,
+          );
+        },
+      );
+      return;
+    }
+    if (homeWork.isExam()) {
+      // CameraService.instance()
+      //     .initializeCamera(provider: _cameraPreviewProvider!);
+    }
+    Navigations.instance()
+        .goToSimulatorTestRoom(context, activitiesModel: homeWork);
   }
 
   @override
@@ -430,7 +593,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
     NewClassModel classModel = NewClassModel();
     classModel.id = 0;
-    classModel.name = "All";
+    classModel.name = Utils.instance().multiLanguage(StringConstants.all);
+    classModel.activities = homeworks;
     classes.add(classModel);
     _provider.setClassesList(classes);
     _provider.setClassSelection(classModel);
@@ -442,14 +606,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
     _loading?.hide();
   }
 
   @override
   void onLogoutComplete() {
-    print('onLogoutComplete');
     _loading?.hide();
   }
 
@@ -458,14 +621,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
     _loading?.hide();
   }
 
   @override
   void onUpdateCurrentUserInfo(UserDataModel userDataModel) {
-    print('onUpdateCurrentUserInfo');
     _provider.setCurrentUser(userDataModel);
   }
 }

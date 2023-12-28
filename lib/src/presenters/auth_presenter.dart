@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/data_source/dependency_injection.dart';
 import 'package:icorrect_pc/src/data_source/repositories/auth_repository.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../data_source/local/app_shared_preferences_keys.dart';
 import '../data_source/local/app_shared_references.dart';
@@ -49,14 +51,15 @@ class AuthPresenter {
         _view!.onGetAppConfigInfoSuccess();
       } else {
         _view!.onGetAppConfigInfoFail(
-            "Login error: ${dataMap['error_code']}${dataMap['status']}");
+            "${Utils.instance().multiLanguage(StringConstants.login_error_title)}: ${dataMap['error_code']}${dataMap['status']}");
       }
     }).catchError((onError) {
       if (onError is http.ClientException || onError is SocketException) {
-        _view!.onGetAppConfigInfoFail(
-            'Please check your Internet and try again!');
+        _view!.onGetAppConfigInfoFail(Utils.instance()
+            .multiLanguage(StringConstants.network_error_message));
       } else {
-        _view!.onGetAppConfigInfoFail("An error occur. Please try again!");
+        _view!.onGetAppConfigInfoFail(Utils.instance()
+            .multiLanguage(StringConstants.common_error_message));
       }
     });
   }

@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/repositories/auth_repository.dart';
@@ -9,8 +12,10 @@ import '../models/homework_models/class_model.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
+import '../models/log_models/log_model.dart';
 import '../models/user_data_models/user_data_model.dart';
 import '../utils/utils.dart';
+import 'package:http/http.dart' as http;
 
 abstract class HomeWorkViewContract {
   void onGetListHomeworkComplete(List<ActivitiesModel> homeworks,
@@ -31,39 +36,98 @@ class HomeWorkPresenter {
     _homeWorkRepository = Injector().getHomeWorkRepository();
   }
 
-  void getListHomeWork() async {
+  void getListHomeWork(BuildContext context) async {
     assert(_view != null && _homeWorkRepository != null);
-
-    UserDataModel? currentUser = await Utils.instance().getCurrentUser();
-    if (currentUser == null) {
-      _view!.onGetListHomeworkError("Loading list homework error");
-      return;
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetListHomework);
     }
-
-    _view!.onUpdateCurrentUserInfo(currentUser);
-
-    String email = currentUser.userInfoModel.email;
-    String status = Status.allHomework.get.toString();
-
-    _homeWorkRepository!.getHomeWorks(email, status).then((value) async {
-      Map<String, dynamic> dataMap = jsonDecode(value);
-      if (kDebugMode) {
-        print(jsonEncode(dataMap).toString());
+    try {
+      UserDataModel? currentUser = await Utils.instance().getCurrentUser();
+      if (currentUser == null) {
+        _view!.onGetListHomeworkError(Utils.instance().multiLanguage(
+            StringConstants.loading_error_homeworks_list_message));
+        return;
       }
-      if (dataMap['error_code'] == 200) {
-        List<NewClassModel> classes =
-            await _generateListNewClass(dataMap['data']);
-        List<ActivitiesModel> homeworks = await _generateListHomeWork(classes);
-        _view!.onGetListHomeworkComplete(
-            homeworks, classes, dataMap['current_time']);
-      } else {
-        _view!.onGetListHomeworkError(
-            "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}");
-      }
-    }).catchError(
-      // ignore: invalid_return_type_for_catch_error
-      (onError) => _view!.onGetListHomeworkError(onError.toString()),
-    );
+
+      _view!.onUpdateCurrentUserInfo(currentUser);
+
+      String email = currentUser.userInfoModel.email;
+      String status = Status.allHomework.get.toString();
+
+      _homeWorkRepository!.getHomeWorks(email, status).then((value) async {
+        Map<String, dynamic> dataMap = jsonDecode(value);
+        if (kDebugMode) {
+          print(jsonEncode(dataMap).toString());
+        }
+        if (dataMap['error_code'] == 200) {
+          List<NewClassModel> classes =
+              await _generateListNewClass(dataMap['data']);
+          List<ActivitiesModel> homeworks =
+              await _generateListHomeWork(classes);
+
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: null,
+            status: LogEvent.success,
+          );
+          _view!.onGetListHomeworkComplete(
+              homeworks, classes, dataMap['current_time']);
+        } else {
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message:
+                "${StringConstants.loading_error_homeworks_list}: ${dataMap['error_code']}${dataMap['status']}",
+            status: LogEvent.failed,
+          );
+          _view!.onGetListHomeworkError(
+              "${Utils.instance().multiLanguage(StringConstants.loading_error_homeworks_list)}: ${dataMap['error_code']}${dataMap['status']}");
+        }
+      }).catchError(
+        // ignore: invalid_return_type_for_catch_error
+        (onError) {
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: null,
+            message: onError.toString(),
+            status: LogEvent.failed,
+          );
+          _view!.onGetListHomeworkError(onError.toString());
+        },
+      );
+    } on TimeoutException {
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: StringConstants.time_out_error_message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(Utils.instance()
+          .multiLanguage(StringConstants.time_out_error_message));
+    } on http.ClientException {
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: StringConstants.client_error_message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(
+          Utils.instance().multiLanguage(StringConstants.client_error_message));
+    } on SocketException {
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: StringConstants.socket_error_message,
+        status: LogEvent.failed,
+      );
+      _view!.onGetListHomeworkError(
+          Utils.instance().multiLanguage(StringConstants.socket_error_message));
+    }
   }
 
   Future<List<NewClassModel>> _generateListNewClass(List<dynamic> data) async {
@@ -76,10 +140,10 @@ class HomeWorkPresenter {
   }
 
   List<ActivitiesModel> filterActivities(int classSelectedId,
-      List<ActivitiesModel> activities, String currentTime, String status) {
+      List<ActivitiesModel> activities, String status, String currentTime) {
     List<ActivitiesModel> activitiesFilter = [];
-
-    if (classSelectedId == 0 && status == "All") {
+    if (classSelectedId == 0 &&
+        status == Utils.instance().multiLanguage(StringConstants.all)) {
       return activities;
     }
 
@@ -91,7 +155,8 @@ class HomeWorkPresenter {
         activitiesFilter.add(activity);
       } else if (classSelectedId == 0 && activityStatus['title'] == status) {
         activitiesFilter.add(activity);
-      } else if (activity.classId == classSelectedId && status == "All") {
+      } else if (activity.classId == classSelectedId &&
+          status == Utils.instance().multiLanguage(StringConstants.all)) {
         activitiesFilter.add(activity);
       }
     }
@@ -123,7 +188,8 @@ class HomeWorkPresenter {
         _view!.onLogoutComplete();
       } else {
         _view!.onLogoutError(
-            "Logout error: ${dataMap['error_code']}${dataMap['status']}");
+            "${Utils.instance().multiLanguage(StringConstants.logout_error_title)}: "
+            "${dataMap['error_code']}${dataMap['status']}");
       }
     }).catchError(
       // ignore: invalid_return_type_for_catch_error

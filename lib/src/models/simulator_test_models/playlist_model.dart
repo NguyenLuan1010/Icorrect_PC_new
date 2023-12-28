@@ -5,15 +5,43 @@ class PlayListModel {
   String? _fileIntro;
   String? _fileQuestionNormal;
   String? _fileQuestionSlow;
+  double? _normalSpeed;
+  double? _firstRepeatSpeed;
+  double? _secondRepeatSpeed;
+  int? _part1Time;
+  int? _part2Time;
+  int? _part3Time;
+  int? _takeNoteTime;
+  String? _fileImage;
   String? _questionContent;
+  int? _questionId;
   String? _cueCard;
   String? _endOfTakeNote;
   String? _endOfTest;
   int? _numPart;
   bool? _isFollowUp;
   int? _questionLength;
-
   QuestionTopicModel? _questionTopicModel;
+
+  int get questionId => _questionId ?? 0;
+
+  set questionId(int? value) => _questionId = value;
+
+  double get normalSpeed => _normalSpeed ?? 1.0;
+
+  set normalSpeed(double? value) => _normalSpeed = value;
+
+  double get firstRepeatSpeed => _firstRepeatSpeed ?? 0.85;
+
+  set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
+
+  double get secondRepeatSpeed => _secondRepeatSpeed ?? 0.75;
+
+  set secondRepeatSpeed(value) => _secondRepeatSpeed = value;
+
+  get fileImage => _fileImage ?? "";
+
+  set fileImage(value) => _fileImage = value;
 
   get questionLength => _questionLength ?? 0;
 
@@ -59,4 +87,20 @@ class PlayListModel {
       _questionTopicModel ?? QuestionTopicModel();
 
   set questionTopicModel(value) => _questionTopicModel = value;
+
+  int get part1Time => _part1Time ?? 30;
+
+  set part1Time(int value) => _part1Time = value;
+
+  int get part2Time => _part2Time ?? 120;
+
+  set part2Time(value) => _part2Time = value;
+
+  int get part3Time => _part3Time ?? 45;
+
+  set part3Time(value) => _part3Time = value;
+
+  int get takeNoteTime => _takeNoteTime ?? 60;
+
+  set takeNoteTime(value) => _takeNoteTime = value;
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/new_class_model.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../models/user_data_models/user_data_model.dart';
 import '../presenters/simulator_test_presenter.dart';
@@ -26,7 +28,7 @@ class HomeProvider extends ChangeNotifier {
     _activitiesList = [];
     _classesList = [];
     _classSelected = NewClassModel();
-    _statusActivity = "All";
+    _statusActivity = Utils.instance().multiLanguage(StringConstants.all);
     if (!isDisposed) {
       notifyListeners();
     }
@@ -34,9 +36,26 @@ class HomeProvider extends ChangeNotifier {
 
   String _currentTime = "";
   String get currentTime => _currentTime;
-  void setCurrentTime(String time){
+  void setCurrentTime(String time) {
     _currentTime = time;
-     if (!isDisposed) {
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  List<String> _statusSelections = [
+    Utils.instance().multiLanguage(StringConstants.all),
+    Utils.instance().multiLanguage(StringConstants.submitted),
+    Utils.instance().multiLanguage(StringConstants.corrected),
+    Utils.instance().multiLanguage(StringConstants.not_completed),
+    Utils.instance().multiLanguage(StringConstants.late_title),
+    Utils.instance().multiLanguage(StringConstants.out_of_date)
+  ];
+
+  List<String> get statusSelections => _statusSelections;
+  void setStatusSelections(List<String> selections) {
+    _statusSelections = selections;
+    if (!isDisposed) {
       notifyListeners();
     }
   }
@@ -81,7 +100,7 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-  String _statusActivity = "All";
+  String _statusActivity = Utils.instance().multiLanguage(StringConstants.all) ;
   String get statusActivity => _statusActivity;
 
   void setStatusActivity(String status) {

@@ -28,7 +28,7 @@ class ActivitiesModel {
       String? activityReleaseTime,
       String? activityType,
       int? activityStatus,
-        String? activityTestOption,
+      String? activityTestOption,
       ActivityAnswer? activityAnswer}) {
     _classId = classId;
     _syllabusId = syllabusId;
@@ -67,6 +67,15 @@ class ActivitiesModel {
   set activityAnswer(ActivityAnswer? activityAnswer) =>
       _activityAnswer = activityAnswer;
 
+  bool haveTeacherResponse() {
+    return _activityAnswer != null &&
+        _activityAnswer!.orderId.toString().isNotEmpty;
+  }
+
+  bool haveAIResponse() {
+    return _activityAnswer != null && _activityAnswer!.aiOrder != 0;
+  }
+
   bool canReanswer() {
     if (_activityAnswer != null &&
             (_activityAnswer!.aiOrder != 0 || _activityAnswer!.orderId != 0) ||
@@ -76,11 +85,15 @@ class ActivitiesModel {
     return true;
   }
 
+  bool isExam() {
+    return _activityType == 'exam' || _activityType == 'test';
+  }
+
   ActivitiesModel.fromJson(Map<String, dynamic> json) {
     _classId = json['class_id'];
     _syllabusId = json['syllabus_id'];
     _activityId = json['activity_id'];
-    _activityName = json['activity_name']; 
+    _activityName = json['activity_name'];
     _activityEndTime = json['activity_end_time'];
     _activityReleaseTime = json['activity_release_time'];
     _activityType = json['activity_type'];

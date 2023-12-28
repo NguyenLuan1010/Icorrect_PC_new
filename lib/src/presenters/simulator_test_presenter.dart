@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -13,7 +15,9 @@ import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
 import '../data_source/repositories/simulator_test_repository.dart';
+import '../models/auth_models/video_record_exam_info.dart';
 import '../models/homework_models/new_api_135/activity_answer_model.dart';
+import '../models/log_models/log_model.dart';
 import '../models/simulator_test_models/file_topic_model.dart';
 import '../models/simulator_test_models/question_topic_model.dart';
 import '../models/simulator_test_models/test_detail_model.dart';
@@ -27,6 +31,7 @@ abstract class SimulatorTestViewContract {
   void onGetTestDetailError(String message);
   void onDownloadSuccess(TestDetailModel testDetail, String nameFile,
       double percent, int index, int total);
+  void onDownloadingFile();
   void onDownloadFailure(AlertInfo info);
   void onSaveTopicListIntoProvider(List<TopicModel> list);
   void onGotoMyTestScreen(ActivityAnswer activityAnswer);
@@ -52,7 +57,6 @@ class SimulatorTestPresenter {
     _autoRequestDownloadTimes += 1;
   }
 
-  // http.Client? client;
   Dio? dio;
   final Map<String, String> headers = {
     'Accept': 'application/json',
@@ -77,7 +81,9 @@ class SimulatorTestPresenter {
   TestDetailModel? testDetail;
   List<FileTopicModel>? filesTopic;
 
-  void getTestDetail(String homeworkId) async {
+  //////////////////////////GET TEST DETAIL BY HOMEWORK/////////////////////////
+
+  void getTestDetailByHomework(BuildContext context, String homeworkId) async {
     UserDataModel? currentUser = await Utils.instance().getCurrentUser();
     if (currentUser == null) {
       _view!.onGetTestDetailError("Loading homework detail error!");
@@ -86,10 +92,19 @@ class SimulatorTestPresenter {
 
     String distributeCode = currentUser.userInfoModel.distributorCode;
 
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetTestDetail);
+    }
+
     _testRepository!
-        .getTestDetail(homeworkId, distributeCode)
+        .getTestDetailByHomeWork(homeworkId, distributeCode)
         .then((value) async {
       Map<String, dynamic> map = jsonDecode(value);
+      if (kDebugMode) {
+        print("DEBUG: get detail test $value");
+      }
       if (map['error_code'] == 200) {
         Map<String, dynamic> dataMap = map['data'];
         TestDetailModel tempTestDetailModel = TestDetailModel(testId: 0);
@@ -98,22 +113,129 @@ class SimulatorTestPresenter {
 
         _prepareTopicList(tempTestDetailModel);
 
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: null,
+          status: LogEvent.success,
+        );
+
         List<FileTopicModel> tempFilesTopic =
             _prepareFileTopicListForDownload(tempTestDetailModel);
 
         filesTopic = _prepareFileTopicListForDownload(tempTestDetailModel);
 
-        downloadFiles(tempTestDetailModel, tempFilesTopic);
+        downloadFiles(context, tempTestDetailModel, tempFilesTopic,
+            activityId: homeworkId);
 
         _view!.onGetTestDetailComplete(
             tempTestDetailModel, tempFilesTopic.length);
       } else {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message:
+              "Loading homework detail error: ${map[StringConstants.k_error_code]} ${map[StringConstants.k_status]}",
+          status: LogEvent.failed,
+        );
+
         _view!.onGetTestDetailError(
-            "Loading homework detail error: ${map['error_code']}${map['status']}");
+            "${Utils.instance().multiLanguage(StringConstants.loading_error_homeworks_list)}: ${map['error_code']}${map['status']}");
       }
     }).catchError(
       // ignore: invalid_return_type_for_catch_error
-      (onError) => _view!.onGetTestDetailError(onError.toString()),
+      (onError) {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
+        _view!.onGetTestDetailError(onError.toString());
+      },
+    );
+  }
+
+//////////////////////////GET TEST DETAIL BY PRACTICE/////////////////////////
+  Future getTestDetailByPractice(
+      {required BuildContext context,
+      required int testOption,
+      required List<int> topicsId,
+      required int isPredict}) async {
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiGetTestDetail);
+    }
+
+    _testRepository!
+        .getTestDetailByPractice(
+      testOption: testOption,
+      topicsId: topicsId,
+      isPredict: isPredict,
+    )
+        .then((value) async {
+      Map<String, dynamic> map = jsonDecode(value);
+      if (kDebugMode) {
+        print("DEBUG: get detail test $value");
+      }
+      if (map['error_code'] == 200) {
+        Map<String, dynamic> dataMap = map['data'];
+        TestDetailModel tempTestDetailModel = TestDetailModel(testId: 0);
+        tempTestDetailModel = TestDetailModel.fromJson(dataMap);
+        testDetail = TestDetailModel.fromJson(dataMap);
+
+        _prepareTopicList(tempTestDetailModel);
+
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: null,
+          status: LogEvent.success,
+        );
+
+        List<FileTopicModel> tempFilesTopic =
+            _prepareFileTopicListForDownload(tempTestDetailModel);
+
+        filesTopic = _prepareFileTopicListForDownload(tempTestDetailModel);
+
+        downloadFiles(context, tempTestDetailModel, tempFilesTopic);
+
+        _view!.onGetTestDetailComplete(
+            tempTestDetailModel, tempFilesTopic.length);
+      } else {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message:
+              "Loading practice detail error: ${map[StringConstants.k_error_code]} "
+              "${map[StringConstants.k_status]}",
+          status: LogEvent.failed,
+        );
+
+        _view!.onGetTestDetailError(
+            "${Utils.instance().multiLanguage(StringConstants.load_practice_detail)}:"
+            " ${map['error_code']}${map['status']}");
+      }
+    }).catchError(
+      // ignore: invalid_return_type_for_catch_error
+      (onError) {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
+
+        _view!.onGetTestDetailError(Utils.instance()
+            .multiLanguage(StringConstants.common_error_message));
+      },
     );
   }
 
@@ -143,6 +265,7 @@ class SimulatorTestPresenter {
     //Part 3
     if (0 != testDetail.part3.id && testDetail.part3.title.isNotEmpty) {
       if (testDetail.part3.questionList.isNotEmpty ||
+          testDetail.part3.followUp.isNotEmpty ||
           testDetail.part3.fileEndOfTest.url.isNotEmpty) {
         testDetail.part3.numPart = PartOfTest.part3.get;
         topicsList.add(testDetail.part3);
@@ -183,12 +306,12 @@ class SimulatorTestPresenter {
 
     //Add question files
     for (QuestionTopicModel q in topic.questionList) {
-      allFiles.add(q.files.first);
+      allFiles.addAll(q.files);
       allFiles.addAll(q.answers);
     }
 
     for (QuestionTopicModel q in topic.followUp) {
-      allFiles.add(q.files.first);
+      allFiles.addAll(q.files);
       allFiles.addAll(q.answers);
     }
 
@@ -207,8 +330,9 @@ class SimulatorTestPresenter {
     _view!.onDownloadFailure(alertInfo);
   }
 
-  Future downloadFiles(
-      TestDetailModel testDetail, List<FileTopicModel> filesTopic) async {
+  Future downloadFiles(BuildContext context, TestDetailModel testDetail,
+      List<FileTopicModel> filesTopic,
+      {String? activityId}) async {
     if (null != dio) {
       loop:
       for (int index = 0; index < filesTopic.length; index++) {
@@ -219,9 +343,28 @@ class SimulatorTestPresenter {
 
         if (filesTopic.isNotEmpty) {
           String fileType = Utils.instance().fileType(fileTopic);
+          MediaType mediaType = Utils.instance().mediaType(fileTopic);
           bool isExist = await FileStorageHelper.checkExistFile(
-              fileTopic, MediaType.video, null);
+              fileTopic, mediaType, null);
           if (fileType.isNotEmpty && !isExist) {
+            LogModel? log;
+            if (context.mounted) {
+              log = await Utils.instance().prepareToCreateLog(context,
+                  action: LogEvent.callApiDownloadFile);
+              Map<String, dynamic> fileDownloadInfo = {
+                StringConstants.k_test_id: testDetail.testId.toString(),
+                StringConstants.k_file_name: fileTopic,
+                StringConstants.k_file_path:
+                    downloadFileEP(fileNameForDownload),
+              };
+              if (activityId != null) {
+                fileDownloadInfo.addEntries(
+                    [MapEntry(StringConstants.k_activity_id, activityId)]);
+              }
+              log.addData(
+                  key: "file_download_info",
+                  value: json.encode(fileDownloadInfo));
+            }
             try {
               if (kDebugMode) {
                 print("DEBUG: Downloading file at index = $index");
@@ -229,37 +372,61 @@ class SimulatorTestPresenter {
 
               String url = downloadFileEP(fileNameForDownload);
 
-              dio!.head(url).timeout(const Duration(seconds: 10));
-              // use client.get as you would http.get
+              if (dio == null) {
+                return;
+              }
 
+              _view!.onDownloadingFile();
+
+              dio!.head(url).timeout(const Duration(seconds: 10));
               String savePath =
-                  '${await FileStorageHelper.getFolderPath(MediaType.video, null)}\\$fileTopic';
+                  '${await FileStorageHelper.getFolderPath(mediaType, null)}\\$fileTopic';
               Response response = await dio!.download(url, savePath);
 
               if (response.statusCode == 200) {
-    
-                print('DEBUG : save Path : $savePath');
+                //Add log
+                Utils.instance().prepareLogData(
+                  log: log,
+                  data: null,
+                  message: response.statusMessage,
+                  status: LogEvent.success,
+                );
                 double percent = _getPercent(index + 1, filesTopic.length);
                 _view!.onDownloadSuccess(testDetail, fileTopic, percent,
                     index + 1, filesTopic.length);
               } else {
+                //Add log
+                Utils.instance().prepareLogData(
+                  log: log,
+                  data: null,
+                  message: "Download failed!",
+                  status: LogEvent.failed,
+                );
                 _view!.onDownloadFailure(AlertClass.downloadVideoErrorAlert);
-                reDownloadAutomatic(testDetail, filesTopic);
+                // ignore: use_build_context_synchronously
+                reDownloadAutomatic(context, testDetail, filesTopic,
+                    activityId: activityId);
                 break loop;
               }
             } on TimeoutException {
               _view!.onDownloadFailure(AlertClass.downloadVideoErrorAlert);
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic,
+                  activityId: activityId);
               break loop;
             } on SocketException {
               _view!.onDownloadFailure(AlertClass.downloadVideoErrorAlert);
               //Download again
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic,
+                  activityId: activityId);
               break loop;
             } on http.ClientException {
               _view!.onDownloadFailure(AlertClass.downloadVideoErrorAlert);
               //Download again
-              reDownloadAutomatic(testDetail, filesTopic);
+              // ignore: use_build_context_synchronously
+              reDownloadAutomatic(context, testDetail, filesTopic,
+                  activityId: activityId);
               break loop;
             }
           } else {
@@ -276,14 +443,15 @@ class SimulatorTestPresenter {
     }
   }
 
-  void reDownloadAutomatic(
-      TestDetailModel testDetail, List<FileTopicModel> filesTopic) {
+  void reDownloadAutomatic(BuildContext context, TestDetailModel testDetail,
+      List<FileTopicModel> filesTopic,
+      {String? activityId}) {
     //Download again
     if (autoRequestDownloadTimes <= 3) {
       if (kDebugMode) {
         print("DEBUG: request to download in times: $autoRequestDownloadTimes");
       }
-      downloadFiles(testDetail, filesTopic);
+      downloadFiles(context, testDetail, filesTopic, activityId: activityId);
       increaseAutoRequestDownloadTimes();
     } else {
       //Close old download request
@@ -296,8 +464,8 @@ class SimulatorTestPresenter {
     _view!.onGotoMyTestScreen(activityAnswer);
   }
 
-  void reDownloadFiles() {
-    downloadFiles(testDetail!, filesTopic!);
+  void reDownloadFiles(BuildContext context, {String? activityId}) {
+    downloadFiles(context, testDetail!, filesTopic!, activityId: activityId);
   }
 
   void tryAgainToDownload() async {
@@ -308,18 +476,65 @@ class SimulatorTestPresenter {
     _view!.onTryAgainToDownload();
   }
 
+  String randomVideoRecordExam(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.length > 1) {
+      List<VideoExamRecordInfo> prepareVideoForRandom = [];
+      for (int i = 0; i < videosSaved.length; i++) {
+        if (videosSaved[i].duration! >= 7) {
+          prepareVideoForRandom.add(videosSaved[i]);
+        }
+      }
+      if (prepareVideoForRandom.isEmpty) {
+        return _getMaxDurationVideo(videosSaved);
+      } else {
+        Random random = Random();
+        int elementRandom = random.nextInt(prepareVideoForRandom.length);
+        return prepareVideoForRandom[elementRandom].filePath ?? "";
+      }
+    } else {
+      return _getMaxDurationVideo(videosSaved);
+    }
+  }
+
+  String _getMaxDurationVideo(List<VideoExamRecordInfo> videosSaved) {
+    if (videosSaved.isNotEmpty) {
+      videosSaved.sort(((a, b) => a.duration!.compareTo(b.duration!)));
+      VideoExamRecordInfo maxValue = videosSaved.last;
+      return maxValue.filePath ?? '';
+    }
+    return '';
+  }
+
   Future<void> submitTest({
+    required BuildContext context,
     required String testId,
     required String activityId,
     required List<QuestionTopicModel> questions,
+    required bool isExam,
+    required bool isUpdate,
+    File? videoConfirmFile,
+    List<Map<String, dynamic>>? logAction,
   }) async {
     assert(_view != null && _testRepository != null);
 
-    http.MultipartRequest multiRequest = await _formDataRequest(
-      testId: testId,
-      activityId: activityId,
-      questions: questions,
-    );
+    //Add log
+    LogModel? log;
+    Map<String, dynamic> dataLog = {};
+
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiSubmitTest);
+    }
+
+    http.MultipartRequest multiRequest = await Utils.instance()
+        .formDataRequestSubmit(
+            testId: testId,
+            activityId: activityId,
+            questions: questions,
+            isUpdate: isUpdate,
+            isExam: isExam,
+            videoConfirmFile: videoConfirmFile,
+            logAction: logAction);
 
     try {
       _testRepository!.submitTest(multiRequest).then((value) {
@@ -329,115 +544,76 @@ class SimulatorTestPresenter {
 
         Map<String, dynamic> json = jsonDecode(value) ?? {};
         if (json['error_code'] == 200) {
-          ActivityAnswer activityAnswer = json[''];
+          //ActivityAnswer activityAnswer = json[''];
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: null,
+            status: LogEvent.success,
+          );
           _view!.onSubmitTestSuccess(
-              'Save your answers successfully!', activityAnswer);
+              Utils.instance()
+                  .multiLanguage(StringConstants.save_your_answers_success),
+              ActivityAnswer());
         } else {
-          _view!.onSubmitTestFail("Has an error when submit this test!");
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: dataLog,
+            message: StringConstants.submit_test_error_message,
+            status: LogEvent.failed,
+          );
+          String errorCode = "";
+          if (json[StringConstants.k_error_code] != null) {
+            errorCode = " [Error Code: ${json[StringConstants.k_error_code]}]";
+          }
+          _view!.onSubmitTestFail(
+              "${Utils.instance().multiLanguage(StringConstants.has_an_error_while_submitting)} ! $errorCode");
         }
-      }).catchError((onError) =>
-          // ignore: invalid_return_type_for_catch_error
-          _view!.onSubmitTestFail("Has an error when submit this test!"));
+      }).catchError((onError) {
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: dataLog,
+          message: onError.toString(),
+          status: LogEvent.failed,
+        );
+
+        _view!.onSubmitTestFail(
+            "${Utils.instance().multiLanguage(StringConstants.has_an_error_while_submitting)} !");
+      });
     } on TimeoutException {
-      _view!.onSubmitTestFail("Has an error when submit this test!");
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_timeout,
+        status: LogEvent.failed,
+      );
+      _view!.onSubmitTestFail(Utils.instance()
+          .multiLanguage(StringConstants.submit_test_error_timeout));
     } on SocketException {
-      _view!.onSubmitTestFail("Has an error when submit this test!");
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_socket,
+        status: LogEvent.failed,
+      );
+      _view!.onSubmitTestFail(Utils.instance()
+          .multiLanguage(StringConstants.submit_test_error_socket));
     } on http.ClientException {
-      _view!.onSubmitTestFail("Has an error when submit this test!");
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: dataLog,
+        message: StringConstants.submit_test_error_client,
+        status: LogEvent.failed,
+      );
+      _view!.onSubmitTestFail(Utils.instance()
+          .multiLanguage(StringConstants.submit_test_error_client));
     }
-  }
-
-  List<MapEntry<String, String>> _generateFormat(
-      QuestionTopicModel q, String suffix) {
-    List<MapEntry<String, String>> result = [];
-
-    if (q.answers.isEmpty) return [];
-
-    for (int i = 0; i < q.answers.length; i++) {
-      result.add(MapEntry("$suffix[$i]", q.answers[i].url));
-    }
-
-    return result;
-  }
-
-  Future<http.MultipartRequest> _formDataRequest({
-    required String testId,
-    required String activityId,
-    required List<QuestionTopicModel> questions,
-  }) async {
-    Directory appDocDirectory = await getApplicationDocumentsDirectory();
-
-    String url = submitHomeWorkV2EP();
-    http.MultipartRequest request =
-        http.MultipartRequest(RequestMethod.post, Uri.parse(url));
-    request.headers.addAll({
-      'Content-Type': 'multipart/form-data',
-      'Authorization': 'Bearer ${await Utils.instance().getAccessToken()}'
-    });
-
-    Map<String, String> formData = {};
-
-    formData.addEntries([MapEntry('test_id', testId)]);
-    formData.addEntries([MapEntry('activity_id', activityId)]);
-    formData.addEntries([const MapEntry('is_update', '0')]);
-
-    if (Platform.isAndroid) {
-      formData.addEntries([const MapEntry('os', "android")]);
-    } else {
-      formData.addEntries([const MapEntry('os', "ios")]);
-    }
-    formData.addEntries([const MapEntry('app_version', '2.0.2')]);
-
-    for (QuestionTopicModel q in questions) {
-      String part = '';
-      switch (q.numPart) {
-        case 0:
-          {
-            part = "introduce";
-            break;
-          }
-        case 1:
-          {
-            part = "part1";
-            break;
-          }
-        case 2:
-          {
-            part = "part2";
-            break;
-          }
-        case 3:
-          {
-            part = "part3";
-            if (q.isFollowUp == 1) {
-              part = "followup";
-            }
-            break;
-          }
-      }
-
-      String prefix = "$part[${q.id}]";
-
-      List<MapEntry<String, String>> temp = _generateFormat(q, prefix);
-      if (temp.isNotEmpty) {
-        formData.addEntries(temp);
-      }
-
-      for (int i = 0; i < q.answers.length; i++) {
-        String path =
-            "${appDocDirectory.path}/${q.answers.elementAt(i).url.toString()}.wav";
-        File audioFile = File(path);
-
-        if (await audioFile.exists()) {
-          request.files.add(
-              await http.MultipartFile.fromPath("$prefix[$i]", audioFile.path));
-        }
-      }
-    }
-
-    request.fields.addAll(formData);
-
-    return request;
   }
 
   void handleEventBackButtonSystem({required bool isQuitTheTest}) {

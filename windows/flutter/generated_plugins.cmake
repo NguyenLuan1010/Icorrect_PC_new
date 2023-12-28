@@ -4,12 +4,16 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
+  camera_windows
   connectivity_plus
   file_selector_windows
+  flutter_desktop_audio_recorder
+  flutter_localization
   permission_handler_windows
   record_windows
   screen_retriever
   video_player_win
+  webview_cef
   window_manager
 )
 

@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/views/screens/auth/login_screen.dart';
 
 class AuthWidgetProvider extends ChangeNotifier {
@@ -78,6 +79,25 @@ class AuthWidgetProvider extends ChangeNotifier {
     }
   }
 
+  String _previousAction = "";
+  String get previousAction => _previousAction;
+  void setPreviousAction(String action) {
+    _previousAction = action;
+  }
+
+  void resetPreviousAction() {
+    _previousAction = "";
+  }
+
+  bool _isRefresh = false;
+  bool get isRefresh => _isRefresh;
+  void setRefresh(bool isRefresh) {
+    _isRefresh = isRefresh;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   List<dynamic> _myGridList = [];
   List<dynamic> get myGridList => _myGridList;
   void setMyGrid(dynamic item) {
@@ -110,6 +130,16 @@ class AuthWidgetProvider extends ChangeNotifier {
   void clearMyGrid() {
     _gridList1 = [];
     _gridList2 = [];
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  bool _playAudioExample = true;
+  bool get playAudioExample => _playAudioExample;
+
+  void setPlayAudioExample(bool visible) {
+    _playAudioExample = visible;
     if (!isDisposed) {
       notifyListeners();
     }

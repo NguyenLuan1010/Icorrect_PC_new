@@ -1,5 +1,3 @@
-
-
 import '../user_data_models/student_model.dart';
 import 'activity_result_model.dart';
 
@@ -106,7 +104,7 @@ class StudentResultModel {
 
   set aiScore(value) => this._aiScore = value;
 
-  get students => this._students;
+  StudentModel get students => _students ?? StudentModel();
 
   set students(value) => this._students = value;
 
@@ -121,6 +119,13 @@ class StudentResultModel {
   get teacherName => this._teacherName;
 
   set teacherName(value) => this._teacherName = value;
+
+  bool haveResponse() {
+    return _orderId != null &&
+        _orderId != 0 &&
+        _overallScore != null &&
+        _overallScore != "0.0";
+  }
 
   StudentResultModel.fromJson(Map<String, dynamic> item) {
     StudentModel studentModel = StudentModel.fromJson(item['student']);

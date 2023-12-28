@@ -1,4 +1,3 @@
-
 import 'package:icorrect_pc/src/models/my_test_models/skill_problem_model.dart';
 
 class ResultResponseModel {
@@ -71,8 +70,7 @@ class ResultResponseModel {
 
   set pronunciation(value) => this._pronunciation = value;
 
-  get overallComment =>
-      this._overallComment ?? 'Nothing overall comment in here';
+  get overallComment => this._overallComment ?? '';
 
   set overallComment(value) => this._overallComment = value;
 

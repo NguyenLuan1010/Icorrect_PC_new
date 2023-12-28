@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 TestDetailModel testDetailModelFromJson(String str) =>
     TestDetailModel.fromJson(json.decode(str));
@@ -21,6 +22,13 @@ class TestDetailModel {
   String? _status;
   String? _updateAt;
   String? _hasOrder;
+  double? _normalSpeed;
+  double? _firstRepeatSpeed;
+  double? _secondRepeatSpeed;
+  int? _part1Time;
+  int? _part2Time;
+  int? _part3Time;
+  int? _takeNoteTime;
 
   TestDetailModel(
       {String? activityType,
@@ -35,7 +43,10 @@ class TestDetailModel {
       String? updateAt,
       String? hasOrder,
       TopicModel? part2,
-      TopicModel? part3}) {
+      TopicModel? part3,
+      double? normalSpeed,
+      double? firstRepeatSpeed,
+      double? secondRepeatSpeed}) {
     _activityType = activityType;
     _testOption = testOption;
     _introduce = introduce;
@@ -49,6 +60,9 @@ class TestDetailModel {
     _hasOrder = hasOrder;
     _part2 = part2;
     _part3 = part3;
+    _normalSpeed = normalSpeed;
+    _firstRepeatSpeed = firstRepeatSpeed;
+    _secondRepeatSpeed = secondRepeatSpeed;
   }
 
   String get activityType => _activityType ?? "";
@@ -77,6 +91,27 @@ class TestDetailModel {
   set part2(TopicModel part2) => _part2 = part2;
   TopicModel get part3 => _part3 ?? TopicModel();
   set part3(TopicModel part3) => _part3 = part3;
+  dynamic get normalSpeed => _normalSpeed ?? 1.0;
+  set normalSpeed(dynamic value) => _normalSpeed = value;
+  get firstRepeatSpeed => _firstRepeatSpeed ?? 0.9;
+  set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
+  get secondRepeatSpeed => _secondRepeatSpeed ?? 0.85;
+  set secondRepeatSpeed(value) => _secondRepeatSpeed = value;
+  int get part1Time => _part1Time ?? 30;
+
+  set part1Time(int value) => _part1Time = value;
+
+  int get part2Time => _part2Time ?? 120;
+
+  set part2Time(value) => _part2Time = value;
+
+  int get part3Time => _part3Time ?? 45;
+
+  set part3Time(value) => _part3Time = value;
+
+  int get takeNoteTime => _takeNoteTime ?? 60;
+
+  set takeNoteTime(value) => _takeNoteTime = value;
 
   TestDetailModel.fromJson(Map<String, dynamic> json) {
     _activityType = json['activity_type'];
@@ -99,6 +134,22 @@ class TestDetailModel {
     _hasOrder = json['has_order'];
     _part2 = json['part2'] != null ? TopicModel.fromJson(json['part2']) : null;
     _part3 = json['part3'] != null ? TopicModel.fromJson(json['part3']) : null;
+    if (json['normal_speed'] != null) {
+      _normalSpeed = Utils.instance().parseToDouble(json['normal_speed']);
+    }
+    if (json['first_repeat_speed'] != null) {
+      _firstRepeatSpeed =
+          Utils.instance().parseToDouble(json['first_repeat_speed']);
+    }
+    if (json['second_repeat_speed'] != null) {
+      _secondRepeatSpeed =
+          Utils.instance().parseToDouble(json['second_repeat_speed']);
+    }
+
+    _part1Time = json['part1_time'] ?? 30;
+    _part2Time = json['part2_time'] ?? 120;
+    _part3Time = json['part3_time'] ?? 45;
+    _takeNoteTime = json['take_note_time'] ?? 60;
   }
 
   Map<String, dynamic> toJson() {

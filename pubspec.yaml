@@ -32,8 +32,6 @@ dependencies:
     sdk: flutter
 
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   http: ^0.13.5 #call api
   shared_preferences: ^2.1.0 #shared reference
@@ -49,18 +47,18 @@ dependencies:
  
   dashed_circular_progress_bar: ^0.0.4
   path: ^1.8.2 
-  record: ^4.4.4
-  #dotted_border: ^2.0.0+3
-  fdottedline_nullsafety: ^2.0.1
   audioplayers: ^4.0.1
   image: ^3.1.2
   permission_handler: ^10.2.0
   flutter_local_notifications: ^13.0.0
   window_manager: ^0.2.7
+  loading_animation_widget: ^1.2.0+4
+  flutter_desktop_audio_recorder: ^0.0.1 
 
   cached_network_image: ^3.2.2
   fluttertoast: ^8.0.9
-  intl: ^0.17.0
+  intl: ^0.18.1
+  record: ^4.4.4
   sizer: ^2.0.15
   image_picker: ^0.8.5+3
   smooth_page_indicator: ^1.0.0+2
@@ -69,10 +67,15 @@ dependencies:
   flutter_launcher_icons: ^0.10.0
   carousel_slider: ^4.0.0
   grouped_list: ^5.1.2
-  webview_flutter: ^4.2.2
-  connectivity_plus: ^4.0.1
-
+  connectivity_plus: ^4.0.1 
   dio: ^5.3.2
+  webview_cef: ^0.1.0
+  camera_windows: ^0.2.1+8
+  #ffmpeg_wasm: ^1.0.1
+  ffmpeg_cli: ^0.2.0
+  shimmer: ^3.0.0
+  dotted_border: ^2.1.0
+  flutter_localization: ^0.1.14
 
 dev_dependencies:
   flutter_test:

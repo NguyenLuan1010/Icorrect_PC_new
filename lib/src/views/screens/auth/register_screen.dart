@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/define_object.dart';
 import '../../widgets/input_field_custom.dart';
 import 'login_screen.dart';
 
@@ -32,7 +33,6 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   void dispose() {
     dispose();
     super.dispose();
-    _provider.dispose();
   }
 
   @override
@@ -84,20 +84,19 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                     SizedBox(
                       width: w / 3,
                       child: ElevatedButton(
-                        onPressed: () {
-                          
-                        },
+                        onPressed: () {},
                         style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(
                                 AppColors.purple),
                             shape: MaterialStateProperty.all(
                                 RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(13)))),
-                        child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Text(
-                              "Register",
-                              style: TextStyle(fontSize: 17),
+                              Utils.instance()
+                                  .multiLanguage(StringConstants.register),
+                              style: const TextStyle(fontSize: 17),
                             )),
                       ),
                     )
@@ -113,8 +112,8 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Email',
-            style: TextStyle(
+        Text(Utils.instance().multiLanguage(StringConstants.register),
+            style: const TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,
                 fontWeight: FontWeight.bold)),
@@ -132,8 +131,8 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Password',
-            style: TextStyle(
+        Text(Utils.instance().multiLanguage(StringConstants.password),
+            style: const TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,
                 fontWeight: FontWeight.bold)),
@@ -175,8 +174,8 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Confirm Password',
-            style: TextStyle(
+        Text(Utils.instance().multiLanguage(StringConstants.confirm_password),
+            style: const TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,
                 fontWeight: FontWeight.bold)),
@@ -218,9 +217,9 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        const Text(
-          'You had an account ?',
-          style: TextStyle(
+        Text(
+          Utils.instance().multiLanguage(StringConstants.you_had_account),
+          style: const TextStyle(
               color: Colors.black, fontSize: 13, fontWeight: FontWeight.w400),
         ),
         const SizedBox(width: 10),
@@ -228,9 +227,10 @@ class _RegisterWidgetState extends State<RegisterWidget> {
           onTap: () {
             _provider.setCurrentScreen(const LoginWidget());
           },
-          child: const Text(
-            'Sign In',
-            style: TextStyle(
+          child: Text(
+            Utils.instance()
+                .multiLanguage(StringConstants.sign_up_button_title),
+            style: const TextStyle(
                 decoration: TextDecoration.underline,
                 fontWeight: FontWeight.bold,
                 fontSize: 17),

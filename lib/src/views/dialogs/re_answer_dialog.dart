@@ -6,12 +6,12 @@ import 'package:icorrect_pc/core/app_assets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:provider/provider.dart';
-import 'package:record/record.dart';
 
+import '../../data_source/local/file_storage_helper.dart';
 import '../../models/simulator_test_models/question_topic_model.dart';
-import '../../presenters/test_room_presenter.dart';
 import '../../providers/re_answer_provider.dart';
 import '../../utils/utils.dart';
+import 'package:record/record.dart';
 
 // ignore: must_be_immutable
 class ReAnswerDialog extends Dialog {
@@ -20,7 +20,8 @@ class ReAnswerDialog extends Dialog {
   Timer? _countDown;
   int _timeRecord = 30;
   late Record _record;
-  final String _filePath = '';
+  String _filePath = '';
+  String _fileName = '';
   final String _currentTestId;
   final Function(QuestionTopicModel question) _finishReanswerCallback;
 
@@ -63,9 +64,10 @@ class ReAnswerDialog extends Dialog {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Your answers are being recorded',
-              style: TextStyle(
+            Text(
+              Utils.instance()
+                  .multiLanguage(StringConstants.answer_being_recorded),
+              style: const TextStyle(
                   color: Colors.black,
                   fontSize: 17,
                   fontWeight: FontWeight.w500),
@@ -105,9 +107,10 @@ class ReAnswerDialog extends Dialog {
                   ),
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(
+                    child: Text(
+                      Utils.instance()
+                          .multiLanguage(StringConstants.cancel_button_title),
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,
                           fontWeight: FontWeight.bold),
@@ -115,31 +118,38 @@ class ReAnswerDialog extends Dialog {
                   ),
                 )),
                 const SizedBox(width: 20),
-                Expanded(
-                    child: ElevatedButton(
-                  onPressed: () {
-                    _finishReAnswer(_question);
-                  },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green),
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                Consumer<ReAnswerProvider>(
+                    builder: (context, reAnswerProvider, child) {
+                  return Expanded(
+                      child: ElevatedButton(
+                    onPressed: () {
+                      _finishReAnswer(_question);
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: _canFinishReanswer()
+                          ? MaterialStateProperty.all<Color>(
+                              const Color.fromARGB(255, 11, 180, 16))
+                          : MaterialStateProperty.all<Color>(
+                              const Color.fromARGB(255, 199, 221, 200)),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Text(
-                      "Finish",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        Utils.instance()
+                            .multiLanguage(StringConstants.finish_button_title),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                )),
+                  ));
+                }),
                 const SizedBox(width: 20),
               ],
             )
@@ -150,15 +160,29 @@ class ReAnswerDialog extends Dialog {
   }
 
   void _finishReAnswer(QuestionTopicModel question) {
-    _record.stop();
-    _countDown!.cancel();
-    _finishReanswerCallback(question);
-    Navigator.pop(_context);
+    if (_canFinishReanswer()) {
+      question.answers.last.url = _fileName;
+      question.reAnswerCount = question.reAnswerCount + 1;
+      _record.stop();
+      _countDown!.cancel();
+      _finishReanswerCallback(question);
+      Navigator.pop(_context);
+    }
   }
 
-  void _cancelReAnswer() {
+  bool _canFinishReanswer() {
+    int timeCounting =
+        Provider.of<ReAnswerProvider>(_context, listen: false).numCount;
+    return _timeRecord - timeCounting >= 2;
+  }
+
+  void _cancelReAnswer() async {
+    if (File(_filePath).existsSync()) {
+      await File(_filePath).delete();
+    }
     _record.stop();
     _countDown!.cancel();
+    // ignore: use_build_context_synchronously
     Navigator.pop(_context);
   }
 
@@ -167,18 +191,19 @@ class ReAnswerDialog extends Dialog {
       _countDown != null ? _countDown!.cancel() : '';
       _countDown = _countDownTimer(_context, _timeRecord, false);
       Provider.of<ReAnswerProvider>(_context, listen: false)
-          .setCountDown("00:$_timeRecord");
+          .setCountDown("00:$_timeRecord", _timeRecord);
     });
   }
 
   void _startRecord() async {
-    String path =
-        await Utils.instance().getAudioPathToPlay(_question, _currentTestId);
-
+    _fileName = '${await Utils.instance().generateAudioFileName()}.wav';
+    _filePath =
+        '${await FileStorageHelper.getFolderPath(MediaType.audio, null)}'
+        '\\$_fileName';
     if (await _record.hasPermission()) {
       await _record.start(
-        path: path,
-        encoder: AudioEncoder.wav,
+        path: _filePath,
+        encoder: Platform.isWindows ? AudioEncoder.wav : AudioEncoder.pcm16bit,
         bitRate: 128000,
         samplingRate: 44100,
       );
@@ -202,7 +227,7 @@ class ReAnswerDialog extends Dialog {
       dynamic secondStr = seconds.toString().padLeft(2, '0');
 
       Provider.of<ReAnswerProvider>(_context, listen: false)
-          .setCountDown("$minuteStr:$secondStr");
+          .setCountDown("$minuteStr:$secondStr", count);
 
       if (count == 0 && !finishCountDown) {
         finishCountDown = true;

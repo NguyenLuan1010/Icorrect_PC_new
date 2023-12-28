@@ -46,12 +46,12 @@ class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
   }
 
   void _autoLogin() async {
-    String token = await Utils.instance().getAccessToken();
+    String token = await Utils.instance().getAccessToken() ?? "";
     Timer(const Duration(milliseconds: 2000), () async {
       if (token.isNotEmpty) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (_) => const MainWidget(),
+            builder: (_) => MainWidget(),
           ),
           ModalRoute.withName('/'),
         );
@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> implements AuthConstract {
     showDialog(
         context: context,
         builder: (context) {
-          return MessageDialog.alertDialog(context, message);
+          return MessageDialog(context: context, message: message);
         });
   }
 
