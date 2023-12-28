@@ -214,7 +214,7 @@ class FilterJsonData {
 }
 
 class SizeLayout {
-  static const HomeScreenTabletSize = 1200;
+  static const HomeScreenTabletSize = 1400;
   static const OthersScreenTabletSize = 1200;
   static const QuestionsListSize = 1200;
   static const MyTestScreenSize = 1200;
@@ -619,7 +619,7 @@ class StringConstants {
   static const String save_test_success_message =
       'Your test is save successfully !';
   static const String fail_to_submit_and_contact_admin_message =
-      'Error! An error occurred. Please try again later. Please contact I Correct admin for support!';
+      'Error! An error occurred.Please check your internet and try again later!';
   static const String network_fail_to_submit =
       'Error! An error occurred.Please check your internet and click Save The Test again';
 

@@ -368,7 +368,7 @@ class MultiLanguage {
     StringConstants.save_test_success_message:
         'Lưu bài nói thành công. Hãy bấm để nghe lại bài nói của mình !',
     StringConstants.fail_to_submit_and_contact_admin_message:
-        'Gặp lỗi khi nộp bài làm, vui lòng liên hệ với đội ngũ Icorrect để được hỗ trợ !',
+        'Gặp lỗi khi nộp bài làm, vui lòng kiểm tra lại internet và thử lại sau !',
     StringConstants.network_fail_to_submit:
         'Đã xảy ra lỗi. Vui lòng kiểm tra lại internet và thử lại !',
   };

@@ -52,7 +52,7 @@ class HomeWorkPresenter {
       }
 
       _view!.onUpdateCurrentUserInfo(currentUser);
-
+ 
       String email = currentUser.userInfoModel.email;
       String status = Status.allHomework.get.toString();
 

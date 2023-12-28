@@ -13,6 +13,7 @@ import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
+import 'package:icorrect_pc/src/views/widgets/grid_view_widget.dart';
 import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/download_progressing_widget.dart';
 
 import 'package:provider/provider.dart';
@@ -72,7 +73,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
   @override
   void dispose() {
     dispose();
-    super.dispose(); 
+    super.dispose();
     _provider.dispose();
     _loading!.hide();
   }
@@ -326,16 +327,11 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         margin: const EdgeInsets.only(top: 10, bottom: 10),
         padding: const EdgeInsets.only(bottom: 20),
         child: (provider.activitiesFilter.isNotEmpty)
-            ? Center(
-                child: GridView.count(
-                crossAxisCount: 2,
-                childAspectRatio: 7,
-                crossAxisSpacing: 1,
-                mainAxisSpacing: 1,
-                children: provider.activitiesFilter
-                    .map((data) => _questionItem(data))
-                    .toList(),
-              ))
+            ? MyGridView(
+                data: provider.activitiesFilter,
+                itemWidget: (itemModel, index) {
+                  return _questionItem(itemModel);
+                })
             : NothingWidget.init().buildNothingWidget(
                 Utils.instance()
                     .multiLanguage(StringConstants.nothing_your_homework),
@@ -377,159 +373,183 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
             {};
 
     int activityStatus = Utils.instance().getFilterStatus(statusMap['title']);
-    return Container(
-      margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(width: 1, color: AppColors.purple),
-          borderRadius: const BorderRadius.all(Radius.circular(10))),
-      child: Stack(
-        alignment: Alignment.centerRight,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+    return Wrap(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(width: 1, color: AppColors.purple),
+              borderRadius: const BorderRadius.all(Radius.circular(10))),
+          child: Stack(
+            alignment: Alignment.centerRight,
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                margin: const EdgeInsets.only(right: 10),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    border: Border.all(width: 2, color: AppColors.purple),
-                    borderRadius: const BorderRadius.all(Radius.circular(100))),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(Utils.instance().multiLanguage(StringConstants.part),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: AppColors.purple,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 8)),
-                    Text(
-                        Utils.instance().getPartOfTestWithString(
-                            homeWork.activityTestOption),
-                        style: const TextStyle(
-                            color: AppColors.purple,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14))
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(
-                      width: w / 4,
-                      child: Row(
-                        children: [
-                          (homeWork.isExam())
-                              ? Text(
-                                  Utils.instance().multiLanguage(
-                                      StringConstants.test_status),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 17,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold))
-                              : Container(),
-                          SizedBox(
-                            width: w / 7,
-                            child: Text(homeWork.activityName.toString(),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 17, color: Colors.black)),
-                          )
-                        ],
-                      )),
-                  Row(
-                    children: [
-                      Text(
-                          '${Utils.instance().multiLanguage(StringConstants.time_end_title)}: ',
-                          style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
-                      Text(
-                          (homeWork.activityEndTime.isNotEmpty)
-                              ? homeWork.activityEndTime.toString()
-                              : '0000-00-00 00:00',
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black)),
-                      const Text(' | ',
-                          style: TextStyle(fontSize: 12, color: Colors.black)),
-                      Text(_statusOfActivity(homeWork),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: _getColor(homeWork),
-                          ))
-                    ],
-                  )
-                ],
-              ),
-            ],
-          ),
-          (activityStatus == Status.notComplete.get ||
-                  activityStatus == Status.outOfDate.get ||
-                  homeWork.activityStatus == Status.loadedTest.get)
-              ? SizedBox(
-                  width: 100,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      _onClickStartTest(homeWork);
-                      //Add action log
-                      LogModel actionLog = await Utils.instance()
-                          .prepareToCreateLog(context,
-                              action: LogEvent.actionClickOnHomeworkItem);
-                      actionLog.addData(
-                          key: StringConstants.k_activity_id,
-                          value: homeWork.activityId.toString());
-                      Utils.instance().addLog(actionLog, LogEvent.none);
-                    },
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(AppColors.purple),
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)))),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Text(Utils.instance()
-                          .multiLanguage(StringConstants.start_title)),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    margin: const EdgeInsets.only(right: 10),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 2, color: AppColors.purple),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(100))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                            Utils.instance()
+                                .multiLanguage(StringConstants.part),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: AppColors.purple,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 8)),
+                        Text(
+                            Utils.instance().getPartOfTestWithString(
+                                homeWork.activityTestOption),
+                            style: const TextStyle(
+                                color: AppColors.purple,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14))
+                      ],
                     ),
                   ),
-                )
-              : SizedBox(
-                  width: 100,
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        Navigations.instance().goToMyTest(context, homeWork);
-                        //Add action log
-                        LogModel actionLog = await Utils.instance()
-                            .prepareToCreateLog(context,
-                                action: LogEvent.actionClickOnHomeworkItem);
-                        actionLog.addData(
-                            key: StringConstants.k_activity_id,
-                            value: homeWork.activityId.toString());
-                        Utils.instance().addLog(actionLog, LogEvent.none);
-                      },
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.green),
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)))),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text(Utils.instance()
-                            .multiLanguage(StringConstants.detail_title)),
-                      )),
-                )
-        ],
-      ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                          width: w / 4.5,
+                          child: Row(
+                            children: [
+                              (homeWork.isExam())
+                                  ? Text(
+                                      Utils.instance().multiLanguage(
+                                          StringConstants.test_status),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold))
+                                  : Container(),
+                              SizedBox(
+                                width: w / 4.5,
+                                child: Text(homeWork.activityName.toString(),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    softWrap: true,
+                                    style: const TextStyle(
+                                        fontSize: 17, color: Colors.black)),
+                              )
+                            ],
+                          )),
+                      SizedBox(
+                        width: w / 4,
+                        child: Row(
+                          children: [
+                            Text(
+                                '${Utils.instance().multiLanguage(StringConstants.time_end_title)}: ',
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold)),
+                            Text(
+                                (homeWork.activityEndTime.isNotEmpty)
+                                    ? homeWork.activityEndTime.toString()
+                                    : '0000-00-00 00:00',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black)),
+                            const Text(' | ',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.black)),
+                            SizedBox(
+                              width: (w / 4) - 200,
+                              child: Text(_statusOfActivity(homeWork),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: _getColor(homeWork),
+                                  )),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+              (activityStatus == Status.notComplete.get ||
+                      activityStatus == Status.outOfDate.get ||
+                      homeWork.activityStatus == Status.loadedTest.get)
+                  ? SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          _onClickStartTest(homeWork);
+                          //Add action log
+                          LogModel actionLog = await Utils.instance()
+                              .prepareToCreateLog(context,
+                                  action: LogEvent.actionClickOnHomeworkItem);
+                          actionLog.addData(
+                              key: StringConstants.k_activity_id,
+                              value: homeWork.activityId.toString());
+                          Utils.instance().addLog(actionLog, LogEvent.none);
+                        },
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                AppColors.purple),
+                            shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)))),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                              Utils.instance()
+                                  .multiLanguage(StringConstants.start_title),
+                              style: const TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            Navigations.instance()
+                                .goToMyTest(context, homeWork);
+                            //Add action log
+                            LogModel actionLog = await Utils.instance()
+                                .prepareToCreateLog(context,
+                                    action: LogEvent.actionClickOnHomeworkItem);
+                            actionLog.addData(
+                                key: StringConstants.k_activity_id,
+                                value: homeWork.activityId.toString());
+                            Utils.instance().addLog(actionLog, LogEvent.none);
+                          },
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.green),
+                              shape: MaterialStateProperty.all(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5)))),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text(
+                                Utils.instance().multiLanguage(
+                                    StringConstants.detail_title),
+                                style: const TextStyle(color: Colors.white)),
+                          )),
+                    )
+            ],
+          ),
+        )
+      ],
     );
   }
 

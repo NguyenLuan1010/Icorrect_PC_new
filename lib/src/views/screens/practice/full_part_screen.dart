@@ -24,6 +24,7 @@ class FullPartScreen extends StatefulWidget {
 
 class _FullPartScreenState extends State<FullPartScreen>
     implements IELTSTopicsListConstract {
+  double w = 0, h = 0;
   IELTSTopicsListPresenter? _presenter;
 
   @override
@@ -34,6 +35,8 @@ class _FullPartScreenState extends State<FullPartScreen>
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     return _buildTopicPanel();
   }
 
@@ -262,7 +265,7 @@ class _FullPartScreenState extends State<FullPartScreen>
                       color: AppColors.defaultPurpleColor),
               const SizedBox(width: 5),
               SizedBox(
-                  width: 250,
+                  width: w / 7,
                   child: Text(
                     topic.title.toUpperCase(),
                     style: const TextStyle(
