@@ -44,6 +44,7 @@ import '../../widgets/simulator_test_widgets/download_progressing_widget.dart';
 
 class MyTestScreen extends StatefulWidget {
   ActivitiesModel homeWork;
+
   MyTestScreen({super.key, required this.homeWork});
 
   @override
@@ -205,27 +206,39 @@ class _MyTestScreenState extends State<MyTestScreen>
 
   _getTabs() {
     var tabs = [
-      Tab(
-          text: Utils.instance()
-              .multiLanguage(StringConstants.test_detail_title)),
+      Container(
+          child: Tab(
+              text: Utils.instance()
+                  .multiLanguage(StringConstants.test_detail_title)),
+          padding: const EdgeInsets.symmetric(horizontal: 20)),
     ];
     if (widget.homeWork.activityAnswer != null) {
       if (widget.homeWork.activityAnswer!.hasTeacherResponse()) {
-        tabs.add(Tab(
-            text: Utils.instance()
-                .multiLanguage(StringConstants.response_title)));
+        tabs.add(Container(
+            child: Tab(
+                text: Utils.instance()
+                    .multiLanguage(StringConstants.response_title)),
+            padding: const EdgeInsets.symmetric(horizontal: 20)));
       }
     }
     tabs.addAll([
-      Tab(
-          text:
-              Utils.instance().multiLanguage(StringConstants.highlight_title)),
-      Tab(text: Utils.instance().multiLanguage(StringConstants.others_list)),
+      Container(
+          child: Tab(
+              text: Utils.instance()
+                  .multiLanguage(StringConstants.highlight_title)),
+          padding: const EdgeInsets.symmetric(horizontal: 20)),
+      Container(
+          child: Tab(
+              text:
+                  Utils.instance().multiLanguage(StringConstants.others_list)),
+          padding: const EdgeInsets.symmetric(horizontal: 20))
     ]);
     if (widget.homeWork.haveAIResponse()) {
-      tabs.add(Tab(
-          text: Utils.instance()
-              .multiLanguage(StringConstants.ai_response_title)));
+      tabs.add(Container(
+          child: Tab(
+              text: Utils.instance()
+                  .multiLanguage(StringConstants.ai_response_title)),
+          padding: const EdgeInsets.symmetric(horizontal: 10)));
     }
     return tabs;
   }

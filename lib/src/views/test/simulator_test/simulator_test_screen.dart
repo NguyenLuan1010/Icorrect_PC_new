@@ -98,6 +98,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       if (kDebugMode) {
         print("DEBUG: NO INTERNET === $isOffline");
       }
+      if(isOffline){
+        Future.delayed(Duration.zero,(){
+          _showCheckNetworkDialog();
+        });
+      }
     });
 
     super.initState();
@@ -623,12 +628,6 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     }
   }
 
-  @override
-  Future<void> onDownloadingFile() async {
-    if (isOffline) {
-      _showCheckNetworkDialog();
-    }
-  }
 
   @override
   void onDownloadFailure(AlertInfo info) {

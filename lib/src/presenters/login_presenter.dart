@@ -73,7 +73,7 @@ class LoginPresenter {
           );
         } else {
           _view!.onLoginError(Utils.instance()
-              .multiLanguage(StringConstants.common_error_message));
+              .multiLanguage(StringConstants.network_error_message));
           //Add log
           Utils.instance().prepareLogData(
             log: log,
@@ -95,12 +95,12 @@ class LoginPresenter {
           status: LogEvent.failed,
         );
       } else {
-        _view!.onLoginError(StringConstants.common_error_message);
+        _view!.onLoginError(StringConstants.network_error_message);
         //Add log
         Utils.instance().prepareLogData(
           log: log,
           data: null,
-          message: StringConstants.common_error_message,
+          message: StringConstants.network_error_message,
           status: LogEvent.failed,
         );
       }

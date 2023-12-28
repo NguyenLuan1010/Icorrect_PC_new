@@ -11,6 +11,7 @@ import '../../../models/homework_models/new_api_135/activities_model.dart';
 import '../../../models/user_data_models/user_data_model.dart';
 import '../../../presenters/special_homeworks_presenter.dart';
 import '../../../providers/my_test_provider.dart';
+import '../../../utils/navigations.dart';
 import '../../../utils/utils.dart';
 import '../../widgets/nothing_widget.dart';
 
@@ -117,83 +118,95 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
   }
 
   Widget _highLightItem(StudentResultModel results) {
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey, width: 2)),
-        child: Stack(
-          alignment: Alignment.centerRight,
-          children: [
-            Text(Utils.instance().scoreReponse(results)['score'],
-                style: TextStyle(
-                    color: Utils.instance().scoreReponse(results)['color'],
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: 170,
-                  margin: const EdgeInsets.only(right: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        padding: const EdgeInsets.all(0),
-                        child: const CircleAvatar(
-                          child: Image(
-                            image: AssetImage(AppAssets.default_avatar),
-                            fit: BoxFit.fill,
+    return InkWell(
+      hoverColor: Colors.transparent,
+      onTap: () {
+        Navigations.instance()
+            .goToOtherStudentTestScreen(context, results, widget.homeWorkModel);
+      },
+      child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey, width: 2)),
+          child: Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              Text(Utils.instance().scoreReponse(results)['score'],
+                  style: TextStyle(
+                      color: Utils.instance().scoreReponse(results)['color'],
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 170,
+                    margin: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          padding: const EdgeInsets.all(0),
+                          child: const CircleAvatar(
+                            child: Image(
+                              image: AssetImage(AppAssets.default_avatar),
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(results.students!.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Color.fromARGB(255, 92, 90, 90),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400))
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(results.activityResult!.name,
-                        style: const TextStyle(
-                            color: AppColors.purple,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                            '${Utils.instance().multiLanguage(StringConstants.time)} : ',
+                        Text(results.students!.name,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                color: AppColors.purple,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold)),
-                        Text(results.updateAt.toString(),
-                            style: const TextStyle(
-                                color: AppColors.purple,
-                                fontSize: 15,
+                                color: Color.fromARGB(255, 92, 90, 90),
+                                fontSize: 16,
                                 fontWeight: FontWeight.w400))
                       ],
                     ),
-                  ],
-                )
-              ],
-            )
-          ],
-        ));
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: w/6,
+                        child: Text(results.activityResult!.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: AppColors.purple,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                              '${Utils.instance().multiLanguage(StringConstants.time)} : ',
+                              style: const TextStyle(
+                                  color: AppColors.purple,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold)),
+                          Text(results.updateAt.toString(),
+                              style: const TextStyle(
+                                  color: AppColors.purple,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400))
+                        ],
+                      ),
+                    ],
+                  )
+                ],
+              )
+            ],
+          )),
+    );
   }
 
   @override

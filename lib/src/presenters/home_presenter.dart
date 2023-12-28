@@ -90,14 +90,16 @@ class HomeWorkPresenter {
       }).catchError(
         // ignore: invalid_return_type_for_catch_error
         (onError) {
-          //Add log
           Utils.instance().prepareLogData(
             log: log,
             data: null,
             message: onError.toString(),
             status: LogEvent.failed,
           );
-          _view!.onGetListHomeworkError(onError.toString());
+          if(kDebugMode){
+            print("DEBUG:onGetListHomeworkError - ${onError.toString()} ");
+          }
+          _view!.onGetListHomeworkError('${Utils.instance().multiLanguage(StringConstants.network_error_message)}. \nError Detail: ${onError.toString()}');
         },
       );
     } on TimeoutException {

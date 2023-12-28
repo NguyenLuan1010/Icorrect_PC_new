@@ -172,11 +172,16 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(results.activityResult!.name,
-                          style: const TextStyle(
-                              color: AppColors.purple,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500)),
+                      SizedBox(
+                        width: w/6,
+                        child: Text(results.activityResult!.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: AppColors.purple,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500)),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [

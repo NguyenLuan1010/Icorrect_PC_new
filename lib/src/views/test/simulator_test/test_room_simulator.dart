@@ -453,6 +453,9 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future _initVideoController(File file) async {
+    if(kDebugMode){
+      print("DEBUG: File video : ${file.path}");
+    }
     _videoPlayerController = VideoPlayerController.file(file)
       ..initialize().then((value) {
         _videoPlayerController!.value.isPlaying

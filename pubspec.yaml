@@ -38,8 +38,8 @@ dependencies:
   device_info: ^2.0.0 # device info
   path_provider: ^2.0.14 
   provider: ^6.0.5 #provider for state management
-  video_player: ^2.6.1 #video play 
-  video_player_win: ^1.1.0
+  video_player: ^2.5.1
+  video_player_win: ^2.0.0
   video_player_macos: ^2.0.1
   sqflite: ^2.2.6 #database local
   device_info_plus: ^9.0.2

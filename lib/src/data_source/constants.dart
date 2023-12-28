@@ -215,7 +215,7 @@ class FilterJsonData {
 
 class SizeLayout {
   static const HomeScreenTabletSize = 1400;
-  static const OthersScreenTabletSize = 1200;
+  static const OthersScreenTabletSize = 1400;
   static const QuestionsListSize = 1200;
   static const MyTestScreenSize = 1200;
 }

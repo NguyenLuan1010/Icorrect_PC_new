@@ -92,7 +92,8 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
                     child: Text(
                         Utils.instance().multiLanguage(
                             StringConstants.sign_in_button_title),
-                        style: const TextStyle(fontSize: 17))),
+                        style: const TextStyle(
+                            fontSize: 17, color: Colors.white))),
               ),
             )
           ],
@@ -222,7 +223,7 @@ class _LoginState extends State<LoginWidget> implements LoginViewContract {
   }
 
   @override
-  void onLoginComplete() {  
+  void onLoginComplete() {
     _loading?.hide();
     Navigations.instance().goToMainWidget(context);
   }

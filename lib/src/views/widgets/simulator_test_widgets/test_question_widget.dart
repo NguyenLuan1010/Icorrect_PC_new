@@ -144,6 +144,7 @@ class TestQuestionWidget extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
+                    color: AppColors.black
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -152,6 +153,7 @@ class TestQuestionWidget extends StatelessWidget {
                   textAlign: TextAlign.start,
                   style: const TextStyle(
                     fontSize: 15,
+                    color: AppColors.black
                   ),
                 ),
               ],

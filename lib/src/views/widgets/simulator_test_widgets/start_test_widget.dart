@@ -42,7 +42,7 @@ class StartTestWidget extends StatelessWidget {
                     child: Text(
                         Utils.instance()
                             .multiLanguage(StringConstants.start_test_title),
-                        style: const TextStyle(fontSize: 17))),
+                        style: const TextStyle(fontSize: 17,color: Colors.white))),
               )
             ],
           ));

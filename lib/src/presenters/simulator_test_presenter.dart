@@ -31,7 +31,6 @@ abstract class SimulatorTestViewContract {
   void onGetTestDetailError(String message);
   void onDownloadSuccess(TestDetailModel testDetail, String nameFile,
       double percent, int index, int total);
-  void onDownloadingFile();
   void onDownloadFailure(AlertInfo info);
   void onSaveTopicListIntoProvider(List<TopicModel> list);
   void onGotoMyTestScreen(ActivityAnswer activityAnswer);
@@ -375,8 +374,6 @@ class SimulatorTestPresenter {
               if (dio == null) {
                 return;
               }
-
-              _view!.onDownloadingFile();
 
               dio!.head(url).timeout(const Duration(seconds: 10));
               String savePath =

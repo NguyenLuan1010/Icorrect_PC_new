@@ -30,7 +30,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isGettingTestDetail = true;
+
   bool get isGettingTestDetail => _isGettingTestDetail;
+
   void setGettingTestDetailStatus(bool isProcessing) {
     _isGettingTestDetail = isProcessing;
 
@@ -40,7 +42,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isDownloadProgressing = false;
+
   bool get isDownloadProgressing => _isDownloadProgressing;
+
   void setDownloadProgressingStatus(bool isDownloading) {
     _isDownloadProgressing = isDownloading;
 
@@ -50,7 +54,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _startNowAvailable = false;
+
   bool get startNowAvailable => _startNowAvailable;
+
   void setStartNowStatus(bool available) {
     _startNowAvailable = available;
 
@@ -61,7 +67,9 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   //=========================== Downloading video info==========================
   int _total = 0;
+
   int get total => _total;
+
   void setTotal(int total) {
     _total = total;
 
@@ -71,7 +79,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _downloadingIndex = 1;
+
   int get downloadingIndex => _downloadingIndex;
+
   void updateDownloadingIndex(int index) {
     _downloadingIndex = index;
 
@@ -81,7 +91,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   double _downloadingPercent = 0.0;
+
   double get downloadingPercent => _downloadingPercent;
+
   void updateDownloadingPercent(double percent) {
     _downloadingPercent = percent;
 
@@ -91,7 +103,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _permissionDeniedTime = 0;
+
   int get permissionDeniedTime => _permissionDeniedTime;
+
   void setPermissionDeniedTime() {
     _permissionDeniedTime++;
 
@@ -101,7 +115,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   final List<TopicModel> _topicsList = [];
+
   List<TopicModel> get topicsList => _topicsList;
+
   void setTopicsList(List<TopicModel> list) {
     _topicsList.clear();
     _topicsList.addAll(list);
@@ -112,7 +128,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _dialogShowing = false;
+
   bool get dialogShowing => _dialogShowing;
+
   void setDialogShowing(bool isShowing) {
     _dialogShowing = isShowing;
 
@@ -123,7 +141,9 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   //Status of doing the test
   DoingStatus _doingStatus = DoingStatus.none;
+
   DoingStatus get doingStatus => _doingStatus;
+
   void updateDoingStatus(DoingStatus status) {
     _doingStatus = status;
 
@@ -133,13 +153,17 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   String _activityType = '';
+
   String get activityType => _activityType;
+
   void setActivityType(String type) {
     _activityType = type;
   }
 
   SubmitStatus _submitStatus = SubmitStatus.none;
+
   SubmitStatus get submitStatus => _submitStatus;
+
   void updateSubmitStatus(SubmitStatus status) {
     _submitStatus = status;
 
@@ -149,20 +173,26 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   TestDetailModel _currentTestDetail = TestDetailModel();
+
   TestDetailModel get currentTestDetail => _currentTestDetail;
+
   void setCurrentTestDetail(TestDetailModel testDetailModel) {
     _currentTestDetail = testDetailModel;
   }
 
   final List<String> _answerList = [];
+
   List<String> get answerList => _answerList;
+
   void setAnswerList(List<String> list) {
     _answerList.clear();
     _answerList.addAll(list);
   }
 
   bool _isLoadingVideo = false;
+
   bool get isLoadingVideo => _isLoadingVideo;
+
   void setIsLoadingVideo(bool isLoading) {
     _isLoadingVideo = isLoading;
 
@@ -172,7 +202,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _needDownloadAgain = false;
+
   bool get needDownloadAgain => _needDownloadAgain;
+
   void setNeedDownloadAgain(bool need) {
     _needDownloadAgain = need;
 
@@ -182,7 +214,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _visibleRepeat = true;
+
   bool get visibleRepeat => _visibleRepeat;
+
   void setVisibleRepeat(bool visible) {
     _visibleRepeat = visible;
     if (!isDisposed) {
@@ -191,13 +225,17 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _countRepeat = 0;
+
   int get countRepeat => _countRepeat;
+
   void setCountRepeat(int countRepeat) {
     _countRepeat = countRepeat;
   }
 
   List<VideoExamRecordInfo> _videosRecorded = [];
+
   List<VideoExamRecordInfo> get videosRecorded => _videosRecorded;
+
   void setVideosRecorded(List<VideoExamRecordInfo> videos) {
     if (_videosRecorded.isNotEmpty) {
       _videosRecorded.clear();
@@ -225,13 +263,17 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _reviewingCurrentIndex = 0;
+
   int get reviewingCurrentIndex => _reviewingCurrentIndex;
+
   void updateReviewingCurrentIndex(int index) {
     _reviewingCurrentIndex = index;
   }
 
   final List<QuestionTopicModel> _questionList = [];
+
   List<QuestionTopicModel> get questionList => _questionList;
+
   void addCurrentQuestionIntoList({
     required QuestionTopicModel questionTopic,
     required int repeatIndex,
@@ -282,7 +324,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexOfHeaderPart2 = 0;
+
   int get indexOfHeaderPart2 => _indexOfHeaderPart2;
+
   void setIndexOfHeaderPart2(int i) {
     _indexOfHeaderPart2 = i;
 
@@ -292,7 +336,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexOfHeaderPart3 = 0;
+
   int get indexOfHeaderPart3 => _indexOfHeaderPart3;
+
   void setIndexOfHeaderPart3(int i) {
     _indexOfHeaderPart3 = i;
 
@@ -302,7 +348,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexOfCurrentQuestion = 0;
+
   int get indexOfCurrentQuestion => _indexOfCurrentQuestion;
+
   void setIndexOfCurrentQuestion(int i) {
     _indexOfCurrentQuestion = i;
 
@@ -320,7 +368,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexOfCurrentFollowUp = 0;
+
   int get indexOfCurrentFollowUp => _indexOfCurrentFollowUp;
+
   void setIndexOfCurrentFollowUp(int i) {
     _indexOfCurrentFollowUp = i;
 
@@ -338,7 +388,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _finishPlayFollowUp = false;
+
   bool get finishPlayFollowUp => _finishPlayFollowUp;
+
   void setFinishPlayFollowUp(bool isFinish) {
     _finishPlayFollowUp = isFinish;
 
@@ -348,7 +400,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _timeRecord = 0;
+
   int get timeRecord => _timeRecord;
+
   void setTimeRecord(int seconds) {
     _timeRecord = seconds;
 
@@ -358,7 +412,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   final Queue<TopicModel> _topicsQueue = Queue<TopicModel>();
+
   Queue<TopicModel> get topicsQueue => _topicsQueue;
+
   void setTopicsQueue(Queue<TopicModel> queue) {
     _topicsQueue.addAll(queue);
   }
@@ -372,7 +428,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isReviewingPlayAnswer = false;
+
   bool get isReviewingPlayAnswer => _isReviewingPlayAnswer;
+
   void setIsReviewingPlayAnswer(bool isReviewingPlayAnswer) {
     _isReviewingPlayAnswer = isReviewingPlayAnswer;
 
@@ -382,7 +440,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   final List<Map<String, dynamic>> _logActions = [];
+
   List<Map<String, dynamic>> get logActions => _logActions;
+
   void addLogActions(Map<String, dynamic> log) {
     _logActions.add(log);
     if (!isDisposed) {
@@ -399,8 +459,11 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   int _selectedQuestionIndex = -1;
   bool _isPlaying = false;
+
   int get selectedQuestionIndex => _selectedQuestionIndex;
+
   bool get isPlaying => _isPlaying;
+
   void setSelectedQuestionIndex(int i, bool isPlaying) {
     _selectedQuestionIndex = i;
     _isPlaying = isPlaying;
@@ -410,7 +473,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _canPlayAnswer = false;
+
   bool get canPlayAnswer => _canPlayAnswer;
+
   void setCanPlayAnswer(bool canPlayAnswer) {
     _canPlayAnswer = canPlayAnswer;
     if (!isDisposed) {
@@ -419,7 +484,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _canReanswer = false;
+
   bool get canReanswer => _canReanswer;
+
   void setCanReanswer(bool reanswer) {
     _canReanswer = reanswer;
     if (!isDisposed) {
@@ -428,7 +495,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   File _fileImage = File("");
+
   File get fileImage => _fileImage;
+
   void setFileImage(File fileImage) {
     _fileImage = fileImage;
     if (!isDisposed) {
@@ -444,7 +513,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   List<FileTopicModel> _answersRecord = [];
+
   List<FileTopicModel> get answerRecord => _answersRecord;
+
   void addAnswerRecord(FileTopicModel file) {
     _answersRecord.add(file);
     if (!isDisposed) {
@@ -462,7 +533,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _playedIntroduce = false;
+
   bool get playedIntroduce => _playedIntroduce;
+
   void setPlayedIntroduce(bool played) {
     _playedIntroduce = played;
     if (!isDisposed) {
@@ -471,7 +544,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   PlayListModel _currentPlay = PlayListModel();
+
   PlayListModel get currentPlay => _currentPlay;
+
   void setCurrentPlay(PlayListModel play) {
     _currentPlay = play;
     if (!isDisposed) {
@@ -480,7 +555,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _repeatTimes = 0;
+
   int get repeatTimes => _repeatTimes;
+
   void setRepeatTimes(int time) {
     _repeatTimes = time;
     if (!isDisposed) {
@@ -489,7 +566,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexCurrentPlay = 0;
+
   int get indexCurrentPlay => _indexCurrentPlay;
+
   void setIndexCurrentPlay(int index) {
     _indexCurrentPlay = index;
     if (!isDisposed) {
@@ -498,7 +577,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _questionLength = 1;
+
   int get questionLength => _questionLength;
+
   void setQuestionLength(int length) {
     _questionLength = length;
     if (!isDisposed) {
@@ -507,7 +588,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _indexQuestion = 0;
+
   int get indexQuestion => _indexQuestion;
+
   void setIndexQuestion(int index) {
     _indexQuestion = index;
     if (!isDisposed) {
@@ -516,7 +599,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   List<PlayListModel> _playList = [];
+
   List<PlayListModel> get playList => _playList;
+
   void setPlayList(List<PlayListModel> playList) {
     _playList = playList;
     if (!isDisposed) {
@@ -525,7 +610,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _visibleRecord = false;
+
   bool get visibleRecord => _visibleRecord;
+
   void setVisibleRecord(bool visible) {
     _visibleRecord = visible;
     if (!isDisposed) {
@@ -534,7 +621,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _enableRepeatButton = true;
+
   bool get enableRepeatButton => _enableRepeatButton;
+
   void setEnableRepeatButton(bool enable) {
     _enableRepeatButton = enable;
     if (!isDisposed) {
@@ -543,7 +632,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   String _strCountCueCard = "";
+
   String get strCountCueCard => _strCountCueCard;
+
   void setStrCountCueCard(String count) {
     _strCountCueCard = count;
     if (!isDisposed) {
@@ -552,7 +643,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   String _strCountDown = "";
+
   String get strCountDown => _strCountDown;
+
   void setStrCountDown(String count) {
     _strCountDown = count;
     if (!isDisposed) {
@@ -561,7 +654,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   int _currentCount = 100;
+
   int get currentCount => _currentCount;
+
   void setCurrentCount(int count) {
     _currentCount = count;
     if (!isDisposed) {
@@ -570,7 +665,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   QuestionTopicModel _currentQuestion = QuestionTopicModel();
+
   QuestionTopicModel get currentQuestion => _currentQuestion;
+
   void setCurrentQuestion(QuestionTopicModel question) {
     _currentQuestion = question;
     if (!isDisposed) {
@@ -610,7 +707,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   // }
 
   TopicModel _currentTopic = TopicModel();
+
   TopicModel get currentTopic => _currentTopic;
+
   void setCurrentTopic(TopicModel currentTopic) {
     _currentTopic = currentTopic;
     if (!isDisposed) {
@@ -619,7 +718,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isVisibleCueCard = false;
+
   bool get isVisibleCueCard => _isVisibleCueCard;
+
   void setVisibleCueCard(bool visible) {
     _isVisibleCueCard = visible;
     if (!isDisposed) {
@@ -628,7 +729,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isVisibleSaveTheTest = false;
+
   bool get isVisibleSaveTheTest => _isVisibleSaveTheTest;
+
   void setVisibleSaveTheTest(bool visible) {
     _isVisibleSaveTheTest = visible;
     if (!isDisposed) {
@@ -637,7 +740,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   bool _isStartTest = false;
+
   bool get isStartTest => _isStartTest;
+
   void setStartTest(bool status) {
     _isStartTest = status;
     if (!isDisposed) {
@@ -645,9 +750,12 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+
   VideoPlayerController? _videoPlayerController;
+
   VideoPlayerController get videoPlayController =>
       _videoPlayerController ?? VideoPlayerController.networkUrl(Uri.parse(""));
+
   void setPlayController(VideoPlayerController videoPlayerController) {
     _videoPlayerController = videoPlayerController;
     if (!isDisposed) {
@@ -656,7 +764,9 @@ class SimulatorTestProvider extends ChangeNotifier {
   }
 
   List<QuestionTopicModel> _reanswersList = [];
+
   List<QuestionTopicModel> get reanswersList => _reanswersList;
+
   void setReanswerList(List<QuestionTopicModel> list) {
     _reanswersList.clear();
     _reanswersList.addAll(list);
