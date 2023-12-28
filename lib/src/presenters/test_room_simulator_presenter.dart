@@ -14,6 +14,7 @@ import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 
+import '../data_source/api_urls.dart';
 import '../data_source/constants.dart';
 import '../data_source/dependency_injection.dart';
 import '../data_source/local/file_storage_helper.dart';
@@ -22,6 +23,8 @@ import '../models/auth_models/video_record_exam_info.dart';
 import '../models/log_models/log_model.dart';
 import '../models/simulator_test_models/playlist_model.dart';
 import 'package:http/http.dart' as http;
+
+import '../models/user_data_models/user_data_model.dart';
 
 abstract class TestRoomSimulatorContract {
   void playFileVideo(File normalFile, File slowFile);
@@ -223,6 +226,7 @@ class TestRoomSimulatorPresenter {
       _view!.playFileVideo(File(normalPath), File(slowPath));
     } else {
       //Handle have not file question
+      print("Handle have not file question");
     }
   }
 
@@ -236,7 +240,9 @@ class TestRoomSimulatorPresenter {
       _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
-      print("Handle have not file introduce 1");
+      if (kDebugMode) {
+        print("Handle have not file playingEndOfTakeNote");
+      }
     }
   }
 
@@ -250,7 +256,9 @@ class TestRoomSimulatorPresenter {
       _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
-      print("Handle have not file introduce 1");
+      if (kDebugMode) {
+        print("Handle have not file playingEndOfTest");
+      }
     }
   }
 
@@ -441,5 +449,87 @@ class TestRoomSimulatorPresenter {
       );
       _view!.submitAnswerFail(AlertClass.networkFailToSubmit);
     }
+  }
+
+  void callTestPositionApi(
+    BuildContext context, {
+    required String activityId,
+    required int questionIndex,
+  }) async {
+    UserDataModel? currentUser = await Utils.instance().getCurrentUser();
+    if (null == currentUser) return;
+
+    if (kDebugMode) {
+      print(
+          "DEBUG: callTestPositionApi: activityId $activityId - questionIndex $questionIndex");
+    }
+
+    assert(_view != null && _repository != null);
+
+    LogModel? log;
+    if (context.mounted) {
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiTestPosition);
+    }
+
+    String email = currentUser.userInfoModel.email;
+
+    _repository!
+        .callTestPosition(
+            email: email,
+            activityId: activityId,
+            questionIndex: questionIndex,
+            user: testPositionUser,
+            pass: testPositionPass)
+        .then((value) async {
+      if (kDebugMode) {
+        print("DEBUG: callTestPosition $value");
+      }
+
+      //Add information into log
+      log!.addData(key: StringConstants.k_email, value: email);
+      log.addData(key: StringConstants.k_activity_id, value: activityId);
+      log.addData(key: "question_index", value: questionIndex);
+
+      Map<String, dynamic> dataMap = jsonDecode(value);
+      if (dataMap[StringConstants.k_error_code] == 200) {
+        if (kDebugMode) {
+          print("DEBUG: callTestPosition SUCCESS");
+        }
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: jsonDecode(value),
+          message: dataMap[StringConstants.k_message],
+          status: LogEvent.success,
+        );
+      } else {
+        if (kDebugMode) {
+          print("DEBUG: callTestPosition FAIL");
+        }
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message:
+              "CallTestPositionApi error: ${dataMap[StringConstants.k_error_code]}${dataMap[StringConstants.k_status]}",
+          status: LogEvent.failed,
+        );
+      }
+    }).catchError((onError) {
+      String message = '';
+      if (onError is http.ClientException || onError is SocketException) {
+        message = StringConstants.network_error_message;
+      } else {
+        message = StringConstants.common_error_message;
+      }
+      //Add log
+      Utils.instance().prepareLogData(
+        log: log,
+        data: null,
+        message: message,
+        status: LogEvent.failed,
+      );
+    });
   }
 }

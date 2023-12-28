@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../../../core/app_colors.dart';
 import '../../presenters/my_test_presenter.dart';
 import '../../presenters/simulator_test_presenter.dart';
 
 class DownloadAgainWidget extends StatelessWidget {
-  const DownloadAgainWidget(
-      {super.key,
-      required this.onClickTryAgain});
+  const DownloadAgainWidget({super.key, required this.onClickTryAgain});
 
   final Function onClickTryAgain;
 
@@ -30,14 +30,15 @@ class DownloadAgainWidget extends StatelessWidget {
               height: 120,
             ),
             //Message
-            const Padding(
-              padding:
-                  EdgeInsets.only(left: 40, top: 10, right: 40, bottom: 10),
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 40, top: 10, right: 40, bottom: 10),
               child: Center(
                 child: Text(
-                  "A part of data has not downloaded properly. Please check your internet connection and try again.",
+                  Utils.instance().multiLanguage(
+                      StringConstants.data_downloaded_error_message),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 17),
+                  style: const TextStyle(fontSize: 17),
                 ),
               ),
             ),
@@ -46,13 +47,14 @@ class DownloadAgainWidget extends StatelessWidget {
               onTap: () {
                 onClickTryAgain();
               },
-              child: const SizedBox(
+              child: SizedBox(
                 width: 100,
                 height: 60,
                 child: Center(
                   child: Text(
-                    'Try Again',
-                    style: TextStyle(
+                    Utils.instance()
+                        .multiLanguage(StringConstants.try_again_button_title),
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppColors.defaultPurpleColor,
                       fontSize: 17,

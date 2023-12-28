@@ -42,17 +42,21 @@ class TestQuestionWidget extends StatelessWidget {
   final Function(QuestionTopicModel questionTopicModel, int indexQuestion)
       playReAnswerCallBack;
   final Function(QuestionTopicModel questionTopicModel) showTipCallBack;
+  double w = 0, h = 0;
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     if (questions.isEmpty) {
       return Container(
         alignment: Alignment.center,
         margin: const EdgeInsets.all(20),
         height: 300,
-        child: const Text(
-          "Oops, No answer here, please start your test!",
-          style: TextStyle(
+        child: Text(
+          Utils.instance().multiLanguage(
+              StringConstants.no_answer_please_start_your_test_message),
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -78,14 +82,30 @@ class TestQuestionWidget extends StatelessWidget {
         //           QuestionTopicModel question = itemModel;
         //           return _buildTestQuestionItem(context, question, index);
         //         }),
-        child: MyGridView(
-                data: questions,
-                itemWidget: (dynamic itemModel, int index) {
-                  QuestionTopicModel question = itemModel;
-                  return _buildTestQuestionItem(context, question, index);
-                }),
+        child: (w < SizeLayout.QuestionsListSize)
+            ? _buildQuestionsTabletLayout()
+            : _buildQuestionsDesktopLayout(context),
       );
     }
+  }
+
+  Widget _buildQuestionsDesktopLayout(BuildContext context) {
+    return MyGridView(
+        data: questions,
+        itemWidget: (dynamic itemModel, int index) {
+          QuestionTopicModel question = itemModel;
+          return _buildTestQuestionItem(context, question, index);
+        });
+  }
+
+  Widget _buildQuestionsTabletLayout() {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: questions.length,
+        itemBuilder: (context, index) {
+          return _buildTestQuestionItem(
+              context, questions.elementAt(index), index);
+        });
   }
 
   Widget _buildTestQuestionItem(
@@ -182,9 +202,10 @@ class TestQuestionWidget extends StatelessWidget {
                                   onTap: () {
                                     playReAnswerCallBack(question, index);
                                   },
-                                  child: const Text(
-                                    "Re-answer",
-                                    style: TextStyle(
+                                  child: Text(
+                                    Utils.instance().multiLanguage(
+                                        StringConstants.re_answer_button_title),
+                                    style: const TextStyle(
                                       color: Colors.green,
                                       fontWeight: FontWeight.w500,
                                       fontSize: 16,
@@ -200,9 +221,11 @@ class TestQuestionWidget extends StatelessWidget {
                                       onTap: () {
                                         showTipCallBack(question);
                                       },
-                                      child: const Text(
-                                        "View tips",
-                                        style: TextStyle(
+                                      child: Text(
+                                        Utils.instance().multiLanguage(
+                                            StringConstants
+                                                .view_tips_button_title),
+                                        style: const TextStyle(
                                             color: Colors.amber,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500),

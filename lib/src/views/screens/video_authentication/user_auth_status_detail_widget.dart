@@ -88,16 +88,18 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
                       child: VideoPlayerWidget(path: provider.filePathVideo))
                   : GestureDetector(
                       onTap: () {},
-                      child: const AspectRatio(
+                      child: AspectRatio(
                         aspectRatio: 16 / 9,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.video_camera_front_outlined,
+                            const Icon(Icons.video_camera_front_outlined,
                                 size: 100,
                                 color: AppColors.defaultPurpleSightColor),
-                            Text(StringConstants.start_record_video_title,
-                                style: TextStyle(
+                            Text(
+                                Utils.instance().multiLanguage(
+                                    StringConstants.start_record_video_title),
+                                style: const TextStyle(
                                     color: AppColors.defaultGrayColor,
                                     fontSize: 17,
                                     fontWeight: FontWeight.w500))
@@ -148,7 +150,7 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      statusUI.title,
+                      Utils.instance().multiLanguage(statusUI.title),
                       style: TextStyle(
                           color: statusUI.titleColor,
                           fontSize: 17,
@@ -161,7 +163,8 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
                                 provider.userAuthenDetailModel.status ==
                                     UserAuthStatus.reject.get
                             ? note
-                            : statusUI.description,
+                            : Utils.instance()
+                                .multiLanguage(statusUI.description),
                         maxLines: 3,
                         style: const TextStyle(
                             color: Colors.black,
@@ -254,9 +257,10 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
                       child: Text(
                           provider.userAuthenDetailModel.videosAuthDetail
                                   .isNotEmpty
-                              ? StringConstants.record_video_again_title
-                              : StringConstants
-                                  .record_video_authentication_title,
+                              ? Utils.instance().multiLanguage(
+                                  StringConstants.record_video_again_title)
+                              : Utils.instance().multiLanguage(StringConstants
+                                  .record_video_authentication_title),
                           style: const TextStyle(
                               color: AppColors.defaultWhiteColor,
                               fontSize: 18,
@@ -283,10 +287,14 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
       barrierDismissible: false,
       builder: (builderContext) {
         return ConfirmDialogWidget(
-          title: StringConstants.waiting_review_video,
-          message: StringConstants.confirm_record_new_video,
-          cancelButtonTitle: StringConstants.cancel_button_title,
-          okButtonTitle: StringConstants.ok_button_title,
+          title: Utils.instance()
+              .multiLanguage(StringConstants.waiting_review_video),
+          message: Utils.instance()
+              .multiLanguage(StringConstants.confirm_record_new_video),
+          cancelButtonTitle: Utils.instance()
+              .multiLanguage(StringConstants.cancel_button_title),
+          okButtonTitle:
+              Utils.instance().multiLanguage(StringConstants.ok_button_title),
           cancelButtonTapped: () {},
           okButtonTapped: () {
             // CameraService.instance()
@@ -352,7 +360,6 @@ class _UserAuthDetailStatusState extends State<UserAuthDetailStatus>
 
   @override
   void downloadVideoSuccess(String savePath) {
-    print("savePath: $savePath");
     _circleLoading?.hide();
     _provider!.setFileVideoAuth(savePath);
   }

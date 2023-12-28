@@ -85,7 +85,7 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
             image: const DecorationImage(
                 image: AssetImage(AppAssets.bg_test_room), fit: BoxFit.cover)),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             // Container(
             //   width: w / 3,
@@ -119,9 +119,10 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
                             widget.clickUpdateReanswerCallBack();
                           },
                           style: ButtonCustom.init().buttonPurple20(),
-                          child: const Text(
-                            "Update Your Test",
-                            style: TextStyle(fontSize: 18),
+                          child: Text(
+                            Utils.instance().multiLanguage(
+                                StringConstants.update_your_test),
+                            style: const TextStyle(fontSize: 18),
                           ),
                         ),
                       )
@@ -166,11 +167,11 @@ class _ViewMyAnswersState extends State<ViewMyAnswers> {
         widget.provider.setSelectedQuestionIndex(index, false);
       }
       _startPlayAudio(question, index);
-    }else{
+    } else {
       if (isPlaying) {
         await _audioPlayer!.stop();
         widget.provider.setSelectedQuestionIndex(index, false);
-      }else{
+      } else {
         _startPlayAudio(question, index);
       }
     }

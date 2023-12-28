@@ -42,13 +42,19 @@ class Navigations {
         context, MaterialPageRoute(builder: (context) => MainWidget()));
   }
 
-  void goToSimulatorTestRoom(
-      BuildContext context, ActivitiesModel activitiesModel) {
+  void goToSimulatorTestRoom(BuildContext context,
+      {ActivitiesModel? activitiesModel,
+      int? testOption,
+      List<int>? topicsId,
+      int? isPredict}) {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                SimulatorTestScreen(homeWorkModel: activitiesModel)));
+            builder: (context) => SimulatorTestScreen(
+                homeWorkModel: activitiesModel,
+                testOption: testOption,
+                topicsId: topicsId,
+                isPredict: isPredict)));
   }
 
   void goToMyTest(BuildContext context, ActivitiesModel activitiesModel) {

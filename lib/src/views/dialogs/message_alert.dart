@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../../../core/app_colors.dart';
 
@@ -23,15 +25,15 @@ class MessageDialog extends Dialog {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.width;
     return Container(
-      width: w / 3,
+      width: (w < SizeLayout.MyTestScreenSize) ? w : w / 3,
       padding: const EdgeInsets.all(20),
       child: Wrap(
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Notify",
-                  style: TextStyle(
+              Text(Utils.instance().multiLanguage(StringConstants.dialog_title),
+                  style: const TextStyle(
                       fontSize: 18,
                       color: Colors.black,
                       fontWeight: FontWeight.bold)),
@@ -54,9 +56,10 @@ class MessageDialog extends Dialog {
                       minimumSize: const Size(50, 30),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       alignment: Alignment.center),
-                  child: const Text(
-                    "OK",
-                    style: TextStyle(
+                  child: Text(
+                    Utils.instance()
+                        .multiLanguage(StringConstants.ok_button_title),
+                    style: const TextStyle(
                         color: AppColors.purple,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),

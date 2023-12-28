@@ -64,9 +64,10 @@ class ReAnswerDialog extends Dialog {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Your answers are being recorded',
-              style: TextStyle(
+            Text(
+              Utils.instance()
+                  .multiLanguage(StringConstants.answer_being_recorded),
+              style: const TextStyle(
                   color: Colors.black,
                   fontSize: 17,
                   fontWeight: FontWeight.w500),
@@ -106,9 +107,10 @@ class ReAnswerDialog extends Dialog {
                   ),
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(
+                    child: Text(
+                      Utils.instance()
+                          .multiLanguage(StringConstants.cancel_button_title),
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,
                           fontWeight: FontWeight.bold),
@@ -137,9 +139,10 @@ class ReAnswerDialog extends Dialog {
                     ),
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 10),
-                      child: const Text(
-                        "Finish",
-                        style: TextStyle(
+                      child: Text(
+                        Utils.instance()
+                            .multiLanguage(StringConstants.finish_button_title),
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 17,
                             fontWeight: FontWeight.bold),

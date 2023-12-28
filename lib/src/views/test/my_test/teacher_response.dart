@@ -2,10 +2,12 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_model.dart';
 import 'package:icorrect_pc/src/models/my_test_models/result_response_model.dart';
 import 'package:icorrect_pc/src/models/my_test_models/skill_problem_model.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:provider/provider.dart';
 
@@ -44,8 +46,8 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
     _presenter = ResponsePresenter(this);
     if (widget.activitiesModel.haveTeacherResponse()) {
       _loading!.show(context);
-      _presenter!.getResponse(context,
-          widget.activitiesModel.activityAnswer!.orderId.toString());
+      _presenter!.getResponse(
+          context, widget.activitiesModel.activityAnswer!.orderId.toString());
     }
   }
 
@@ -78,7 +80,9 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
                 decoration: const BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(6)),
                     color: AppColors.defaultPurpleColor),
-                child: Text("Overall Score: ${responseModel.overallScore}",
+                child: Text(
+                    "${Utils.instance().multiLanguage(StringConstants.overall_score)}:"
+                    " ${responseModel.overallScore}",
                     style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -109,19 +113,23 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
       children: [
         Column(
           children: [
-            _resultItem('Fluency: ${responseModel.fluency}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.fluency)} ${responseModel.fluency}',
                 responseModel.fluencyProblem),
             const SizedBox(height: 20),
-            _resultItem('Grammatical: ${responseModel.grammatical}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.grammatical)} ${responseModel.grammatical}',
                 responseModel.grammaticalProblem)
           ],
         ),
         Column(
           children: [
-            _resultItem('Lexical Resource: ${responseModel.lexicalResource}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.lexical_resource)} ${responseModel.lexicalResource}',
                 responseModel.lexicalResourceProblem),
             const SizedBox(height: 20),
-            _resultItem('Pronunciation: ${responseModel.pronunciation}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.pronunciation)} ${responseModel.pronunciation}',
                 responseModel.pronunciationProblem)
           ],
         )
@@ -165,7 +173,8 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
                                         index, problems.elementAt(index));
                                   })
                               : NothingWidget.init().buildNothingWidget(
-                                  'No Problem and Solution in here.',
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.no_problem_solution),
                                   widthSize: 150,
                                   heightSize: 150)),
                     ))),
@@ -224,7 +233,8 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
               children: [
                 const Icon(Icons.warning_amber, color: Colors.amber),
                 const SizedBox(width: 10),
-                Text("Problem ${index > 0 ? index : ''}: ",
+                Text(
+                    "${Utils.instance().multiLanguage(StringConstants.problem)} ${index > 0 ? index : ''}: ",
                     style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,
@@ -251,7 +261,9 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
                   children: [
                     const Icon(Icons.light_mode_outlined, color: Colors.amber),
                     const SizedBox(width: 10),
-                    Text("Solution ${index > 0 ? index : ''}: ",
+                    Text(
+                        "${Utils.instance().multiLanguage(StringConstants.solution)}"
+                        " ${index > 0 ? index : ''}: ",
                         style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
@@ -281,10 +293,12 @@ class _TeacherResponseWidgetState extends State<TeacherResponseWidget>
                           border:
                               Border.all(color: AppColors.defaultPurpleColor),
                           borderRadius: BorderRadius.circular(5)),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: Text('Xem ví dụ',
-                            style: TextStyle(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                            Utils.instance()
+                                .multiLanguage(StringConstants.example_title),
+                            style: const TextStyle(
                                 color: AppColors.defaultPurpleColor,
                                 fontSize: 13)),
                       ),

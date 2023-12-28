@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import 'package:provider/provider.dart';
 
@@ -35,67 +37,8 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: ((context, constraints) {
-      // if (constraints.maxWidth < SizeScreen.MINIMUM_WiDTH_2.size) {
-      //   return _buildForgotPasswordFormMobile();
-      // } else {
-      //   return _buildForgotPasswordFormDesktop();
-      // }
       return _buildForgotPasswordFormDesktop();
     }));
-  }
-
-  Widget _buildForgotPasswordFormMobile() {
-    return Center(
-      child: Container(
-        width: 700,
-        height: 300,
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-        margin: const EdgeInsets.only(bottom: 100),
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: AppColors.gray),
-            borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              'Please input your email to recover password !',
-              style: TextStyle(
-                  color: AppColors.gray,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500),
-            ),
-            _buildEmailField(),
-            const SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(AppColors.purple),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Send Verify Code")),
-            ),
-            const SizedBox(height: 15),
-            InkWell(
-              onTap: () {
-                _provider.setCurrentScreen(const LoginWidget());
-              },
-              child: const Text(
-                'Back',
-                style: TextStyle(
-                    decoration: TextDecoration.underline,
-                    color: AppColors.purple,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildForgotPasswordFormDesktop() {
@@ -112,9 +55,10 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Please input your email to recover password !',
-              style: TextStyle(
+            Text(
+              Utils.instance()
+                  .multiLanguage(StringConstants.forgot_password_message),
+              style: const TextStyle(
                   color: AppColors.gray,
                   fontSize: 18,
                   fontWeight: FontWeight.w500),
@@ -128,18 +72,20 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
                       MaterialStateProperty.all<Color>(AppColors.purple),
                   shape: MaterialStateProperty.all(RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(13)))),
-              child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("Send Verify Code")),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(Utils.instance()
+                      .multiLanguage(StringConstants.send_verify_code))),
             ),
             const SizedBox(height: 15),
             InkWell(
               onTap: () {
                 _provider.setCurrentScreen(const LoginWidget());
               },
-              child: const Text(
-                'Back',
-                style: TextStyle(
+              child: Text(
+                Utils.instance()
+                    .multiLanguage(StringConstants.back_button_title),
+                style: const TextStyle(
                     decoration: TextDecoration.underline,
                     color: AppColors.purple,
                     fontSize: 16,
@@ -156,7 +102,7 @@ class _ForgotPasswordWidgetState extends State<ForgotPasswordWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Email',
+        const Text(StringConstants.email,
             style: TextStyle(
                 color: AppColors.purple,
                 fontSize: 15,

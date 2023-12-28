@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import 'auth_form_field.dart';
 
@@ -21,19 +23,21 @@ class EmailInputWidget extends StatelessWidget {
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (emailController.text.isEmpty) {
-          return "E-mail can't be empty";
+          return Utils.instance()
+              .multiLanguage(StringConstants.empty_email_error_message);
         }
 
         if (!RegExp(regexEmail).hasMatch(emailController.text)) {
-          return "Invalid email .Please try again !";
+          return Utils.instance()
+              .multiLanguage(StringConstants.invalid_email_error_message);
         }
 
         return null;
       },
       controller: emailController,
       keyboardType: TextInputType.text,
-      hintText: 'Email',
-      upHintText: 'Email',
+      hintText: StringConstants.email,
+      upHintText: StringConstants.email,
       maxLines: 1,
     );
   }

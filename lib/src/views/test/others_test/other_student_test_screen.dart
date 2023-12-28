@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.dart';
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/providers/student_test_detail_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/test/others_test/corrections_student.dart';
 import 'package:icorrect_pc/src/views/test/others_test/view_other_student_answers.dart';
 import 'package:provider/provider.dart';
@@ -121,7 +123,8 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
                           ))),
                   const SizedBox(width: 10),
                   Text(
-                    'Student: ${widget.resultModel.students.name}',
+                    '${Utils.instance().multiLanguage(StringConstants.student)}:'
+                    ' ${widget.resultModel.students.name}',
                     style: const TextStyle(
                         color: Color.fromARGB(255, 152, 142, 142),
                         fontWeight: FontWeight.w500,
@@ -167,8 +170,10 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
 
   _getTabs() {
     return [
-      const Tab(text: 'Test Detail'),
-      const Tab(text: 'Corrections'),
+      Tab(
+          text: Utils.instance()
+              .multiLanguage(StringConstants.test_detail_title)),
+      Tab(text: Utils.instance().multiLanguage(StringConstants.corrections)),
     ];
   }
 
@@ -304,9 +309,11 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
       context: context,
       builder: (BuildContext context) {
         return CustomAlertDialog(
-          title: "Notify",
-          description: "An error occur. Please check your connection!",
-          okButtonTitle: "OK",
+          title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+          description: Utils.instance()
+              .multiLanguage(StringConstants.network_error_message),
+          okButtonTitle:
+              StringConstants.ok_button_title,
           cancelButtonTitle: null,
           borderRadius: 8,
           hasCloseButton: false,

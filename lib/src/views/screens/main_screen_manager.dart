@@ -10,7 +10,7 @@ import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/confirm_dialog.dart';
 import 'package:icorrect_pc/src/views/screens/home/home_screen.dart';
-import 'package:icorrect_pc/src/views/screens/home/practice_screen.dart';
+import 'package:icorrect_pc/src/views/screens/practice/practice_screen.dart';
 import 'package:icorrect_pc/src/views/screens/video_authentication/user_auth_status_detail_widget.dart';
 
 import 'package:provider/provider.dart';

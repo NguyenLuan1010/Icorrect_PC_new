@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/models/my_test_models/student_result_model.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/student_test_detail_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
@@ -86,7 +87,8 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
                           borderRadius: BorderRadius.all(Radius.circular(6)),
                           color: AppColors.defaultPurpleColor),
                       child: Text(
-                          "Overall Score: ${responseModel.overallScore}",
+                          "${Utils.instance().multiLanguage(StringConstants.overall_score)}:"
+                          " ${responseModel.overallScore}",
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -111,7 +113,8 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
-                    StringConstants.test_correction_wait_response_message,
+                    Utils.instance().multiLanguage(
+                        StringConstants.test_correction_wait_response_message),
                     textAlign: TextAlign.center,
                     style: CustomTextStyle.textWithCustomInfo(
                       context: context,
@@ -132,19 +135,23 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
       children: [
         Column(
           children: [
-            _resultItem('Fluency: ${responseModel.fluency}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.fluency)}: ${responseModel.fluency}',
                 responseModel.fluencyProblem),
             const SizedBox(height: 20),
-            _resultItem('Grammatical: ${responseModel.grammatical}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.grammatical)}: ${responseModel.grammatical}',
                 responseModel.grammaticalProblem)
           ],
         ),
         Column(
           children: [
-            _resultItem('Lexical Resource: ${responseModel.lexicalResource}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.lexical_resource)}: ${responseModel.lexicalResource}',
                 responseModel.lexicalResourceProblem),
             const SizedBox(height: 20),
-            _resultItem('Pronunciation: ${responseModel.pronunciation}',
+            _resultItem(
+                '${Utils.instance().multiLanguage(StringConstants.pronunciation)}: ${responseModel.pronunciation}',
                 responseModel.pronunciationProblem)
           ],
         )
@@ -188,7 +195,8 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
                                         index, problems.elementAt(index));
                                   })
                               : NothingWidget.init().buildNothingWidget(
-                                  'No Problem and Solution in here.',
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.no_problem_solution),
                                   widthSize: 150,
                                   heightSize: 150)),
                     ))),
@@ -247,7 +255,8 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
               children: [
                 const Icon(Icons.warning_amber, color: Colors.amber),
                 const SizedBox(width: 10),
-                Text("Problem ${index > 0 ? index : ''}: ",
+                Text(
+                    "${Utils.instance().multiLanguage(StringConstants.problem)} ${index > 0 ? index : ''}: ",
                     style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,
@@ -274,7 +283,8 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
                   children: [
                     const Icon(Icons.light_mode_outlined, color: Colors.amber),
                     const SizedBox(width: 10),
-                    Text("Solution ${index > 0 ? index : ''}: ",
+                    Text(
+                        "${Utils.instance().multiLanguage(StringConstants.solution)} ${index > 0 ? index : ''}: ",
                         style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
@@ -304,10 +314,12 @@ class _CorrectionsStudentState extends State<CorrectionsStudent>
                           border:
                               Border.all(color: AppColors.defaultPurpleColor),
                           borderRadius: BorderRadius.circular(5)),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: Text('Xem ví dụ',
-                            style: TextStyle(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                            Utils.instance()
+                                .multiLanguage(StringConstants.example_title),
+                            style: const TextStyle(
                                 color: AppColors.defaultPurpleColor,
                                 fontSize: 13)),
                       ),

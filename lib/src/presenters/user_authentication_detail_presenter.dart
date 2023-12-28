@@ -81,8 +81,8 @@ class UserAuthDetailPresenter {
           message: "Something went wrong when load your authentication!",
           status: LogEvent.failed,
         );
-        _view!.getUserAuthDetailFail(
-            "Something went wrong when load your authentication!");
+        _view!.getUserAuthDetailFail(Utils.instance()
+            .multiLanguage(StringConstants.common_error_message));
       }
     }).catchError((e) {
       //Add log
@@ -92,7 +92,8 @@ class UserAuthDetailPresenter {
         message: "Something went wrong when load your authentication!",
         status: LogEvent.failed,
       );
-      _view!.getUserAuthDetailFail("An Error : ${e.toString()}!");
+      _view!.getUserAuthDetailFail(
+          "${Utils.instance().multiLanguage(StringConstants.load_error)} : ${e.toString()}!");
     });
   }
 

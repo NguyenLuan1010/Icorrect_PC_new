@@ -61,38 +61,49 @@ class LoginPresenter {
         );
         _view!.onLoginError(authModel.status);
       } else {
-        String message = '';
         if (authModel.message.isNotEmpty) {
-          _view!.onLoginError(StringConstants.network_error_message);
-          message = StringConstants.network_error_message;
+          _view!.onLoginError(Utils.instance().multiLanguage(Utils.instance()
+              .multiLanguage(StringConstants.network_error_message)));
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: StringConstants.network_error_message,
+            status: LogEvent.failed,
+          );
         } else {
-          _view!.onLoginError(StringConstants.common_error_message);
-          message = '${authModel.errorCode}: ${authModel.status}';
+          _view!.onLoginError(Utils.instance()
+              .multiLanguage(StringConstants.common_error_message));
+          //Add log
+          Utils.instance().prepareLogData(
+            log: log,
+            data: jsonDecode(value),
+            message: '${authModel.errorCode}: ${authModel.status}',
+            status: LogEvent.failed,
+          );
         }
+      }
+    }).catchError((onError) {
+      if (onError is http.ClientException || onError is SocketException) {
+        _view!.onLoginError(Utils.instance()
+            .multiLanguage(StringConstants.network_error_message));
         //Add log
         Utils.instance().prepareLogData(
           log: log,
-          data: jsonDecode(value),
-          message: message,
+          data: null,
+          message: StringConstants.network_error_message,
+          status: LogEvent.failed,
+        );
+      } else {
+        _view!.onLoginError(StringConstants.common_error_message);
+        //Add log
+        Utils.instance().prepareLogData(
+          log: log,
+          data: null,
+          message: StringConstants.common_error_message,
           status: LogEvent.failed,
         );
       }
-    }).catchError((onError) {
-      String message = '';
-      if (onError is http.ClientException || onError is SocketException) {
-        _view!.onLoginError(StringConstants.network_error_message);
-        message = StringConstants.network_error_message;
-      } else {
-        _view!.onLoginError(StringConstants.common_error_message);
-        message = StringConstants.common_error_message;
-      }
-      //Add log
-      Utils.instance().prepareLogData(
-        log: log,
-        data: null,
-        message: message,
-        status: LogEvent.failed,
-      );
     });
   }
 
@@ -136,7 +147,8 @@ class LoginPresenter {
         );
 
         _view!.onLoginError(
-            "Login error: ${dataMap['error_code']}${dataMap['status']}");
+            "${Utils.instance().multiLanguage(StringConstants.login_error_title)}:"
+            "${dataMap['error_code']}${dataMap['status']}");
       }
     }).catchError(
       (onError) {

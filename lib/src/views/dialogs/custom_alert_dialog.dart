@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import '../../../core/app_colors.dart';
 
@@ -37,7 +38,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
     double w = MediaQuery.of(context).size.width;
     return Center(
       child: SizedBox(
-        width: w / 3,
+        width: (w < SizeLayout.MyTestScreenSize) ? w : w / 3,
         child: Wrap(
           children: [
             Dialog(
@@ -48,16 +49,6 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
               ),
               child: Stack(
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 5, right: 5),
-                    alignment: Alignment.topRight,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Icon(Icons.cancel_outlined),
-                    ),
-                  ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -110,7 +101,10 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                                       width: 100,
                                       child: Center(
                                         child: Text(
-                                          widget.cancelButtonTitle ?? "Cancel",
+                                          widget.cancelButtonTitle ??
+                                              Utils.instance().multiLanguage(
+                                                  StringConstants
+                                                      .cancel_button_title),
                                           style: const TextStyle(
                                             fontSize: fontSize_15,
                                             fontWeight: FontWeight.bold,
@@ -136,7 +130,8 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                                       width: 100,
                                       child: Center(
                                         child: Text(
-                                          widget.okButtonTitle ?? "OK",
+                                          widget.okButtonTitle ??
+                                              StringConstants.ok_button_title,
                                           style: const TextStyle(
                                             fontSize: fontSize_15,
                                             fontWeight: FontWeight.bold,
@@ -163,7 +158,9 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                                   width: 150,
                                   child: Center(
                                     child: Text(
-                                      widget.okButtonTitle ?? "OK",
+                                      widget.okButtonTitle ??
+                                          Utils.instance().multiLanguage(
+                                              StringConstants.ok_button_title),
                                       style: const TextStyle(
                                         fontSize: fontSize_15,
                                         fontWeight: FontWeight.bold,
@@ -185,13 +182,8 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                           width: 40,
                           height: 40,
                           child: Center(
-                            child: Image(
-                              image: AssetImage(
-                                  "assets/images/ic_close_black.png"),
-                              width: 15,
-                              height: 15,
-                              fit: BoxFit.fitWidth,
-                            ),
+                            child: Icon(Icons.cancel_outlined,
+                                color: Colors.black),
                           ),
                         ),
                         onTap: () {

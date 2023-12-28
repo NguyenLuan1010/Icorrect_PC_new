@@ -33,12 +33,12 @@ class ChangePasswordPresenter {
     LogModel? log;
     if (context.mounted) {
       //Add action log
-      LogModel actionLog = await Utils.instance().prepareToCreateLog(context,
-          action: LogEvent.actionChangePassword);
+      LogModel actionLog = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.actionChangePassword);
       Utils.instance().addLog(actionLog, LogEvent.none);
 
-      log = await Utils.instance().prepareToCreateLog(context,
-          action: LogEvent.callApiChangePassword);
+      log = await Utils.instance()
+          .prepareToCreateLog(context, action: LogEvent.callApiChangePassword);
     }
 
     _authRepository!
@@ -65,11 +65,12 @@ class ChangePasswordPresenter {
           log: log,
           data: jsonDecode(value),
           message:
-              "Change password error: ${dataMap['error_code']}${dataMap['status']}",
+              "${StringConstants.change_password_error_title}: ${dataMap['error_code']}${dataMap['status']}",
           status: LogEvent.failed,
         );
 
-        _view!.onChangePasswordError("An error occur. Please try again !");
+        _view!.onChangePasswordError(Utils.instance()
+            .multiLanguage(StringConstants.common_error_message));
       }
     }).catchError(
       // ignore: invalid_return_type_for_catch_error
@@ -82,7 +83,8 @@ class ChangePasswordPresenter {
           status: LogEvent.failed,
         );
 
-        _view!.onChangePasswordError("An error occur. Please try again !");
+        _view!.onChangePasswordError(Utils.instance()
+            .multiLanguage(StringConstants.common_error_message));
       },
     );
   }

@@ -29,6 +29,7 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
     implements SpecialHomeworksContracts {
   SpecialHomeworksPresenter? _presenter;
   CircleLoading? _loading;
+  double w = 0, h = 0;
   @override
   void initState() {
     super.initState();
@@ -50,7 +51,7 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
       if (homeWorks.isEmpty) {
         _loading!.show(context);
         _presenter!.getSpecialHomeWorks(
-          context: context,
+            context: context,
             email: userDataModel.userInfoModel.email.toString(),
             activityId: widget.homeWorkModel.activityId.toString(),
             status: Status.highLight.get,
@@ -61,6 +62,8 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     super.build(context);
     return _buildHighLightHomeWorks();
   }
@@ -76,24 +79,41 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
         child: Consumer<MyTestProvider>(builder: (context, provider, child) {
           if (provider.highLightHomeworks.isNotEmpty) {
             return Center(
-                child: GridView.count(
-              crossAxisCount: 2,
-              childAspectRatio: 8,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-              children: provider.highLightHomeworks
-                  .map(
-                    (data) => _highLightItem(data),
-                  )
-                  .toList(),
-            ));
+                child: (w < SizeLayout.OthersScreenTabletSize)
+                    ? _buildOthersTabletLayout(provider.highLightHomeworks)
+                    : _buildHighLightDesktopLayout(
+                        provider.highLightHomeworks));
           } else {
             return NothingWidget.init().buildNothingWidget(
-                'No highlight homeworks in here.',
+                Utils.instance()
+                    .multiLanguage(StringConstants.no_highlight_homework),
                 widthSize: 200,
                 heightSize: 200);
           }
         }));
+  }
+
+  Widget _buildHighLightDesktopLayout(List<StudentResultModel> list) {
+    return GridView.count(
+      crossAxisCount: 2,
+      childAspectRatio: 8,
+      crossAxisSpacing: 1,
+      mainAxisSpacing: 1,
+      children: list
+          .map(
+            (data) => _highLightItem(data),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildOthersTabletLayout(List<StudentResultModel> list) {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          return _highLightItem(list.elementAt(index));
+        });
   }
 
   Widget _highLightItem(StudentResultModel results) {
@@ -155,8 +175,9 @@ class _HighLightHomeWorksState extends State<HighLightHomeWorks>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        const Text('Time : ',
-                            style: TextStyle(
+                        Text(
+                            '${Utils.instance().multiLanguage(StringConstants.time)} : ',
+                            style: const TextStyle(
                                 color: AppColors.purple,
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold)),

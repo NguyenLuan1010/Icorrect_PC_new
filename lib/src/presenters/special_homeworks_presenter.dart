@@ -66,7 +66,7 @@ class SpecialHomeworksPresenter {
             message: StringConstants.get_special_homework_error_message,
             status: LogEvent.failed,
           );
-          _view!.getSpecialHomeWorksFail('Loading result response fail !');
+          _view!.getSpecialHomeWorksFail(StringConstants.load_result_response_fail);
         }
       } else {
         //Add log
@@ -77,7 +77,7 @@ class SpecialHomeworksPresenter {
           status: LogEvent.failed,
         );
         _view!.getSpecialHomeWorksFail(
-            'Loading result response fail.Please check your internet and try again!');
+            StringConstants.load_result_response_fail);
       }
     }).catchError((onError) {
       String message = '';
@@ -95,7 +95,7 @@ class SpecialHomeworksPresenter {
         message = StringConstants.common_error_message;
       }
       _view!.getSpecialHomeWorksFail(
-          'Error when load homeworks : ${onError.toString()}');
+          '${StringConstants.loading_error_homeworks_list} : ${onError.toString()}');
       if (kDebugMode) {
         print("DEBUG: getSpecialHomeWorks ${onError.toString()}");
       }

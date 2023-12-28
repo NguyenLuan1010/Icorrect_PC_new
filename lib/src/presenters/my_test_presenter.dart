@@ -184,7 +184,8 @@ class MyTestPresenter {
       QuestionTopicModel question, int index) {
     return question.copyWith(
         id: question.id,
-        content: "Ask for repeat question",
+        content: Utils.instance()
+            .multiLanguage(StringConstants.ask_for_question_title),
         type: question.type,
         topicId: question.topicId,
         tips: question.tips,
@@ -321,7 +322,7 @@ class MyTestPresenter {
 
               if (response.statusCode == 200) {
                 if (kDebugMode) {
-                  print("DEBUG savePath : ${savePath}");
+                  print("DEBUG savePath : $savePath");
                 }
                 double percent = _getPercent(index + 1, filesTopic.length);
                 _view!.onDownloadSuccess(testDetail, fileTopic, percent,
@@ -416,7 +417,8 @@ class MyTestPresenter {
             message: null,
             status: LogEvent.success,
           );
-          _view!.updateAnswersSuccess('Save your answers successfully!');
+          _view!.updateAnswersSuccess(Utils.instance()
+              .multiLanguage(StringConstants.save_your_answers_success));
         } else {
           //Add log
           Utils.instance().prepareLogData(
@@ -449,7 +451,7 @@ class MyTestPresenter {
         status: LogEvent.failed,
       );
       _view!.updateAnswerFail(AlertClass.timeOutUpdateAnswer);
-    } on SocketException {
+    } on SocketException {  
       //Add log
       Utils.instance().prepareLogData(
         log: log,

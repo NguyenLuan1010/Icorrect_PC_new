@@ -17,6 +17,7 @@ import 'package:icorrect_pc/src/models/simulator_test_models/test_detail_model.d
 import 'package:icorrect_pc/src/models/ui_models/alert_info.dart';
 import 'package:icorrect_pc/src/presenters/my_test_presenter.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:icorrect_pc/src/views/test/my_test/ai_response_widget.dart';
 import 'package:icorrect_pc/src/views/test/my_test/highlight_activities.dart';
@@ -52,6 +53,7 @@ class MyTestScreen extends StatefulWidget {
 class _MyTestScreenState extends State<MyTestScreen>
     with TickerProviderStateMixin
     implements MyTestContract, ActionAlertListener {
+  double w = 0, h = 0;
   TabController? _tabController;
   Permission? _microPermission;
   PermissionStatus _microPermissionStatus = PermissionStatus.denied;
@@ -128,6 +130,8 @@ class _MyTestScreenState extends State<MyTestScreen>
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     return _buildMyTestScreen();
   }
 
@@ -145,16 +149,17 @@ class _MyTestScreenState extends State<MyTestScreen>
                 onTap: () {
                   Navigator.of(context).pop();
                 },
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.keyboard_backspace_sharp,
                       color: AppColors.black,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Text(
-                      'Back',
-                      style: TextStyle(
+                      Utils.instance()
+                          .multiLanguage(StringConstants.back_button_title),
+                      style: const TextStyle(
                           color: AppColors.black,
                           fontWeight: FontWeight.w500,
                           fontSize: 17),
@@ -200,17 +205,27 @@ class _MyTestScreenState extends State<MyTestScreen>
 
   _getTabs() {
     var tabs = [
-      const Tab(text: 'Test\'s Detail'),
-      const Tab(text: 'Highlights'),
-      const Tab(text: 'List Other'),
+      Tab(
+          text: Utils.instance()
+              .multiLanguage(StringConstants.test_detail_title)),
     ];
     if (widget.homeWork.activityAnswer != null) {
       if (widget.homeWork.activityAnswer!.hasTeacherResponse()) {
-        tabs.add(const Tab(text: 'Response'));
+        tabs.add(Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.response_title)));
       }
     }
+    tabs.addAll([
+      Tab(
+          text:
+              Utils.instance().multiLanguage(StringConstants.highlight_title)),
+      Tab(text: Utils.instance().multiLanguage(StringConstants.others_list)),
+    ]);
     if (widget.homeWork.haveAIResponse()) {
-      tabs.add(const Tab(text: 'AI Response'));
+      tabs.add(Tab(
+          text: Utils.instance()
+              .multiLanguage(StringConstants.ai_response_title)));
     }
     return tabs;
   }
@@ -223,7 +238,9 @@ class _MyTestScreenState extends State<MyTestScreen>
           appBar: PreferredSize(
               preferredSize: const Size.fromHeight(40),
               child: Container(
-                margin: const EdgeInsets.only(left: 50, right: 600),
+                margin: EdgeInsets.only(
+                    left: 50,
+                    right: (w < SizeLayout.MyTestScreenSize) ? 0 : 600),
                 child: DefaultTabController(
                     initialIndex: 0,
                     length: _tabLength,
@@ -267,7 +284,8 @@ class _MyTestScreenState extends State<MyTestScreen>
                             url: snapshot.data ?? '',
                           );
                         }
-                        return const Text('Waiting for video to load');
+                        return Text(Utils.instance()
+                            .multiLanguage(StringConstants.waiting_for_video));
                       })
               ]),
         ));
@@ -301,7 +319,6 @@ class _MyTestScreenState extends State<MyTestScreen>
 
   @override
   void downloadFilesFail(AlertInfo alertInfo) {
-    // TODO: implement downloadFilesFail
     showDialog(
         context: context,
         builder: (context) {
@@ -443,9 +460,10 @@ class _MyTestScreenState extends State<MyTestScreen>
       context: context,
       builder: (BuildContext context) {
         return CustomAlertDialog(
-          title: "Notify",
-          description: "An error occur. Please check your connection!",
-          okButtonTitle: "OK",
+          title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+          description: Utils.instance()
+              .multiLanguage(StringConstants.network_error_message),
+          okButtonTitle: StringConstants.ok_button_title,
           cancelButtonTitle: null,
           borderRadius: 8,
           hasCloseButton: false,

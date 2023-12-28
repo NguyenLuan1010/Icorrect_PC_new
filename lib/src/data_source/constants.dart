@@ -112,16 +112,62 @@ enum SubmitStatus {
   final int get;
 }
 
+enum ActivityType {
+  exam,
+  test,
+  homework,
+  practice;
+}
+
+enum IELTSTopicType {
+  part1(['1']),
+  part2(['2']),
+  part3(['3']),
+  part2and3(['2', '3']),
+  full(['4']);
+
+  const IELTSTopicType(this.get);
+  final List<String> get;
+}
+
+enum IELTSTestOption {
+  part1(1),
+  part2(2),
+  part3(3),
+  part2and3(4),
+  full(5);
+
+  const IELTSTestOption(this.get);
+  final int get;
+}
+
+enum IELTSStatus {
+  eachPart('3'),
+  fullPart('2');
+
+  const IELTSStatus(this.get);
+  final String get;
+}
+
+enum IELTSPredict {
+  normalQuestion(0),
+  all(1402),
+  randomQuestion(1);
+
+  const IELTSPredict(this.get);
+  final int get;
+}
+
 enum Alert {
   networkError({
-    Alert.cancelTitle: 'Exit',
-    Alert.actionTitle: 'Try again',
+    Alert.cancelTitle: StringConstants.exit_button_title,
+    Alert.actionTitle: StringConstants.try_again_button_title,
     Alert.icon: 'assets/images/img_no_internet.png'
   }),
 
   serverError({
-    Alert.cancelTitle: 'Exit',
-    Alert.actionTitle: 'Contact with us',
+    Alert.cancelTitle: StringConstants.exit_button_title,
+    Alert.actionTitle: StringConstants.contact,
     Alert.icon: 'assets/images/img_server_error.png'
   }),
 
@@ -132,19 +178,19 @@ enum Alert {
   }),
 
   downloadError({
-    Alert.cancelTitle: 'Exit',
-    Alert.actionTitle: 'Try again',
+    Alert.cancelTitle: StringConstants.exit_button_title,
+    Alert.actionTitle: StringConstants.try_again_button_title,
     Alert.icon: 'assets/images/img_server_error.png'
   }),
 
   dataNotFound({
-    Alert.cancelTitle: 'Exit',
-    Alert.actionTitle: 'Try again',
+    Alert.cancelTitle: StringConstants.exit_button_title,
+    Alert.actionTitle: StringConstants.try_again_button_title,
     Alert.icon: 'assets/images/img_not_found.png'
   }),
 
   permissionDenied({
-    Alert.cancelTitle: 'Exit',
+    Alert.cancelTitle: StringConstants.exit_button_title,
     Alert.actionTitle: 'Go to setting',
     Alert.icon: 'assets/images/img_warning.png'
   });
@@ -167,6 +213,13 @@ class FilterJsonData {
   static Map<String, dynamic> outOfDate = {"id": -2, "name": "Out of date"};
 }
 
+class SizeLayout {
+  static const HomeScreenTabletSize = 1200;
+  static const OthersScreenTabletSize = 1200;
+  static const QuestionsListSize = 1200;
+  static const MyTestScreenSize = 1200;
+}
+
 class StringClass {
   static const video = "videos";
   static const audio = "audios";
@@ -181,58 +234,6 @@ class StringClass {
 }
 
 enum MediaType { video, audio, image }
-
-class AlertClass {
-  static AlertInfo downloadVideoErrorAlert = AlertInfo(
-    'Fail to load your test',
-    "Can not download video. Please try again!",
-    Alert.networkError.type,
-  );
-
-  static AlertInfo microPermissionAlert = AlertInfo(
-    'Warning',
-    "You must allow micro permission to continue.",
-    Alert.permissionDenied.type,
-  );
-
-  static AlertInfo storagePermissionAlert = AlertInfo(
-    'Warning',
-    "You must allow storage permission to continue.",
-    Alert.permissionDenied.type,
-  );
-
-  static AlertInfo videoPathIncorrectAlert = AlertInfo(
-    'Warning',
-    'Video path was incorrect. Please try again !',
-    Alert.dataNotFound.type,
-  );
-
-  static AlertInfo getTestDetailAlert = AlertInfo(
-    'Warning',
-    'Error when load your test. Please try again !',
-    Alert.dataNotFound.type,
-  );
-  static AlertInfo notResponseLoadTestAlert = AlertInfo(
-    'Warning',
-    'Error when load your test. Let contact to admin to support !',
-    Alert.dataNotFound.type,
-  );
-
-  static AlertInfo timeOutUpdateAnswer = AlertInfo(
-      'Warning', 'Timeout to update your changes. Please try again !');
-
-  static AlertInfo errorWhenUpdateAnswer = AlertInfo(
-      'Warning', 'An error when update your answers. Please try again !');
-
-  ///////////////////////////Submit test///////////////////////////////////////
-
-  static AlertInfo submitTestSuccess =
-      AlertInfo('Notification', 'Your test is save successfully !');
-  static AlertInfo failToSubmitAndContactAdmin = AlertInfo('Warning',
-      'Error! An error occurred. Please try again later. Please contact I Correct admin for support!');
-  static AlertInfo networkFailToSubmit = AlertInfo('Warning',
-      'Error! An error occurred.Please check your internet and click Save The Test again');
-}
 
 class GlobalScaffoldKey {
   static final filterScaffoldKey =
@@ -534,8 +535,212 @@ class LogEvent {
 
 const sendLogsTask = "com.csupporter.sendlogtask";
 
+class AlertClass {
+  static AlertInfo downloadVideoErrorAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.download_test_fail_title),
+    Utils.instance().multiLanguage(StringConstants.download_test_fail_message),
+    Alert.networkError.type,
+  );
+
+  static AlertInfo microPermissionAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.warning_title),
+    Utils.instance().multiLanguage(StringConstants.micro_permission_alert),
+    Alert.permissionDenied.type,
+  );
+
+  static AlertInfo storagePermissionAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.warning_title),
+    Utils.instance().multiLanguage(StringConstants.micro_permission_alert),
+    Alert.permissionDenied.type,
+  );
+
+  static AlertInfo videoPathIncorrectAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.warning_title),
+    Utils.instance().multiLanguage(StringConstants.video_path_error_message),
+    Alert.dataNotFound.type,
+  );
+
+  static AlertInfo getTestDetailAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.warning_title),
+    Utils.instance().multiLanguage(StringConstants.error_load_test_message),
+    Alert.dataNotFound.type,
+  );
+  static AlertInfo notResponseLoadTestAlert = AlertInfo(
+    Utils.instance().multiLanguage(StringConstants.warning_title),
+    Utils.instance().multiLanguage(
+        StringConstants.error_load_test_and_contact_admin_message),
+    Alert.dataNotFound.type,
+  );
+
+  static AlertInfo timeOutUpdateAnswer = AlertInfo(
+      Utils.instance().multiLanguage(StringConstants.warning_title),
+      Utils.instance()
+          .multiLanguage(StringConstants.time_out_update_answer_message));
+
+  static AlertInfo errorWhenUpdateAnswer = AlertInfo(
+      Utils.instance().multiLanguage(StringConstants.warning_title),
+      Utils.instance().multiLanguage(StringConstants.error_when_update_answer));
+
+  ///////////////////////////Submit test///////////////////////////////////////
+
+  static AlertInfo submitTestSuccess = AlertInfo(
+      Utils.instance().multiLanguage(StringConstants.notification_title),
+      Utils.instance()
+          .multiLanguage(StringConstants.save_test_success_message));
+  static AlertInfo failToSubmitAndContactAdmin = AlertInfo(
+      Utils.instance().multiLanguage(StringConstants.warning_title),
+      Utils.instance().multiLanguage(
+          StringConstants.fail_to_submit_and_contact_admin_message));
+  static AlertInfo networkFailToSubmit = AlertInfo(
+      Utils.instance().multiLanguage(StringConstants.warning_title),
+      Utils.instance().multiLanguage(StringConstants.network_fail_to_submit));
+}
+
 class StringConstants {
-  //Button Titles
+  static const String download_test_fail_title = 'Fail to load your test';
+  static const String download_test_fail_message =
+      "Can not download video. Please try again!";
+  static const String warning_title = "Warning";
+  static const String storage_permission_alert =
+      "You must allow storage permission to continue.";
+  static const String micro_permission_alert =
+      'You must allow micro permission to continue.';
+  static const String video_path_error_message =
+      'Video path was incorrect. Please try again !';
+  static const String error_load_test_message =
+      'Error when load your test. Please try again !';
+  static const String error_load_test_and_contact_admin_message =
+      'Error when load your test. Let contact to admin to support !';
+  static const String time_out_update_answer_message =
+      "Timeout to update your changes. Please try again !";
+  static const String error_when_update_answer =
+      'An error when update your answers. Please try again !';
+  static const String notification_title = 'Notification';
+  static const String save_test_success_message =
+      'Your test is save successfully !';
+  static const String fail_to_submit_and_contact_admin_message =
+      'Error! An error occurred. Please try again later. Please contact I Correct admin for support!';
+  static const String network_fail_to_submit =
+      'Error! An error occurred.Please check your internet and click Save The Test again';
+
+  static const String next_button_title = "Next";
+  static const String previous_button_title = "Previous";
+  static const String delete_action_title = "Delete";
+  static const String delete_this_test_confirm =
+      "Are you sure to delete this test ?";
+  static const String delete_test_success_message =
+      "Delete this test successfully!";
+  static const String ens = "English";
+  static const String vn = "Tiếng Việt";
+  static const String select_your_language_title = 'Select your language';
+  static const String not_evaluated = 'Not Evaluated';
+  static const String aiscored = "AI Scored";
+  static const String loaded_test = "Loaded Test";
+  static const String submit_video_authen_success =
+      "Submit file to authentication successfully. Waiting for confirmation";
+  static const String load_practice_detail = "Loading practice detail error";
+  static const String load_result_response_fail =
+      "Failure to load the result response !";
+  static const String load_error_response = "Can't load response";
+  static const String save_your_answers_success =
+      "Save your answers successfully!";
+  static const String load_error = "Load Error";
+  static const String logout_error_title = "Logout error";
+  static const String time_out_error_message =
+      "Time Out : Please check your internet !";
+  static const String old_password_equals_new_password_error_message =
+      "The new password must be different from the old password!";
+  static const String client_error_message =
+      "Client Exception: Please check your internet !";
+  static const String socket_error_message =
+      "Socket Exception: Please check your internet !";
+  static const String loading_error_homeworks_list =
+      "Loading homework list error";
+  static const String loading_error_homeworks_list_message =
+      "An error occurred while loading the homework list!";
+  static const String change_password_error_title = "Change password error";
+  static const String login_error_title = "Login Error";
+  static const String logout_confirm_message = "Are you sure to logout ?";
+  static const String multi_language_title = "Multi Language";
+  static const String practice_title = "Practice";
+  static const String question_title = "Question";
+  static const String start_test_title = "Start Test";
+  static const String download_file_description =
+      "Start the test now or wait until the process is finished!";
+  static const String reanswer_question = 'Reanswer Questions';
+  static const String congratulations = "Congratulations";
+  static const String reanswer_description =
+      "You just answered the question again";
+  static const String finish_test_description =
+      "You have completed the speaking test";
+  static const String update_your_answer = "Update your answers";
+  static const String save_the_test = "Save the test";
+  static const String ask_for_question_title = "Ask for repeat question";
+  static const String save_before_exit_message =
+      "Do you want to save this test before quit?";
+  static const String exit_while_testing_confirm =
+      "The test is not completed! Are you sure to quit ?";
+  static const String save_change_before_exit_message =
+      "Your answer has changed, do you want to save before exiting ?";
+  static const String corrections = "Corrections";
+  static const String student = 'Student';
+  static const String update_your_test = "Update Your Test";
+  static const String no_problem_solution = 'No Problem and Solution in here.';
+  static const String waiting_for_video = 'Waiting for video to load';
+  static const String test_detail_title = "Test Detail";
+  static const String highlight_title = "Highlights";
+  static const String others_list = "Others List";
+  static const String response_title = "Response";
+  static const String ai_response_title = "AI Response";
+  static const String time = "Time";
+  static const String no_highlight_homework = 'No highlight homeworks in here.';
+  static const String selected = "Selected";
+  static const String topic_part1_title = "Topics Part I";
+  static const String topic_part23_title = "Topics Part II&III";
+  static const String you_must_choose_min_3_topics =
+      "You must choose at least 3 topics !";
+  static const String you_must_choose_min_3_topics_part1 =
+      "You must choose at least 3 topics at part I";
+  static const String you_must_choose_min_1_topics_part23 =
+      "You must choose at least 1 topics at part II and III";
+  static const String empty_selected_topics =
+      "Please choose topics for start !";
+  static const String select_topic = "Selected Topics";
+  static const String loaded_test_warning_message =
+      "This test is loaded but not completed. Please contact admin to reset it !";
+  static const String detail_title = "Details";
+  static const String start_title = "Start";
+  static const String test_status = "Test: ";
+  static const String part = "Part";
+  static const String nothing_your_homework = 'Nothing your homeworks in here';
+  static const String refresh_data = 'Refresh Data';
+  static const String class_filter = "Class Filter";
+  static const String status_filter = 'Status Filter';
+  static const String all = 'All';
+  static const String submitted = "Submitted";
+  static const String corrected = "Corrected";
+  static const String not_completed = "Not Completed";
+  static const String late_title = "Late";
+  static const String out_of_date = 'Out of date';
+  static const String you_had_account = 'You had an account ?';
+  static const String register = "Register";
+  static const String you_not_have_account = 'You don not have an account';
+  static const String send_verify_code = "Send Verify Code";
+  static const String forgot_password_message =
+      'Please input your email to recover password !';
+  static const String change_password_success =
+      "Change password successfully !";
+  static const String please_complete_all_info =
+      "Please complete all information";
+  static const String confirm_password_warning =
+      "Password and Confirm Password do not match";
+  static const String time_end_title = "Time End";
+  static const String stop_title = "Stop";
+  static const String click_to_play_title = 'Click To Play';
+  static const String audio_example_title = "Audio Example : ";
+  static const String video_example_title = "Video Example : ";
+  static const String you_should_say_content = "You should say : ";
+  static const String example_title = "Example";
   static const String sign_in_button_title = "Sign In";
   static const String sign_up_button_title = "Sign Up";
   static const String forgot_password_button_title = "Forgot password?";
@@ -567,6 +772,7 @@ class StringConstants {
       "Record Video Authentication";
   static const String submit_now_title = "Submit Now";
   static const String record_new_video_title = "Record New Video";
+  static const String record_new_button_title = "Record New";
   //Dialog
   static const String dialog_title = "Notification";
   static const String exit_app_message = "Do you want to exit app?";
@@ -598,6 +804,8 @@ class StringConstants {
 
   //Screen Titles
   static const String change_password_screen_title = "Change password";
+  static const String my_test_title = "My Test";
+
   static const String my_homework_screen_title = "MY HOMEWORK";
   static const String tips_screen_title = "Tips for you";
   static const String practice_screen_title = "PRACTICE";
@@ -635,7 +843,7 @@ class StringConstants {
   static const String practice_card_full_test_description =
       "You will take a full sample test of IELTS Speaking Test";
   static const String selected_topics = "Selected topic (0/24)";
-  static const String downloading = "Downloading...";
+  static const String downloading = "Downloading";
   static const String overview = "Overview";
   static const String show_less = "Show less";
   static const String show_more = "Show more";
@@ -661,15 +869,16 @@ class StringConstants {
   static const String unknown = "Unknown";
   static const String home_menu_item_title = "Home";
   static const String change_password_menu_item_title = "Change password";
+  static const String old_password_title = "Old Password";
   static const String logout_menu_item_title = "Logout";
   static const String email = "Email";
-  static const String part = "Part";
   static const String logo_text = "REACH YOUR DREAM TARGET";
   static const String password = "Password";
   static const String retype_password = "Retype Password";
   static const String current_password = "Current password";
-  static const String new_password = "New password";
-  static const String confirm_new_password = "Confirm new password";
+  static const String new_password = "New Password";
+  static const String confirm_password = "Confirm Password";
+  static const String confirm_new_password = "Confirm New Password";
   static const String video_authen_menu_item_title = "Videos Authentication";
   static const String sampleTextTitle = "Sample Text :";
   static const String sampleTextContent =
@@ -703,6 +912,8 @@ class StringConstants {
       'Your internet is not connect!';
 
   //Warning Message
+  static const String login_wrong_message =
+      "Opps! Something went wrong, email or password is not found.";
   static const String choose_filter_message =
       "You must choose at least one class and one status!";
   static const String no_data_filter_message =
@@ -753,6 +964,8 @@ class StringConstants {
       "An error occur, please try again later!";
   static const String update_answer_error_message =
       "An error when update your answers. Please try again !";
+  static const String has_an_error_while_submitting =
+      "Has an error when submit this test";
   static const String submit_test_error_message =
       "Has an error when submit this test. Please try again later!";
   static const String submit_test_error_timeout =

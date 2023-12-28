@@ -49,8 +49,6 @@ dependencies:
  
   dashed_circular_progress_bar: ^0.0.4
   path: ^1.8.2 
-  #dotted_border: ^2.0.0+3
-  fdottedline_nullsafety: ^2.0.1
   audioplayers: ^4.0.1
   image: ^3.1.2
   permission_handler: ^10.2.0
@@ -61,7 +59,7 @@ dependencies:
 
   cached_network_image: ^3.2.2
   fluttertoast: ^8.0.9
-  intl: ^0.17.0
+  intl: ^0.18.1
   record: ^4.4.4
   sizer: ^2.0.15
   image_picker: ^0.8.5+3
@@ -77,6 +75,9 @@ dependencies:
   camera_windows: ^0.2.1+8
   #ffmpeg_wasm: ^1.0.1
   ffmpeg_cli: ^0.2.0
+  shimmer: ^3.0.0
+  dotted_border: ^2.1.0
+  flutter_localization: ^0.1.14
   
 dev_dependencies:
   flutter_test:

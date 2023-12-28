@@ -27,6 +27,7 @@ class OtherHomeWorks extends StatefulWidget {
 class _OtherHomeWorksState extends State<OtherHomeWorks>
     with AutomaticKeepAliveClientMixin<OtherHomeWorks>
     implements SpecialHomeworksContracts {
+  double w = 0, h = 0;
   SpecialHomeworksPresenter? _presenter;
   CircleLoading? _loading;
 
@@ -58,6 +59,8 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     super.build(context);
     return _buildHighLightHomeWorks();
   }
@@ -73,24 +76,43 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
         child: Consumer<MyTestProvider>(builder: (context, provider, child) {
           if (provider.otherLightHomeWorks.isNotEmpty) {
             return Center(
-                child: GridView.count(
-              crossAxisCount: 2,
-              childAspectRatio: 8,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-              children: provider.otherLightHomeWorks
-                  .map(
-                    (data) => _othersItem(data),
-                  )
-                  .toList(),
-            ));
+                child: (w < SizeLayout.OthersScreenTabletSize)
+                    ? _buildOthersTabletLayout(provider.otherLightHomeWorks)
+                    : _buildOthersDesktopLayout(provider.otherLightHomeWorks));
           } else {
             return NothingWidget.init().buildNothingWidget(
-                'No other homeworks in here.',
+                Utils.instance()
+                    .multiLanguage(StringConstants.nothing_your_homework),
                 widthSize: 200,
                 heightSize: 200);
           }
         }));
+  }
+
+  Widget _buildOthersDesktopLayout(
+      List<StudentResultModel> otherLightHomeWorks) {
+    return Center(
+        child: GridView.count(
+      crossAxisCount: 2,
+      childAspectRatio: 8,
+      crossAxisSpacing: 1,
+      mainAxisSpacing: 1,
+      children: otherLightHomeWorks
+          .map(
+            (data) => _othersItem(data),
+          )
+          .toList(),
+    ));
+  }
+
+  Widget _buildOthersTabletLayout(
+      List<StudentResultModel> otherLightHomeWorks) {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: otherLightHomeWorks.length,
+        itemBuilder: (context, index) {
+          return _othersItem(otherLightHomeWorks.elementAt(index));
+        });
   }
 
   Widget _othersItem(StudentResultModel results) {
@@ -158,8 +180,9 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const Text('Time : ',
-                              style: TextStyle(
+                          Text(
+                              '${Utils.instance().multiLanguage(StringConstants.time)} : ',
+                              style: const TextStyle(
                                   color: AppColors.purple,
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold)),

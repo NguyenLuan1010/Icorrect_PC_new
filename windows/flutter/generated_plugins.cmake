@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   file_selector_windows
   flutter_desktop_audio_recorder
+  flutter_localization
   permission_handler_windows
   record_windows
   screen_retriever

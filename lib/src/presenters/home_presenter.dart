@@ -46,7 +46,8 @@ class HomeWorkPresenter {
     try {
       UserDataModel? currentUser = await Utils.instance().getCurrentUser();
       if (currentUser == null) {
-        _view!.onGetListHomeworkError("Loading list homework error");
+        _view!.onGetListHomeworkError(Utils.instance().multiLanguage(
+            StringConstants.loading_error_homeworks_list_message));
         return;
       }
 
@@ -80,11 +81,11 @@ class HomeWorkPresenter {
             log: log,
             data: jsonDecode(value),
             message:
-                "Loading list homework error: ${dataMap['error_code']}${dataMap['status']}",
+                "${StringConstants.loading_error_homeworks_list}: ${dataMap['error_code']}${dataMap['status']}",
             status: LogEvent.failed,
           );
           _view!.onGetListHomeworkError(
-              "Have Error: ${dataMap['error_code']}${dataMap['status']}");
+              "${Utils.instance().multiLanguage(StringConstants.loading_error_homeworks_list)}: ${dataMap['error_code']}${dataMap['status']}");
         }
       }).catchError(
         // ignore: invalid_return_type_for_catch_error
@@ -100,32 +101,32 @@ class HomeWorkPresenter {
         },
       );
     } on TimeoutException {
-      String message = "Time Out : Please check your internet !";
       Utils.instance().prepareLogData(
         log: log,
         data: null,
-        message: message,
+        message: StringConstants.time_out_error_message,
         status: LogEvent.failed,
       );
-      _view!.onGetListHomeworkError(message);
+      _view!.onGetListHomeworkError(Utils.instance()
+          .multiLanguage(StringConstants.time_out_error_message));
     } on http.ClientException {
-      String message = "Client Exception: Please check your internet !";
       Utils.instance().prepareLogData(
         log: log,
         data: null,
-        message: message,
+        message: StringConstants.client_error_message,
         status: LogEvent.failed,
       );
-      _view!.onGetListHomeworkError(message);
+      _view!.onGetListHomeworkError(
+          Utils.instance().multiLanguage(StringConstants.client_error_message));
     } on SocketException {
-      String message = "Socket Exception: Please check your internet !";
       Utils.instance().prepareLogData(
         log: log,
         data: null,
-        message: message,
+        message: StringConstants.socket_error_message,
         status: LogEvent.failed,
       );
-      _view!.onGetListHomeworkError(message);
+      _view!.onGetListHomeworkError(
+          Utils.instance().multiLanguage(StringConstants.socket_error_message));
     }
   }
 
@@ -141,8 +142,8 @@ class HomeWorkPresenter {
   List<ActivitiesModel> filterActivities(int classSelectedId,
       List<ActivitiesModel> activities, String status, String currentTime) {
     List<ActivitiesModel> activitiesFilter = [];
-
-    if (classSelectedId == 0 && status == "All") {
+    if (classSelectedId == 0 &&
+        status == Utils.instance().multiLanguage(StringConstants.all)) {
       return activities;
     }
 
@@ -154,7 +155,8 @@ class HomeWorkPresenter {
         activitiesFilter.add(activity);
       } else if (classSelectedId == 0 && activityStatus['title'] == status) {
         activitiesFilter.add(activity);
-      } else if (activity.classId == classSelectedId && status == "All") {
+      } else if (activity.classId == classSelectedId &&
+          status == Utils.instance().multiLanguage(StringConstants.all)) {
         activitiesFilter.add(activity);
       }
     }
@@ -186,7 +188,8 @@ class HomeWorkPresenter {
         _view!.onLogoutComplete();
       } else {
         _view!.onLogoutError(
-            "Logout error: ${dataMap['error_code']}${dataMap['status']}");
+            "${Utils.instance().multiLanguage(StringConstants.logout_error_title)}: "
+            "${dataMap['error_code']}${dataMap['status']}");
       }
     }).catchError(
       // ignore: invalid_return_type_for_catch_error

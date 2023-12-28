@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:webview_cef/webview_cef.dart';
 
 class AIResponseWidget extends StatefulWidget {
@@ -13,8 +15,7 @@ class AIResponseWidget extends StatefulWidget {
   State<AIResponseWidget> createState() => _AIResponseWidgetState();
 }
 
-class _AIResponseWidgetState extends State<AIResponseWidget>
-    with AutomaticKeepAliveClientMixin<AIResponseWidget> {
+class _AIResponseWidgetState extends State<AIResponseWidget> {
   final _controller = WebViewController();
 
   @override
@@ -53,7 +54,9 @@ class _AIResponseWidgetState extends State<AIResponseWidget>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    Future.delayed(Duration.zero, () {
+      setState(() {});
+    });
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
@@ -69,12 +72,10 @@ class _AIResponseWidgetState extends State<AIResponseWidget>
                 children: [
                   _controller.value
                       ? Expanded(child: WebView(_controller))
-                      : const Text("Something went wrong. Try again!"),
+                      : Text(Utils.instance().multiLanguage(
+                          StringConstants.something_went_wrong_title)),
                 ],
               ))),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

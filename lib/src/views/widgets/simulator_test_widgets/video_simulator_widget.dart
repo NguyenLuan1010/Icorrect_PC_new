@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_player_win/video_player_win.dart';
@@ -14,8 +16,7 @@ import '../../../providers/simulator_test_provider.dart';
 class VideoSimulatorWidget extends StatefulWidget {
   Function onVideoEnd;
 
-  VideoSimulatorWidget(
-      {super.key, required this.onVideoEnd});
+  VideoSimulatorWidget({super.key, required this.onVideoEnd});
 
   @override
   State<VideoSimulatorWidget> createState() => _VideoSimulatorWidgetState();
@@ -80,18 +81,22 @@ class _VideoSimulatorWidgetState extends State<VideoSimulatorWidget> {
                   decoration: BoxDecoration(
                       borderRadius: const BorderRadius.all(Radius.circular(10)),
                       border: Border.all(color: Colors.grey, width: 1)),
-                  child: LinearProgressIndicator(
-                    minHeight: 7,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.defaultPurpleColor),
-                    backgroundColor: Colors.white,
-                    value: provider.indexQuestion / provider.questionLength,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      minHeight: 7,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.defaultPurpleColor),
+                      backgroundColor: Colors.white,
+                      value: provider.indexQuestion / provider.questionLength,
+                    ),
                   ),
                 ),
                 Text(
-                  "Question ${(provider.indexQuestion).toString()}"
+                  "${Utils.instance().multiLanguage(StringConstants.question_title)} "
+                  "${(provider.indexQuestion).toString()}"
                   "/"
-                  " ${provider.questionLength.toString()} ",
+                  "${provider.questionLength.toString()} ",
                   style: const TextStyle(
                       color: Colors.black,
                       fontSize: 18,

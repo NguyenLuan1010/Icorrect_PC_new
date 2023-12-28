@@ -36,7 +36,6 @@ class _SubmitVideoAuthState extends State<SubmitVideoAuth> {
     _submitVideoAuthProvider =
         Provider.of<SubmitVideoAuthProvider>(context, listen: false);
     _controller = VideoPlayerController.file(widget.savedFile);
-    
   }
 
   @override
@@ -60,9 +59,9 @@ class _SubmitVideoAuthState extends State<SubmitVideoAuth> {
         } else {
           _submitVideoAuthProvider!.setVideoStatus(VideoStatus.pause);
         }
-       if(mounted){
-         setState(() {});
-       }
+        if (mounted) {
+          setState(() {});
+        }
       });
     }
     return Consumer<SubmitVideoAuthProvider>(
@@ -130,10 +129,11 @@ class _SubmitVideoAuthState extends State<SubmitVideoAuth> {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const Text(
-                    StringConstants.confirm_submit_video_auth_content,
+                  Text(
+                    Utils.instance().multiLanguage(
+                        StringConstants.confirm_submit_video_auth_content),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: AppColors.defaultPurpleColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
@@ -250,9 +250,9 @@ class _SubmitVideoAuthState extends State<SubmitVideoAuth> {
           color: AppColors.defaultPurpleColor,
           borderRadius: BorderRadius.circular(100),
         ),
-        child: const Text(
-          StringConstants.submit_now_title,
-          style: TextStyle(
+        child: Text(
+          Utils.instance().multiLanguage(StringConstants.submit_now_title),
+          style: const TextStyle(
               color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
         ),
       ),
@@ -277,9 +277,10 @@ class _SubmitVideoAuthState extends State<SubmitVideoAuth> {
           border: Border.all(color: AppColors.defaultPurpleColor, width: 1.5),
           borderRadius: BorderRadius.circular(100),
         ),
-        child: const Text(
-          StringConstants.record_new_video_title,
-          style: TextStyle(
+        child: Text(
+          Utils.instance()
+              .multiLanguage(StringConstants.record_new_video_title),
+          style: const TextStyle(
             color: AppColors.defaultPurpleColor,
             fontSize: 16,
             fontWeight: FontWeight.w400,

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_colors.dart';
@@ -35,9 +37,12 @@ class StartTestWidget extends StatelessWidget {
                         MaterialStateProperty.all<Color>(AppColors.purpleBlue),
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(13)))),
-                child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Start Test", style: TextStyle(fontSize: 17))),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                        Utils.instance()
+                            .multiLanguage(StringConstants.start_test_title),
+                        style: const TextStyle(fontSize: 17))),
               )
             ],
           ));

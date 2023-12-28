@@ -57,7 +57,8 @@ class ResponsePresenter {
           message: "Loading result response fail!",
           status: LogEvent.failed,
         );
-        _view!.getErrorResponse('Loading result response fail !');
+        _view!.getErrorResponse(Utils.instance()
+            .multiLanguage(StringConstants.load_result_response_fail));
       }
     }).catchError((onError) {
       //Add log
@@ -67,7 +68,8 @@ class ResponsePresenter {
         message: onError.toString(),
         status: LogEvent.failed,
       );
-      _view!.getErrorResponse("Can't load response :${onError.toString()}");
+      _view!.getErrorResponse(
+          "${Utils.instance().multiLanguage(StringConstants.load_error_response)} :${onError.toString()}");
     });
   }
 }

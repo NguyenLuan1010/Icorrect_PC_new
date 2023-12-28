@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:icorrect_pc/core/app_colors.dart';
 import 'package:icorrect_pc/src/data_source/api_urls.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/my_test_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -45,9 +47,10 @@ class ExampleProblemDialog extends Dialog {
     audioPlayer.onPlayerComplete.listen((event) {
       provider.setPlayAudioExample(true);
     });
+    double w = MediaQuery.of(context).size.width;
     return SingleChildScrollView(
         child: Container(
-      width: 500,
+      width: (w < SizeLayout.MyTestScreenSize) ? w : w / 3,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       decoration: const BoxDecoration(
           color: Colors.white,
@@ -76,8 +79,9 @@ class ExampleProblemDialog extends Dialog {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text("Example",
-                  style: TextStyle(
+              Text(
+                  Utils.instance().multiLanguage(StringConstants.example_title),
+                  style: const TextStyle(
                       color: AppColors.orangeDark,
                       fontSize: 25,
                       fontWeight: FontWeight.w500)),
@@ -90,17 +94,28 @@ class ExampleProblemDialog extends Dialog {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("You should say : ",
-                              style: TextStyle(
+                          Text(
+                              Utils.instance().multiLanguage(
+                                  StringConstants.you_should_say_content),
+                              style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500)),
-                          Text(problem.exampleText,
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400)),
+                          SizedBox(
+                            width: 300,
+                            height: problem.exampleText.toString().length > 100
+                                ? 100
+                                : 50,
+                            child: SingleChildScrollView(
+                              child: Text(problem.exampleText,
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -129,8 +144,9 @@ class ExampleProblemDialog extends Dialog {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Video Example : ",
-            style: TextStyle(
+        Text(
+            Utils.instance().multiLanguage(StringConstants.video_example_title),
+            style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16,
                 fontWeight: FontWeight.w500)),
@@ -149,13 +165,14 @@ class ExampleProblemDialog extends Dialog {
   Widget _buildAudioWidget(AudioPlayer audioPlayer, SkillProblem skillProblem) {
     return Row(
       children: [
-        const Text("Audio Example : ",
-            style: TextStyle(
+        Text(
+            Utils.instance().multiLanguage(StringConstants.audio_example_title),
+            style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16,
                 fontWeight: FontWeight.w500)),
         const SizedBox(width: 10),
-        Consumer<MyTestProvider>(builder: (context, appState, child) {
+        Consumer<AuthWidgetProvider>(builder: (context, appState, child) {
           return (appState.playAudioExample)
               ? InkWell(
                   onTap: () async {
@@ -167,10 +184,13 @@ class ExampleProblemDialog extends Dialog {
                     decoration: BoxDecoration(
                         border: Border.all(color: Colors.green),
                         borderRadius: BorderRadius.circular(5)),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: Text('Click To Play',
-                          style: TextStyle(color: Colors.green, fontSize: 13)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                          Utils.instance().multiLanguage(
+                              StringConstants.click_to_play_title),
+                          style: const TextStyle(
+                              color: Colors.green, fontSize: 13)),
                     ),
                   ),
                 )
@@ -184,10 +204,13 @@ class ExampleProblemDialog extends Dialog {
                     decoration: BoxDecoration(
                         border: Border.all(color: Colors.red),
                         borderRadius: BorderRadius.circular(5)),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: Text('Stop',
-                          style: TextStyle(color: Colors.red, fontSize: 13)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                          Utils.instance()
+                              .multiLanguage(StringConstants.stop_title),
+                          style:
+                              const TextStyle(color: Colors.red, fontSize: 13)),
                     ),
                   ),
                 );

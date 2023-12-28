@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/models/simulator_test_models/question_topic_model.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 class TipQuestionDialog extends Dialog {
   BuildContext _context;
@@ -25,7 +27,7 @@ class TipQuestionDialog extends Dialog {
     return Wrap(
       children: [
         Container(
-          width: w / 2,
+          width: (w < SizeLayout.MyTestScreenSize) ? w : w / 2,
           padding: const EdgeInsets.all(10),
           child: Stack(
             alignment: Alignment.topRight,
@@ -43,9 +45,10 @@ class TipQuestionDialog extends Dialog {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Tip",
-                    style: TextStyle(
+                  Text(
+                    Utils.instance()
+                        .multiLanguage(StringConstants.tips_screen_title),
+                    style: const TextStyle(
                         color: Colors.amber,
                         fontSize: 30,
                         fontWeight: FontWeight.w500),

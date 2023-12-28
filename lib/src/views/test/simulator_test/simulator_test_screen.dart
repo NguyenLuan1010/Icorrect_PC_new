@@ -43,8 +43,16 @@ import '../../widgets/simulator_test_widgets/download_progressing_widget.dart';
 import '../../widgets/simulator_test_widgets/start_now_button_widget.dart';
 
 class SimulatorTestScreen extends StatefulWidget {
-  const SimulatorTestScreen({super.key, required this.homeWorkModel});
-  final ActivitiesModel homeWorkModel;
+  const SimulatorTestScreen(
+      {super.key,
+      this.homeWorkModel,
+      this.testOption,
+      this.topicsId,
+      this.isPredict});
+  final ActivitiesModel? homeWorkModel;
+  final int? testOption;
+  final List<int>? topicsId;
+  final int? isPredict;
   @override
   State<SimulatorTestScreen> createState() => _SimulatorTestScreenState();
 }
@@ -52,6 +60,8 @@ class SimulatorTestScreen extends StatefulWidget {
 class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     with TickerProviderStateMixin
     implements SimulatorTestViewContract, ActionAlertListener {
+  double w = 0;
+  double h = 0;
   SimulatorTestPresenter? _simulatorTestPresenter;
 
   SimulatorTestProvider? _simulatorTestProvider;
@@ -65,6 +75,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   StreamSubscription? connection;
   bool isOffline = false;
+  bool _isExam = false;
 
   @override
   void initState() {
@@ -104,11 +115,20 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     _authWidgetProvider =
         Provider.of<AuthWidgetProvider>(context, listen: false);
     _simulatorTestPresenter = SimulatorTestPresenter(this);
+
+    if (widget.homeWorkModel != null) {
+      _isExam = widget.homeWorkModel!.activityType == ActivityType.exam.name ||
+          widget.homeWorkModel!.activityType == ActivityType.test.name;
+    } else {
+      _isExam = false;
+    }
     _getTestDetail();
   }
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     return Scaffold(
         body: Stack(
       children: [
@@ -130,7 +150,10 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                   ),
                 ),
               ),
-              Text(widget.homeWorkModel.activityName,
+              Text(
+                  (widget.homeWorkModel != null)
+                      ? widget.homeWorkModel!.activityName
+                      : "",
                   style: const TextStyle(
                       color: AppColors.defaultPurpleColor,
                       fontSize: 20,
@@ -182,11 +205,13 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           context: context,
           builder: (BuildContext context) {
             return CustomAlertDialog(
-              title: "Notification",
-              description:
-                  "Your answer has changed, do you want to save before exiting ?",
-              okButtonTitle: "OK",
-              cancelButtonTitle: "Cancel",
+              title:
+                  Utils.instance().multiLanguage(StringConstants.dialog_title),
+              description: Utils.instance().multiLanguage(
+                  StringConstants.save_change_before_exit_message),
+              okButtonTitle: StringConstants.ok_button_title,
+              cancelButtonTitle: Utils.instance()
+                  .multiLanguage(StringConstants.cancel_button_title),
               borderRadius: 8,
               hasCloseButton: false,
               okButtonTapped: () {
@@ -233,10 +258,13 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
             context: context,
             builder: (BuildContext context) {
               return CustomAlertDialog(
-                title: "Notification",
-                description: "The test is not completed! Are you sure to quit?",
-                okButtonTitle: "OK",
-                cancelButtonTitle: "Cancel",
+                title: Utils.instance()
+                    .multiLanguage(StringConstants.dialog_title),
+                description: Utils.instance()
+                    .multiLanguage(StringConstants.exit_while_testing_confirm),
+                okButtonTitle: StringConstants.ok_button_title,
+                cancelButtonTitle: Utils.instance()
+                    .multiLanguage(StringConstants.cancel_button_title),
                 borderRadius: 8,
                 hasCloseButton: false,
                 okButtonTapped: () {
@@ -251,6 +279,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           );
 
           if (okButtonTapped) {
+            _authWidgetProvider!.setRefresh(_isExam);
             Navigator.of(context).pop();
           }
 
@@ -269,10 +298,14 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
             context: context,
             builder: (BuildContext context) {
               return CustomAlertDialog(
-                title: "Notify",
-                description: "Do you want to save this test before quit?",
-                okButtonTitle: "Save",
-                cancelButtonTitle: "Don't Save",
+                title: Utils.instance()
+                    .multiLanguage(StringConstants.dialog_title),
+                description: Utils.instance()
+                    .multiLanguage(StringConstants.save_before_exit_message),
+                okButtonTitle: Utils.instance()
+                    .multiLanguage(StringConstants.save_button_title),
+                cancelButtonTitle: Utils.instance()
+                    .multiLanguage(StringConstants.dont_save_button_title),
                 borderRadius: 8,
                 hasCloseButton: false,
                 okButtonTapped: () {
@@ -289,6 +322,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           );
 
           if (cancelButtonTapped) {
+            _authWidgetProvider!.setRefresh(_isExam);
             Navigator.of(context).pop();
           }
 
@@ -300,13 +334,17 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   Future _onSubmitTest() async {
     _loading!.show(context);
 
+    String activityId = "";
+    if (widget.homeWorkModel != null) {
+      activityId = widget.homeWorkModel!.activityId.toString();
+    }
     if (_simulatorTestProvider!.reanswersList.isNotEmpty) {
       _simulatorTestPresenter!.submitTest(
           context: context,
           testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
-          activityId: widget.homeWorkModel.activityId.toString(),
+          activityId: activityId,
           questions: _simulatorTestProvider!.reanswersList,
-          isExam: widget.homeWorkModel.isExam(),
+          isExam: _isExam,
           isUpdate: true,
           logAction: _simulatorTestProvider!.logActions);
     } else {
@@ -319,9 +357,9 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       _simulatorTestPresenter!.submitTest(
           context: context,
           testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
-          activityId: widget.homeWorkModel.activityId.toString(),
+          activityId: activityId,
           questions: _simulatorTestProvider!.questionList,
-          isExam: widget.homeWorkModel.isExam(),
+          isExam: _isExam,
           isUpdate: false,
           videoConfirmFile:
               File(pathVideo).existsSync() ? File(pathVideo) : null,
@@ -339,12 +377,12 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
               _simulatorTestProvider!.currentTestDetail.testId.toString())
           .then((value) {
         if (false == value) {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return MessageDialog(
-                    context: context, message: "Can not delete files!");
-              });
+          // showDialog(
+          //     context: context,
+          //     builder: (context) {
+          //       return MessageDialog(
+          //           context: context, message: "Can not delete files!");
+          //     });
         }
       });
     }
@@ -379,7 +417,8 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
           color: AppColors.defaultPurpleColor,
         );
       } else {
-        return (provider.submitStatus == SubmitStatus.success)
+        return (provider.submitStatus == SubmitStatus.success &&
+                widget.homeWorkModel != null)
             ? Expanded(
                 child: Container(
                     margin: const EdgeInsets.symmetric(
@@ -389,7 +428,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                       appBar: PreferredSize(
                           preferredSize: const Size.fromHeight(40),
                           child: Container(
-                            margin: const EdgeInsets.only(left: 50, right: 600),
+                            margin: EdgeInsets.only(
+                                left: 50,
+                                right: (w < SizeLayout.MyTestScreenSize)
+                                    ? 0
+                                    : 600),
                             child: DefaultTabController(
                                 initialIndex: 0,
                                 length: (provider.submitStatus ==
@@ -424,11 +467,11 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
                             HighLightHomeWorks(
                                 provider: Provider.of<MyTestProvider>(context,
                                     listen: false),
-                                homeWorkModel: widget.homeWorkModel),
+                                homeWorkModel: widget.homeWorkModel!),
                             OtherHomeWorks(
                                 provider: Provider.of<MyTestProvider>(context,
                                     listen: false),
-                                homeWorkModel: widget.homeWorkModel)
+                                homeWorkModel: widget.homeWorkModel!)
                           ]),
                     )))
             : Container(
@@ -446,9 +489,13 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   _getTabs() {
     return [
-      const Tab(text: 'Test\'s Detail'),
-      const Tab(text: 'Highlights'),
-      const Tab(text: 'List Other'),
+      Tab(
+          text: Utils.instance()
+              .multiLanguage(StringConstants.test_detail_title)),
+      Tab(
+          text:
+              Utils.instance().multiLanguage(StringConstants.highlight_title)),
+      Tab(text: Utils.instance().multiLanguage(StringConstants.others_list)),
     ];
   }
 
@@ -508,8 +555,16 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   void _getTestDetail() async {
     await _simulatorTestPresenter!.initializeData();
-    _simulatorTestPresenter!
-        .getTestDetail(context, widget.homeWorkModel.activityId.toString());
+    if (widget.homeWorkModel != null) {
+      _simulatorTestPresenter!.getTestDetailByHomework(
+          context, widget.homeWorkModel!.activityId.toString());
+    } else {
+      _simulatorTestPresenter!.getTestDetailByPractice(
+          context: context,
+          testOption: widget.testOption ?? 0,
+          topicsId: widget.topicsId ?? [],
+          isPredict: widget.isPredict ?? 0);
+    }
   }
 
   void _startToDoTest() {
@@ -538,23 +593,41 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   }
 
   void _showCheckNetworkDialog() async {
+    bool okButtonTapped = false;
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return CustomAlertDialog(
-          title: "Notify",
-          description: "An error occur. Please check your connection!",
-          okButtonTitle: "OK",
-          cancelButtonTitle: null,
+          title: Utils.instance().multiLanguage(StringConstants.warning_title),
+          description: Utils.instance()
+              .multiLanguage(StringConstants.network_error_message),
+          okButtonTitle: StringConstants.ok_button_title,
+          cancelButtonTitle: Utils.instance()
+              .multiLanguage(StringConstants.cancel_button_title),
           borderRadius: 8,
           hasCloseButton: false,
           okButtonTapped: () {
+            okButtonTapped = true;
+            _simulatorTestPresenter!.tryAgainToDownload();
+          },
+          cancelButtonTapped: () {
             Navigator.of(context).pop();
           },
-          cancelButtonTapped: null,
         );
       },
     );
+
+    if (okButtonTapped) {
+      _authWidgetProvider!.setRefresh(_isExam);
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Future<void> onDownloadingFile() async {
+    if (isOffline) {
+      _showCheckNetworkDialog();
+    }
   }
 
   @override
@@ -608,8 +681,10 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     }
 
     //Update activityAnswer into current homeWorkModel
-    widget.homeWorkModel.activityAnswer = activityAnswer;
-    Navigations.instance().goToMyTest(context, widget.homeWorkModel);
+    if (widget.homeWorkModel != null) {
+      widget.homeWorkModel!.activityAnswer = activityAnswer;
+      Navigations.instance().goToMyTest(context, widget.homeWorkModel!);
+    }
   }
 
   @override
@@ -693,8 +768,12 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
         if (null == _simulatorTestPresenter!.dio) {
           _simulatorTestPresenter!.initializeData();
         }
-        _simulatorTestPresenter!.reDownloadFiles(
-            context, widget.homeWorkModel.activityId.toString());
+        String? activityId;
+        if (widget.homeWorkModel != null) {
+          activityId = widget.homeWorkModel!.activityId.toString();
+        }
+        _simulatorTestPresenter!
+            .reDownloadFiles(context, activityId: activityId);
       }
     }
   }

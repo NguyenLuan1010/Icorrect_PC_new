@@ -178,7 +178,8 @@ class OtherTestDetailPresenter {
       QuestionTopicModel question, int index) {
     return question.copyWith(
         id: question.id,
-        content: "Ask for repeat question",
+        content: Utils.instance()
+            .multiLanguage(StringConstants.ask_for_question_title),
         type: question.type,
         topicId: question.topicId,
         tips: question.tips,

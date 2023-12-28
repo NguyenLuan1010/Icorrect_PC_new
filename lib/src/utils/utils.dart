@@ -5,6 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:icorrect_pc/src/models/ui_models/user_authen_status.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
@@ -20,6 +21,7 @@ import '../data_source/constants.dart';
 import '../data_source/local/app_shared_preferences_keys.dart';
 import '../data_source/local/app_shared_references.dart';
 import '../data_source/local/file_storage_helper.dart';
+import '../data_source/multi_language.dart';
 import '../models/homework_models/homework_model.dart';
 import '../models/homework_models/new_api_135/activities_model.dart';
 import '../models/homework_models/new_api_135/new_class_model.dart';
@@ -203,7 +205,7 @@ class Utils {
       ActivitiesModel homeWorkModel, String serverCurrentTime) {
     if (homeWorkModel.activityStatus == Status.loadedTest.get) {
       return {
-        'title': 'Loaded Test',
+        'title': Utils.instance().multiLanguage(StringConstants.loaded_test),
         'color': Colors.brown,
       };
     }
@@ -212,32 +214,32 @@ class Utils {
           isExpired(homeWorkModel.activityEndTime, serverCurrentTime);
       if (timeCheck) {
         return {
-          'title': 'Out of date',
+          'title': Utils.instance().multiLanguage(StringConstants.out_of_date),
           'color': Colors.red,
         };
       }
 
       return {
-        'title': 'Not Completed',
+        'title': Utils.instance().multiLanguage(StringConstants.not_completed),
         'color': const Color.fromARGB(255, 237, 179, 3)
       };
     } else {
       if (homeWorkModel.activityAnswer!.orderId != 0) {
         return {
-          'title': 'Corrected',
+          'title': Utils.instance().multiLanguage(StringConstants.corrected),
           'color': const Color.fromARGB(255, 12, 201, 110)
         };
       } else {
         if (homeWorkModel.activityAnswer!.late == 0) {
           return {
-            'title': 'Submitted',
+            'title': Utils.instance().multiLanguage(StringConstants.submitted),
             'color': const Color.fromARGB(255, 45, 117, 243)
           };
         }
 
         if (homeWorkModel.activityAnswer!.late == 1) {
           return {
-            'title': 'Late',
+            'title': Utils.instance().multiLanguage(StringConstants.late_title),
             'color': Colors.orange,
           };
         }
@@ -248,7 +250,8 @@ class Utils {
               DateTime.parse(homeWorkModel.activityAnswer!.createdAt);
           if (endTime.compareTo(createTime) < 0) {
             return {
-              'title': 'Out of date',
+              'title':
+                  Utils.instance().multiLanguage(StringConstants.out_of_date),
               'color': Colors.red,
             };
           }
@@ -276,7 +279,7 @@ class Utils {
   String haveAiResponse(ActivitiesModel homeWorkModel) {
     if (null != homeWorkModel.activityAnswer) {
       if (homeWorkModel.activityAnswer!.aiOrder != 0) {
-        return " AI Scored";
+        return " ${Utils.instance().multiLanguage(StringConstants.aiscored)}";
       } else {
         return '';
       }
@@ -286,20 +289,23 @@ class Utils {
   }
 
   int getFilterStatus(String status) {
-    switch (status) {
-      case 'Submitted':
-        return 1;
-      case 'Corrected':
-        return 2;
-      case 'Not Completed':
-        return 0;
-      case 'Late':
-        return -1;
-      case 'Out of date':
-        return -2;
-      default:
-        return -10;
+    if (status == Utils.instance().multiLanguage(StringConstants.submitted)) {
+      return 1;
     }
+    if (status == Utils.instance().multiLanguage(StringConstants.corrected)) {
+      return 2;
+    }
+    if (status ==
+        Utils.instance().multiLanguage(StringConstants.not_completed)) {
+      return 0;
+    }
+    if (status == Utils.instance().multiLanguage(StringConstants.loaded_test)) {
+      return -1;
+    }
+    if (status == Utils.instance().multiLanguage(StringConstants.out_of_date)) {
+      return -2;
+    }
+    return -10;
   }
 
   void setAppVersion(String version) {
@@ -364,12 +370,19 @@ class Utils {
       if (aiScore.isNotEmpty) {
         if (isNumeric(aiScore) &&
             (double.parse(aiScore) == -1.0 || double.parse(aiScore) == -2.0)) {
-          return {'color': Colors.red, 'score': 'Not Evaluated'};
+          return {
+            'color': Colors.red,
+            'score':
+                Utils.instance().multiLanguage(StringConstants.not_evaluated)
+          };
         } else {
           return {'color': Colors.blue, 'score': aiScore};
         }
       } else {
-        return {'color': Colors.red, 'score': 'Not Evaluated'};
+        return {
+          'color': Colors.red,
+          'score': Utils.instance().multiLanguage(StringConstants.not_evaluated)
+        };
       }
     }
   }
@@ -382,6 +395,13 @@ class Utils {
     } finally {
       return true;
     }
+  }
+
+  double parseToDouble(dynamic data) {
+    if (data is int) {
+      return double.parse('$data.0');
+    }
+    return double.parse(data.toString());
   }
 
   double fixSizeOfText({
@@ -447,6 +467,22 @@ class Utils {
             titleColor: Colors.red,
             iconColor: Colors.red);
     }
+  }
+
+  String getLanguageImg() {
+    final FlutterLocalization localization = FlutterLocalization.instance;
+    if (localization.currentLocale == null) {
+      localization.init(
+        mapLocales: [
+          const MapLocale('en', MultiLanguage.EN),
+          const MapLocale('vn', MultiLanguage.VN),
+        ],
+        initLanguageCode: 'vn',
+      );
+    }
+    return localization.currentLocale!.languageCode == "vn"
+        ? AppAssets.img_vietnamese
+        : AppAssets.img_english;
   }
 
   String convertFileName(String nameFile) {
@@ -646,6 +682,24 @@ class Utils {
     return "";
   }
 
+  String multiLanguage(String constantString) {
+    final FlutterLocalization localization = FlutterLocalization.instance;
+    if (localization.currentLocale == null) {
+      localization.init(
+        mapLocales: [
+          const MapLocale('en', MultiLanguage.EN),
+          const MapLocale('vn', MultiLanguage.VN),
+        ],
+        initLanguageCode: 'vn',
+      );
+    }
+    return Intl.message(
+        localization.currentLocale!.languageCode == "vn"
+            ? MultiLanguage.VN[constantString]
+            : MultiLanguage.EN[constantString],
+        name: constantString);
+  }
+
   Future<http.MultipartRequest> formDataRequestSubmit({
     required String testId,
     required String activityId,
@@ -656,6 +710,9 @@ class Utils {
     List<Map<String, dynamic>>? logAction,
   }) async {
     String url = isExam ? submitExam() : submitHomeWorkV2EP();
+    if (activityId.isEmpty) {
+      url = submitPractice();
+    }
 
     http.MultipartRequest request =
         http.MultipartRequest(RequestMethod.post, Uri.parse(url));
@@ -666,10 +723,12 @@ class Utils {
 
     Map<String, String> formData = {};
     formData.addEntries([MapEntry('test_id', testId)]);
-    formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
-    formData.addEntries([MapEntry('activity_id', activityId)]);
+    if (activityId.isNotEmpty) {
+      formData.addEntries([MapEntry('is_update', isUpdate ? '1' : '0')]);
+      formData.addEntries([MapEntry('activity_id', activityId)]);
+    }
 
-    formData.addEntries([const MapEntry('os', "pc_flutter_for_exam")]);
+    formData.addEntries([const MapEntry('os', "pc_flutter")]);
     formData.addEntries([const MapEntry('app_version', '1.1.0')]);
 
     if (null != logAction) {
@@ -755,13 +814,15 @@ class Utils {
   }
 
   void showConnectionErrorDialog(BuildContext context) async {
-    await showDialog(
+     showDialog(
       context: context,
       builder: (BuildContext context) {
         return CustomAlertDialog(
-          title: StringConstants.dialog_title,
-          description: StringConstants.network_error_message,
-          okButtonTitle: StringConstants.ok_button_title,
+          title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+          description: Utils.instance()
+              .multiLanguage(StringConstants.network_error_message),
+          okButtonTitle:
+              StringConstants.ok_button_title,
           cancelButtonTitle: null,
           borderRadius: 8,
           hasCloseButton: false,

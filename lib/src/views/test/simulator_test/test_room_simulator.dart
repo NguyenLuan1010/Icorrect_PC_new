@@ -52,14 +52,14 @@ import '../../widgets/simulator_test_widgets/test_question_widget.dart';
 import '../../widgets/simulator_test_widgets/test_record_widget.dart';
 
 class TestRoomSimulator extends StatefulWidget {
-  final ActivitiesModel activitiesModel;
+  final ActivitiesModel? activitiesModel;
   final TestDetailModel testDetailModel;
   final SimulatorTestPresenter simulatorTestPresenter;
   final SimulatorTestProvider simulatorTestProvider;
   const TestRoomSimulator(
       {super.key,
       required this.testDetailModel,
-      required this.activitiesModel,
+      this.activitiesModel,
       required this.simulatorTestPresenter,
       required this.simulatorTestProvider});
 
@@ -88,6 +88,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   DateTime? _logEndTime;
   //type : 1 out app: play video  , 2 out app: record answer, 3 out app: takenote
   int _typeOfActionLog = 0; //Default
+  bool _isExam = false;
 
   @override
   void initState() {
@@ -101,6 +102,14 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _cameraPreviewProvider =
         Provider.of<CameraPreviewProvider>(context, listen: false);
     _presenter = TestRoomSimulatorPresenter(this);
+
+    if (widget.activitiesModel != null) {
+      _isExam =
+          widget.activitiesModel!.activityType == ActivityType.exam.name ||
+              widget.activitiesModel!.activityType == ActivityType.test.name;
+    } else {
+      _isExam = false;
+    }
 
     _prepareForTestRoom();
   }
@@ -150,9 +159,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   Future _onWindowActive() async {
     //Calculation time of being out and save into a action log
     PlayListModel currentPlayList = widget.simulatorTestProvider.currentPlay;
-    if (null != _logStartTime &&
-        currentPlayList.questionId != 0 &&
-        widget.activitiesModel.isExam()) {
+    if (null != _logStartTime && currentPlayList.questionId != 0 && _isExam) {
       _logEndTime = DateTime.now();
       if (kDebugMode) {
         print("DEBUG: action log endtime: $_logEndTime");
@@ -177,7 +184,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   Future _onWindowBlur() async {
     //Create start time to save log
-    if (widget.activitiesModel.isExam()) {
+    if (_isExam) {
       _logStartTime = DateTime.now();
       if (kDebugMode) {
         print("DEBUG: action log starttime: $_logStartTime");
@@ -233,10 +240,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     super.build(context);
     w = MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
-    return _buildTestRoom();
+    return (w < SizeLayout.MyTestScreenSize)
+        ? _buildTestRoomTabletLayout()
+        : _buildTestRoomDesktopLayout();
   }
 
-  Widget _buildTestRoom() {
+  Widget _buildTestRoomDesktopLayout() {
     return SizedBox(
       width: w,
       child: Column(
@@ -263,6 +272,93 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
               ),
             ),
           )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTestRoomTabletLayout() {
+    return SizedBox(
+      width: w,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: w,
+                height: h / 2,
+                child: Container(
+                  width: w,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      border: Border.all(color: Colors.black, width: 2),
+                      image: const DecorationImage(
+                          image: AssetImage(AppAssets.bg_test_room),
+                          fit: BoxFit.cover)),
+                  child: SizedBox(
+                    width: w / 3,
+                    child: VideoSimulatorWidget(onVideoEnd: () {
+                      _onVideoEnd();
+                    }),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: w,
+                  height: h / 2.5,
+                  child: Stack(
+                    children: [
+                      // widget.activitiesModel.isExam()
+                      //     ? _buildQuestionAndCameraPreview()
+                      //     : _buildQuestionList(),
+                      _buildQuestionList(),
+                      _buildImageFrame()
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+          if (widget.simulatorTestProvider.submitStatus != SubmitStatus.success)
+            Card(
+              elevation: 3,
+              child: Container(
+                width: w,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10)),
+                alignment: Alignment.bottomCenter,
+                child: Stack(
+                  children: [
+                    StartTestWidget(onClickStartTest: () {
+                      _onClickStartTest();
+                    }),
+                    SaveTheTestWidget(() {
+                      _startSubmitAction();
+                    }),
+                    TestRecordWidget(
+                      finishAnswer: (questionTopicModel) {
+                        _onFinishAnswer();
+                      },
+                      repeatQuestion: (questionTopicModel) {
+                        _onClickRepeatAnswer();
+                      },
+                      simulatorTestProvider: widget.simulatorTestProvider,
+                    ),
+                    const CueCardWidget(),
+                  ],
+                ),
+              ),
+            )
         ],
       ),
     );
@@ -340,7 +436,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (widget.activitiesModel != null) {
       info.addEntries([
         MapEntry(StringConstants.k_activity_id,
-            widget.activitiesModel.activityId.toString())
+            widget.activitiesModel!.activityId.toString())
       ]);
     }
     _createLog(action: LogEvent.actionStartToDoTest, data: info);
@@ -420,6 +516,9 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future<void> _onFinishAnswer() async {
+    if (_isExam) {
+      _callTestPositionApi();
+    }
     widget.simulatorTestProvider.clearImageFile();
     _recordController!.stop();
     widget.simulatorTestProvider.setVisibleRecord(false);
@@ -458,6 +557,17 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     _doingTest();
   }
 
+  void _callTestPositionApi() {
+    if (widget.activitiesModel != null) {
+      String activityId = widget.activitiesModel!.activityId.toString();
+      _presenter!.callTestPositionApi(
+        context,
+        activityId: activityId,
+        questionIndex: widget.simulatorTestProvider.indexQuestion,
+      );
+    }
+  }
+
   void _onClickRepeatAnswer() {
     widget.simulatorTestProvider.setVisibleRecord(false);
     widget.simulatorTestProvider
@@ -477,7 +587,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
     QuestionTopicModel repeatQuestion = question.copyWith(
         id: question.id,
-        content: "Ask for repeat question",
+        content: Utils.instance()
+            .multiLanguage(StringConstants.ask_for_question_title),
         type: question.type,
         topicId: question.topicId,
         tips: question.tips,
@@ -541,7 +652,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   void _startDoingTest() {
     PlayListModel playModel = widget.simulatorTestProvider.playList.first;
     _presenter!.playingIntroduce(playModel.fileIntro);
-    
+
     widget.simulatorTestProvider.updateDoingStatus(DoingStatus.doing);
   }
 
@@ -582,8 +693,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   void _onEndTheTest() {
     //widget.simulatorTestProvider.setQuestionList(widget.simulatorTestProvider.questionList);
-    widget.simulatorTestProvider
-        .setCanReanswer(!widget.activitiesModel.isExam());
+    widget.simulatorTestProvider.setCanReanswer(!_isExam);
     widget.simulatorTestProvider.setCanPlayAnswer(true);
     widget.simulatorTestProvider.setVisibleRecord(false);
     widget.simulatorTestProvider.updateDoingStatus(DoingStatus.finish);
@@ -592,7 +702,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       _countDown!.cancel();
     }
 
-    if (widget.activitiesModel.isExam()) {
+    if (_isExam) {
       String pathVideo = _presenter!
           .randomVideoRecordExam(widget.simulatorTestProvider.videosRecorded);
       if (kDebugMode) {
@@ -630,13 +740,19 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   void _submitExamAction(String pathVideo) {
     widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.submitting);
     _loading!.show(context);
+
+    String activityId = "";
+    if (widget.activitiesModel != null) {
+      activityId = widget.activitiesModel!.activityId.toString();
+    }
+
     _presenter!.submitMyTest(
         context: context,
         testId: widget.testDetailModel.testId.toString(),
-        activityId: widget.activitiesModel.activityId.toString(),
+        activityId: activityId,
         // questionsList: widget.simulatorTestProvider.questionList,
         questionsList: widget.simulatorTestProvider.questionList,
-        isExam: widget.activitiesModel.isExam(),
+        isExam: _isExam,
         isUpdate: false,
         videoConfirmFile: File(pathVideo).existsSync() ? File(pathVideo) : null,
         logAction: widget.simulatorTestProvider.logActions);
@@ -644,22 +760,26 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   void _startSubmitAction() {
     _loading!.show(context);
+    String activityId = "";
+    if (widget.activitiesModel != null) {
+      activityId = widget.activitiesModel!.activityId.toString();
+    }
     if (widget.simulatorTestProvider.reanswersList.isNotEmpty) {
       _presenter!.submitMyTest(
           context: context,
           testId: widget.testDetailModel.testId.toString(),
-          activityId: widget.activitiesModel.activityId.toString(),
+          activityId: activityId,
           questionsList: widget.simulatorTestProvider.reanswersList,
           isUpdate: true,
-          isExam: widget.activitiesModel.isExam());
+          isExam: _isExam);
     } else {
       _presenter!.submitMyTest(
           context: context,
           testId: widget.testDetailModel.testId.toString(),
-          activityId: widget.activitiesModel.activityId.toString(),
+          activityId: activityId,
           questionsList: widget.simulatorTestProvider.questionList,
           isUpdate: false,
-          isExam: widget.activitiesModel.isExam());
+          isExam: _isExam);
       widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.submitting);
     }
   }
@@ -724,7 +844,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   Widget _buildQuestionList() {
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
       return TestQuestionWidget(
-          isExam: widget.activitiesModel.isExam(),
+          isExam: _isExam,
           testId: widget.testDetailModel.testId,
           questions: widget.simulatorTestProvider.questionList,
           canPlayAnswer: provider.canPlayAnswer,

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/dialogs/circle_loading.dart';
 import 'package:provider/provider.dart';
 
@@ -52,18 +54,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text("Change Password",
-                style: TextStyle(
+            Text(
+                Utils.instance().multiLanguage(
+                    StringConstants.change_password_menu_item_title),
+                style: const TextStyle(
                     fontSize: 20,
                     color: AppColors.defaultPurpleColor,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            _buildPasswordField("Old Password", _txtOldPasswordController),
-            const SizedBox(height: 15),
-            _buildPasswordField("New Password", _txtNewPasswordController),
+            _buildPasswordField(
+                Utils.instance()
+                    .multiLanguage(StringConstants.old_password_title),
+                _txtOldPasswordController),
             const SizedBox(height: 15),
             _buildPasswordField(
-                "Confirm New Password", _txtConfirmPasswordController),
+                Utils.instance().multiLanguage(StringConstants.new_password),
+                _txtNewPasswordController),
+            const SizedBox(height: 15),
+            _buildPasswordField(
+                Utils.instance()
+                    .multiLanguage(StringConstants.confirm_new_password),
+                _txtConfirmPasswordController),
             const SizedBox(height: 40),
             SizedBox(
               width: w / 3,
@@ -76,9 +87,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                         MaterialStateProperty.all<Color>(AppColors.purple),
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(13)))),
-                child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Save Change", style: TextStyle(fontSize: 17))),
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                        Utils.instance().multiLanguage(
+                            StringConstants.save_change_button_title),
+                        style: const TextStyle(fontSize: 17))),
               ),
             ),
             const SizedBox(height: 10),
@@ -94,10 +108,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                         AppColors.defaultLightGrayColor),
                     shape: MaterialStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(13)))),
-                child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Cancel",
-                        style: TextStyle(
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                        Utils.instance()
+                            .multiLanguage(StringConstants.cancel_button_title),
+                        style: const TextStyle(
                             fontSize: 17,
                             color: AppColors.defaultPurpleColor,
                             fontWeight: FontWeight.w600))),
@@ -179,10 +195,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     String newPassword = _txtNewPasswordController.text.trim();
     String confirmPassword = _txtConfirmPasswordController.text.trim();
     if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-      return "Please complete all information";
+      return Utils.instance()
+          .multiLanguage(StringConstants.please_complete_all_info);
+    }
+    if (oldPassword == newPassword) {
+      return Utils.instance().multiLanguage(
+          StringConstants.old_password_equals_new_password_error_message);
     }
     if (newPassword != confirmPassword) {
-      return "Password and Confirm Password do not match";
+      return Utils.instance()
+          .multiLanguage(StringConstants.confirm_password_warning);
     }
     return "";
   }
@@ -197,7 +219,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         context: context,
         builder: (context) {
           return MessageDialog(
-              context: context, message: "Change password successfully !");
+              context: context,
+              message: Utils.instance()
+                  .multiLanguage(StringConstants.change_password_success));
         });
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:icorrect_pc/src/models/simulator_test_models/topic_model.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 TestDetailModel testDetailModelFromJson(String str) =>
     TestDetailModel.fromJson(json.decode(str));
@@ -90,7 +91,7 @@ class TestDetailModel {
   set part2(TopicModel part2) => _part2 = part2;
   TopicModel get part3 => _part3 ?? TopicModel();
   set part3(TopicModel part3) => _part3 = part3;
-  dynamic get normalSpeed => _normalSpeed ?? 1;
+  dynamic get normalSpeed => _normalSpeed ?? 1.0;
   set normalSpeed(dynamic value) => _normalSpeed = value;
   get firstRepeatSpeed => _firstRepeatSpeed ?? 0.9;
   set firstRepeatSpeed(value) => _firstRepeatSpeed = value;
@@ -133,10 +134,18 @@ class TestDetailModel {
     _hasOrder = json['has_order'];
     _part2 = json['part2'] != null ? TopicModel.fromJson(json['part2']) : null;
     _part3 = json['part3'] != null ? TopicModel.fromJson(json['part3']) : null;
+    if (json['normal_speed'] != null) {
+      _normalSpeed = Utils.instance().parseToDouble(json['normal_speed']);
+    }
+    if (json['first_repeat_speed'] != null) {
+      _firstRepeatSpeed =
+          Utils.instance().parseToDouble(json['first_repeat_speed']);
+    }
+    if (json['second_repeat_speed'] != null) {
+      _secondRepeatSpeed =
+          Utils.instance().parseToDouble(json['second_repeat_speed']);
+    }
 
-    _normalSpeed = json['normal_speed'] + 0.0 ?? 0.0;
-    _firstRepeatSpeed = json['first_repeat_speed'] + 0.0 ?? 0.0;
-    _secondRepeatSpeed = json['second_repeat_speed'] + 0.0 ?? 0.0;
     _part1Time = json['part1_time'] ?? 30;
     _part2Time = json['part2_time'] ?? 120;
     _part3Time = json['part3_time'] ?? 45;

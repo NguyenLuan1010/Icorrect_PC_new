@@ -74,7 +74,8 @@ class VideoAuthenticationPresenter {
     try {
       _repository!.submitAuth(multiRequest).then((value) {
         if (value.isEmpty) {
-          _view!.submitAuthFail(StringConstants.limit_file_video_content);
+          _view!.submitAuthFail(Utils.instance()
+              .multiLanguage(StringConstants.limit_file_video_content));
           return;
         }
         Map<String, dynamic> json = jsonDecode(value) ?? {};
@@ -94,7 +95,7 @@ class VideoAuthenticationPresenter {
           );
 
           _view!.submitAuthSuccess(authFile,
-              "Submit file to authentication successfully. Waiting for confirmation!");
+              "${Utils.instance().multiLanguage(StringConstants.submit_video_authen_success)}!");
         } else {
           List<String> categoriesList = List<String>.from(isUploadVideo
               ? json['data']['video'] ?? []
@@ -119,7 +120,8 @@ class VideoAuthenticationPresenter {
         message: "Submit file to authentication fail: TimeoutException!",
         status: LogEvent.failed,
       );
-      _view!.submitAuthFail("Please check your internet and try again !");
+      _view!.submitAuthFail(Utils.instance()
+          .multiLanguage(StringConstants.network_error_message));
     } on SocketException {
       //Add log
       Utils.instance().prepareLogData(
@@ -128,7 +130,8 @@ class VideoAuthenticationPresenter {
         message: "Submit file to authentication fail: SocketException!",
         status: LogEvent.failed,
       );
-      _view!.submitAuthFail("Please check your internet and try again !");
+      _view!.submitAuthFail(Utils.instance()
+          .multiLanguage(StringConstants.network_error_message));
     } on http.ClientException {
       //Add log
       Utils.instance().prepareLogData(
@@ -137,7 +140,8 @@ class VideoAuthenticationPresenter {
         message: "Submit file to authentication fail: ClientException!",
         status: LogEvent.failed,
       );
-      _view!.submitAuthFail("Please check your internet and try again !");
+      _view!.submitAuthFail(Utils.instance()
+          .multiLanguage(StringConstants.network_error_message));
     }
   }
 }

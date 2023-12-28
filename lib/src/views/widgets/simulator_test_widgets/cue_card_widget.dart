@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/simulator_test_provider.dart';
@@ -31,10 +33,10 @@ class _CueCardWidgetState extends State<CueCardWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  const Center(
+                  Center(
                     child: Text(
-                      "Cue Card",
-                      style: TextStyle(
+                      Utils.instance().multiLanguage(StringConstants.cue_card),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,

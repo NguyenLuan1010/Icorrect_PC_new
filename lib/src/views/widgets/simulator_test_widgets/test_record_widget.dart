@@ -14,12 +14,11 @@ import '../../../providers/simulator_test_provider.dart';
 import '../../../providers/timer_provider.dart';
 
 class TestRecordWidget extends StatelessWidget {
-  const TestRecordWidget({
-    super.key,
-    required this.finishAnswer,
-    required this.repeatQuestion,
-    required this.simulatorTestProvider
-  });
+  const TestRecordWidget(
+      {super.key,
+      required this.finishAnswer,
+      required this.repeatQuestion,
+      required this.simulatorTestProvider});
 
   final Function(QuestionTopicModel questionTopicModel) finishAnswer;
   final Function(QuestionTopicModel questionTopicModel) repeatQuestion;
@@ -46,9 +45,10 @@ class TestRecordWidget extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  const Text(
-                    'You answer is being recorded',
-                    style: TextStyle(fontSize: 23),
+                  Text(
+                    Utils.instance()
+                        .multiLanguage(StringConstants.answer_being_recorded),
+                    style: const TextStyle(fontSize: 23),
                   ),
                   const SizedBox(height: 20),
                   Image.asset(
@@ -57,7 +57,8 @@ class TestRecordWidget extends StatelessWidget {
                     height: 100,
                   ),
                   const SizedBox(height: 5),
-                  Consumer<SimulatorTestProvider>(builder: (context, provider, _) {
+                  Consumer<SimulatorTestProvider>(
+                      builder: (context, provider, _) {
                     return Text(
                       provider.strCountDown,
                       style: const TextStyle(
@@ -107,24 +108,29 @@ class TestRecordWidget extends StatelessWidget {
           finishAnswer(questionTopicModel);
         }
       },
-      child: Container(
-        width: 100,
-        height: 44,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          color: _lessThan2s(simulatorTestProvider, playListModel)
-              ? const Color.fromARGB(255, 199, 221, 200)
-              : const Color.fromARGB(255, 11, 180, 16),
-        ),
-        alignment: Alignment.center,
-        child: const Text(
-          'Finish',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      child: Wrap(
+        children: [
+          Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              color: _lessThan2s(simulatorTestProvider, playListModel)
+                  ? const Color.fromARGB(255, 199, 221, 200)
+                  : const Color.fromARGB(255, 11, 180, 16),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              Utils.instance()
+                  .multiLanguage(StringConstants.finish_button_title),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
@@ -148,9 +154,9 @@ class TestRecordWidget extends StatelessWidget {
           border: Border.all(width: 1, color: Colors.grey),
         ),
         alignment: Alignment.center,
-        child: const Text(
-          'Repeat',
-          style: TextStyle(
+        child: Text(
+          Utils.instance().multiLanguage(StringConstants.repeat_button_title),
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -160,9 +166,18 @@ class TestRecordWidget extends StatelessWidget {
     );
   }
 
-  bool _lessThan2s(
-      SimulatorTestProvider simulatorTestProvider, PlayListModel playListModel) {
-    int countTime = Utils.instance().getRecordTime(playListModel.numPart);
+  bool _lessThan2s(SimulatorTestProvider simulatorTestProvider,
+      PlayListModel playListModel) {
+    int countTime = playListModel.part1Time;
+    switch (playListModel.numPart) {
+      case 2:
+        countTime = playListModel.part2Time;
+        break;
+      case 3:
+        countTime = playListModel.part3Time;
+        break;
+    }
+
     if (kDebugMode) {
       print(
           'counttime : $countTime, currentCount :${simulatorTestProvider.currentCount}');

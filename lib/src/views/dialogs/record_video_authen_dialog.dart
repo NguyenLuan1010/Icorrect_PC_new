@@ -8,6 +8,7 @@ import 'package:icorrect_pc/src/presenters/video_authentication_persenter.dart';
 import 'package:icorrect_pc/src/providers/camera_preview_provider.dart';
 import 'package:icorrect_pc/src/providers/record_video_provider.dart';
 import 'package:icorrect_pc/src/providers/submit_video_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:icorrect_pc/src/views/screens/video_authentication/submit_video_auth.dart';
 import 'package:icorrect_pc/src/views/widgets/waring_status_widget.dart';
 import 'package:provider/provider.dart';
@@ -81,7 +82,7 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
     return Consumer<CameraPreviewProvider>(builder: (context, provider, child) {
       return Center(
           child: SizedBox(
-        width: w / 2,
+        width: (w < SizeLayout.MyTestScreenSize) ? w : w / 2,
         child: Dialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -177,21 +178,23 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
                           height: h / 4.5,
                           padding: const EdgeInsets.only(
                               right: 20, left: 20, top: 5),
-                          child: const SingleChildScrollView(
+                          child: SingleChildScrollView(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  StringConstants.sampleTextTitle,
-                                  style: TextStyle(
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.sampleTextTitle),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
                                     fontSize: 17,
                                   ),
                                 ),
                                 Text(
-                                  StringConstants.sampleTextContent,
-                                  style: TextStyle(
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.sampleTextContent),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w400,
                                     fontSize: 16,
@@ -327,9 +330,11 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
   @override
   void submitAuthFail(String message) {
     _recordVideoProvider!.showWarningStatus(
-        title: StringConstants.something_went_wrong_title,
+        title: Utils.instance()
+            .multiLanguage(StringConstants.something_went_wrong_title),
         content: message,
-        cancelButtonName: "Record New",
+        cancelButtonName: Utils.instance()
+            .multiLanguage(StringConstants.record_new_button_title),
         isWaring: true,
         cancelAction: () {
           if (_recordVideoProvider!.videoRecorded.existsSync()) {
@@ -362,7 +367,7 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
     // );
     if (savedFile.existsSync()) {
       savedFile.delete().then((value) {
-       // Navigator.of(context).pop();
+        // Navigator.of(context).pop();
         Navigator.of(context).pop();
         widget.userAuthDetailProvider.setStartReload(true);
       });
@@ -393,8 +398,10 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
           });
     } else {
       _recordVideoProvider!.showWarningStatus(
-          title: StringConstants.video_record_duration_less,
-          content: StringConstants.video_record_duration_less_than_15s,
+          title: Utils.instance()
+              .multiLanguage(StringConstants.video_record_duration_less),
+          content: Utils.instance().multiLanguage(
+              StringConstants.video_record_duration_less_than_15s),
           isWaring: false,
           cancelAction: () {},
           okAction: () {});
@@ -431,8 +438,10 @@ class _RecordVideoAuthDialogState extends State<RecordVideoAuthDialog>
 
   void _confirmSubmitBeforeDimiss() {
     _recordVideoProvider!.showWarningStatus(
-        title: StringConstants.confirm_exit_screen_title,
-        content: StringConstants.confirm_submit_before_out_screen,
+        title: Utils.instance()
+            .multiLanguage(StringConstants.confirm_exit_screen_title),
+        content: Utils.instance()
+            .multiLanguage(StringConstants.confirm_submit_before_out_screen),
         isWaring: true,
         cancelAction: () {
           _recordVideoProvider!.setShowWarning(false);

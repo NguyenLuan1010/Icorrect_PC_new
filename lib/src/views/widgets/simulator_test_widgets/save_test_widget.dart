@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/app_assets.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
 import 'package:icorrect_pc/src/presenters/test_room_simulator_presenter.dart';
 import 'package:icorrect_pc/src/providers/test_room_provider.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 
 import 'package:provider/provider.dart';
 
@@ -72,19 +74,20 @@ class SaveTheTestWidget extends StatelessWidget {
 
   String _getTitle(SimulatorTestProvider provider) {
     return provider.reanswersList.isNotEmpty
-        ? "Reanswer Questions"
-        : "Congratulations";
+        ? Utils.instance().multiLanguage(StringConstants.reanswer_question)
+        : Utils.instance().multiLanguage(StringConstants.congratulations);
   }
 
   String _getContent(SimulatorTestProvider provider) {
     return provider.reanswersList.isNotEmpty
-        ? "You just answered the question again."
-        : "You have completed the speaking test";
+        ? Utils.instance().multiLanguage(StringConstants.reanswer_description)
+        : Utils.instance()
+            .multiLanguage(StringConstants.finish_test_description);
   }
 
   String _getTitleButton(SimulatorTestProvider provider) {
     return provider.reanswersList.isNotEmpty
-        ? "Update your answers"
-        : "Save the test";
+        ? Utils.instance().multiLanguage(StringConstants.update_your_answer)
+        : Utils.instance().multiLanguage(StringConstants.save_the_test);
   }
 }

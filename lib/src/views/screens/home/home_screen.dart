@@ -1,7 +1,8 @@
 import 'dart:collection';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fdottedline_nullsafety/fdottedline__nullsafety.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:icorrect_pc/core/camera_service.dart';
 import 'package:icorrect_pc/src/data_source/constants.dart';
@@ -37,21 +38,13 @@ class HomeWorksWidget extends StatefulWidget {
 
 class _HomeWorksWidgetState extends State<HomeWorksWidget>
     implements HomeWorkViewContract {
+  double w = 0, h = 0;
   late HomeProvider _provider;
   String _choosenStatus = '';
 
   CircleLoading? _loading;
   late HomeWorkPresenter _presenter;
   CameraPreviewProvider? _cameraPreviewProvider;
-
-  final List<String> _statusSelections = [
-    'All',
-    'Submitted',
-    'Corrected',
-    'Not Completed',
-    'Late',
-    'Out of date'
-  ];
 
   @override
   void initState() {
@@ -61,7 +54,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     _cameraPreviewProvider =
         Provider.of<CameraPreviewProvider>(context, listen: false);
 
-    _choosenStatus = _statusSelections.first;
+    _choosenStatus = _provider.statusSelections.first;
     _loading = CircleLoading();
 
     _loading?.show(context);
@@ -79,26 +72,32 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
   @override
   void dispose() {
     dispose();
-    super.dispose();
+    super.dispose(); 
     _provider.dispose();
+    _loading!.hide();
   }
 
   @override
   Widget build(BuildContext context) {
+    w = MediaQuery.of(context).size.width;
+    h = MediaQuery.of(context).size.height;
     return Consumer<AuthWidgetProvider>(builder: (context, provider, child) {
       if (provider.isRefresh) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _loading?.show(context);
-          _provider.setStatusActivity("All");
+          _provider.setStatusActivity(
+              Utils.instance().multiLanguage(StringConstants.all));
           _presenter.getListHomeWork(context);
           provider.setRefresh(false);
         });
       }
-      return _buildWidget();
+      return (w < SizeLayout.HomeScreenTabletSize)
+          ? _buildTabletLayout()
+          : _buildDesktopLayout();
     });
   }
 
-  Widget _buildWidget() {
+  Widget _buildDesktopLayout() {
     return Container(
       alignment: Alignment.center,
       child: SingleChildScrollView(
@@ -117,6 +116,26 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     );
   }
 
+  Widget _buildTabletLayout() {
+    return Container(
+      alignment: Alignment.center,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+                height: 200,
+                margin: const EdgeInsets.symmetric(horizontal: 170),
+                child: Column(
+                  children: [_builClassFilter(), _buildStatusFilter()],
+                )),
+            _buildHomeworkList()
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _builClassFilter() {
     return Expanded(
         child: Consumer<HomeProvider>(builder: (context, provider, child) {
@@ -125,8 +144,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Class Filter",
-                  style: TextStyle(
+              Text(Utils.instance().multiLanguage(StringConstants.class_filter),
+                  style: const TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               DropdownButtonFormField<NewClassModel>(
@@ -141,6 +160,9 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   );
                 }).toList(),
                 onChanged: (NewClassModel? newValue) {
+                  if (kDebugMode) {
+                    print("DEBUG: ${newValue!.name}");
+                  }
                   provider.setClassSelection(newValue!);
                   List<ActivitiesModel> activities =
                       _presenter.filterActivities(
@@ -148,6 +170,9 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                           newValue.activities,
                           provider.statusActivity,
                           provider.currentTime);
+                  if (kDebugMode) {
+                    print("DEBUG: activities: ${activities.length}");
+                  }
                   provider.setActivitiesFilter(activities);
                 },
                 decoration: InputDecoration(
@@ -180,13 +205,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Status Filter',
-                  style: TextStyle(
+              Text(
+                  Utils.instance().multiLanguage(StringConstants.status_filter),
+                  style: const TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: provider.statusActivity,
-                items: _statusSelections.map((String value) {
+                items: provider.statusSelections.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(
@@ -234,13 +260,12 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         width: w,
         margin: const EdgeInsets.only(top: 20, left: 100, right: 100),
         child: Consumer<HomeProvider>(builder: (context, provider, child) {
-          return FDottedLine(
+          return DottedBorder(
+              borderType: BorderType.RRect,
+              radius: const Radius.circular(25),
+              dashPattern: [6, 3, 6, 3],
+              strokeWidth: 2,
               color: AppColors.defaultPurpleColor,
-              strokeWidth: 2.0,
-              dottedLength: 10.0,
-              width: w,
-              space: 6.0,
-              corner: FDottedLineCorner.all(20),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
@@ -262,48 +287,88 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                     InkWell(
                         onTap: () {
                           _loading?.show(context);
-                          _provider.setStatusActivity("All");
+                          _provider.setStatusActivity(Utils.instance()
+                              .multiLanguage(StringConstants.all));
                           _presenter.getListHomeWork(context);
                         },
-                        child: const SizedBox(
+                        child: SizedBox(
                           width: 120,
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Icon(Icons.refresh_rounded),
-                                SizedBox(width: 5),
-                                Text('Refresh Data',
-                                    style: TextStyle(
+                                const Icon(Icons.refresh_rounded),
+                                const SizedBox(width: 5),
+                                Text(
+                                    Utils.instance().multiLanguage(
+                                        StringConstants.refresh_data),
+                                    style: const TextStyle(
                                       color: AppColors.purple,
                                       fontSize: 16,
                                     )),
                               ]),
                         )),
-                    SingleChildScrollView(
-                        child: Container(
-                      height: height,
-                      margin: const EdgeInsets.only(top: 10, bottom: 10),
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: (provider.activitiesFilter.isNotEmpty)
-                          ? Center(
-                              child: GridView.count(
-                              crossAxisCount: 2,
-                              childAspectRatio: 7,
-                              crossAxisSpacing: 1,
-                              mainAxisSpacing: 1,
-                              children: provider.activitiesFilter
-                                  .map((data) => _questionItem(data))
-                                  .toList(),
-                            ))
-                          : NothingWidget.init().buildNothingWidget(
-                              'Nothing your homeworks in here',
-                              widthSize: 180,
-                              heightSize: 180),
-                    ))
+                    if (w < SizeLayout.HomeScreenTabletSize)
+                      _buildTabletList()
+                    else
+                      _buildDesktopList()
                   ],
                 ),
               ));
         }));
+  }
+
+  Widget _buildDesktopList() {
+    double height = 450;
+    return Consumer<HomeProvider>(builder: (context, provider, child) {
+      return SingleChildScrollView(
+          child: Container(
+        height: height,
+        margin: const EdgeInsets.only(top: 10, bottom: 10),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: (provider.activitiesFilter.isNotEmpty)
+            ? Center(
+                child: GridView.count(
+                crossAxisCount: 2,
+                childAspectRatio: 7,
+                crossAxisSpacing: 1,
+                mainAxisSpacing: 1,
+                children: provider.activitiesFilter
+                    .map((data) => _questionItem(data))
+                    .toList(),
+              ))
+            : NothingWidget.init().buildNothingWidget(
+                Utils.instance()
+                    .multiLanguage(StringConstants.nothing_your_homework),
+                widthSize: 180,
+                heightSize: 180),
+      ));
+    });
+  }
+
+  Widget _buildTabletList() {
+    double height = 450;
+    return Consumer<HomeProvider>(builder: (context, provider, child) {
+      return SingleChildScrollView(
+          child: Container(
+        height: height,
+        margin: const EdgeInsets.only(top: 10, bottom: 10),
+        padding: const EdgeInsets.only(bottom: 20),
+        child: (provider.activitiesFilter.isNotEmpty)
+            ? Center(
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: provider.activitiesFilter.length,
+                    itemBuilder: (context, index) {
+                      return _questionItem(
+                          provider.activitiesFilter.elementAt(index));
+                    }))
+            : NothingWidget.init().buildNothingWidget(
+                Utils.instance()
+                    .multiLanguage(StringConstants.nothing_your_homework),
+                widthSize: 180,
+                heightSize: 180),
+      ));
+    });
   }
 
   Widget _questionItem(ActivitiesModel homeWork) {
@@ -337,9 +402,9 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Part",
+                    Text(Utils.instance().multiLanguage(StringConstants.part),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: AppColors.purple,
                             fontWeight: FontWeight.w400,
                             fontSize: 8)),
@@ -358,25 +423,36 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                      width: 300,
+                      width: w / 4,
                       child: Row(
                         children: [
                           (homeWork.isExam())
-                              ? const Text("Test: ",
+                              ? Text(
+                                  Utils.instance().multiLanguage(
+                                      StringConstants.test_status),
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 17,
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold))
                               : Container(),
-                          Text(homeWork.activityName.toString(),
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 17, color: Colors.black))
+                          SizedBox(
+                            width: w / 7,
+                            child: Text(homeWork.activityName.toString(),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 17, color: Colors.black)),
+                          )
                         ],
                       )),
                   Row(
                     children: [
+                      Text(
+                          '${Utils.instance().multiLanguage(StringConstants.time_end_title)}: ',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
                       Text(
                           (homeWork.activityEndTime.isNotEmpty)
                               ? homeWork.activityEndTime.toString()
@@ -419,9 +495,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                             MaterialStateProperty.all<Color>(AppColors.purple),
                         shape: MaterialStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)))),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: Text("Start"),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(Utils.instance()
+                          .multiLanguage(StringConstants.start_title)),
                     ),
                   ),
                 )
@@ -445,9 +522,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                           shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5)))),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Text("Details"),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(Utils.instance()
+                            .multiLanguage(StringConstants.detail_title)),
                       )),
                 )
         ],
@@ -460,7 +538,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         .getHomeWorkStatus(activitiesModel, _provider.currentTime)['title'];
     String aiStatus = Utils.instance().haveAiResponse(activitiesModel);
     if (aiStatus.isNotEmpty) {
-      return "${status == 'Corrected' ? '$status &' : ''}$aiStatus";
+      return "${status == Utils.instance().multiLanguage(StringConstants.corrected) ? '$status &' : ''}$aiStatus";
     } else {
       return status;
     }
@@ -482,10 +560,10 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         context: context,
         builder: (BuildContext context) {
           return CustomAlertDialog(
-            title: "Notification",
-            description:
-                "This test is loaded but not completed. Please contact admin to reset it !",
-            okButtonTitle: "OK",
+            title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+            description: Utils.instance()
+                .multiLanguage(StringConstants.loaded_test_warning_message),
+            okButtonTitle: StringConstants.ok_button_title,
             cancelButtonTitle: null,
             borderRadius: 8,
             hasCloseButton: false,
@@ -502,7 +580,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
       // CameraService.instance()
       //     .initializeCamera(provider: _cameraPreviewProvider!);
     }
-    Navigations.instance().goToSimulatorTestRoom(context, homeWork);
+    Navigations.instance()
+        .goToSimulatorTestRoom(context, activitiesModel: homeWork);
   }
 
   @override
@@ -514,7 +593,8 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
     NewClassModel classModel = NewClassModel();
     classModel.id = 0;
-    classModel.name = "All";
+    classModel.name = Utils.instance().multiLanguage(StringConstants.all);
+    classModel.activities = homeworks;
     classes.add(classModel);
     _provider.setClassesList(classes);
     _provider.setClassSelection(classModel);
@@ -533,7 +613,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   @override
   void onLogoutComplete() {
-    print('onLogoutComplete');
     _loading?.hide();
   }
 
@@ -549,7 +628,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
 
   @override
   void onUpdateCurrentUserInfo(UserDataModel userDataModel) {
-    print('onUpdateCurrentUserInfo');
     _provider.setCurrentUser(userDataModel);
   }
 }

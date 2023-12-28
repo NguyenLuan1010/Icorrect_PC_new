@@ -1,4 +1,8 @@
+import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
+import 'package:icorrect_pc/src/data_source/constants.dart';
+import 'package:icorrect_pc/src/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/app_assets.dart';
@@ -44,8 +48,9 @@ class DownloadProgressingWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold)),
 
         const SizedBox(height: 8),
-        const Text('Downloading...',
-            style: TextStyle(
+        Text(
+            '${Utils.instance().multiLanguage(StringConstants.downloading)}...',
+            style: const TextStyle(
                 color: AppColors.defaultLightPurpleColor,
                 fontSize: 17,
                 fontWeight: FontWeight.bold)),

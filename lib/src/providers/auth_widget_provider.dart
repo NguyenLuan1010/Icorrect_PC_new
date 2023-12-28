@@ -12,7 +12,7 @@ class AuthWidgetProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    isDisposed = true; 
+    isDisposed = true;
     super.dispose();
   }
 
@@ -89,7 +89,6 @@ class AuthWidgetProvider extends ChangeNotifier {
     _previousAction = "";
   }
 
-
   bool _isRefresh = false;
   bool get isRefresh => _isRefresh;
   void setRefresh(bool isRefresh) {
@@ -135,7 +134,6 @@ class AuthWidgetProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   bool _playAudioExample = true;
   bool get playAudioExample => _playAudioExample;

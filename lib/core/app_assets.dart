@@ -34,4 +34,6 @@ class AppAssets {
   static const img_video_play_holder = '${image_folder}video_playholder.png';
 
   static const sound_default = '${sound_folder}skyline.wav';
+  static const img_vietnamese = '${image_folder}img_vietname.png';
+  static const img_english = '${image_folder}img_english.png';
 }

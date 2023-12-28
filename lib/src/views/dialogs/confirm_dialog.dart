@@ -27,7 +27,7 @@ class ConfirmDialogWidget extends StatelessWidget {
     double h = MediaQuery.of(context).size.height;
     return Center(
       child: SizedBox(
-        width: w / 3,
+        width: (w < SizeLayout.MyTestScreenSize) ? w : w / 3,
         child: Wrap(
           children: [
             Dialog(
