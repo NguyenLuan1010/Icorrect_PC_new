@@ -28,6 +28,7 @@ import '../models/user_data_models/user_data_model.dart';
 
 abstract class TestRoomSimulatorContract {
   void playFileVideo(File normalFile, File slowFile);
+  void onFileNotFound();
   void onCountDown(String strCount, int count);
   void onFinishAnswer(bool isPart2);
   void onCountDownForCueCard(String strCount);
@@ -205,7 +206,10 @@ class TestRoomSimulatorPresenter {
       _view!.playFileVideo(File(filePath), File(""));
     } else {
       //Handle have not file introduce
-      print("Handle have not file introduce 1");
+      if (kDebugMode) {
+        print("DEBUG: Handle have not file introduce 1");
+      }
+      _view!.onFileNotFound();
     }
   }
 
@@ -226,7 +230,10 @@ class TestRoomSimulatorPresenter {
       _view!.playFileVideo(File(normalPath), File(slowPath));
     } else {
       //Handle have not file question
-      print("Handle have not file question");
+      if (kDebugMode) {
+        print("DEBUG: Handle have not file question");
+      }
+      _view!.onFileNotFound();
     }
   }
 
@@ -243,6 +250,7 @@ class TestRoomSimulatorPresenter {
       if (kDebugMode) {
         print("Handle have not file playingEndOfTakeNote");
       }
+      _view!.onFileNotFound();
     }
   }
 
@@ -259,6 +267,7 @@ class TestRoomSimulatorPresenter {
       if (kDebugMode) {
         print("Handle have not file playingEndOfTest");
       }
+      _view!.onFileNotFound();
     }
   }
 

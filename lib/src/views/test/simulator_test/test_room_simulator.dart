@@ -44,6 +44,7 @@ import '../../../models/simulator_test_models/file_topic_model.dart';
 import '../../../models/simulator_test_models/test_detail_model.dart';
 import '../../../presenters/simulator_test_presenter.dart';
 import '../../../presenters/test_room_simulator_presenter.dart';
+import '../../dialogs/custom_alert_dialog.dart';
 import '../../dialogs/message_alert.dart';
 import '../../widgets/simulator_test_widgets/cue_card_widget.dart';
 import '../../widgets/simulator_test_widgets/save_test_widget.dart';
@@ -159,12 +160,11 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   Future _onWindowActive() async {
     //Calculation time of being out and save into a action log
     PlayListModel currentPlayList = widget.simulatorTestProvider.currentPlay;
-    if (null != _logStartTime && currentPlayList.questionId != 0 && _isExam) {
+    if (null != _logStartTime && _isExam) {
       _logEndTime = DateTime.now();
       if (kDebugMode) {
         print("DEBUG: action log endtime: $_logEndTime");
       }
-
       int second = Utils.instance()
           .getBeingOutTimeInSeconds(_logStartTime!, _logEndTime!);
 
@@ -175,10 +175,9 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
         "time": second
       };
 
-      _resetActionLogTimes();
-
       //Add action log
       widget.simulatorTestProvider.addLogActions(jsonData);
+      _resetActionLogTimes();
     }
   }
 
@@ -240,9 +239,16 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     super.build(context);
     w = MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
-    return (w < SizeLayout.MyTestScreenSize)
-        ? _buildTestRoomTabletLayout()
-        : _buildTestRoomDesktopLayout();
+    return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
+      if (provider.isDownloadAgain &&
+          provider.isDownloadAgainSuccess &&
+          provider.doingStatus == DoingStatus.doing) {
+        _onDownloadAgainCompleted();
+      }
+      return (w < SizeLayout.MyTestScreenSize)
+          ? _buildTestRoomTabletLayout()
+          : _buildTestRoomDesktopLayout();
+    });
   }
 
   Widget _buildTestRoomDesktopLayout() {
@@ -453,7 +459,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   Future _initVideoController(File file) async {
-    if(kDebugMode){
+    if (kDebugMode) {
       print("DEBUG: File video : ${file.path}");
     }
     _videoPlayerController = VideoPlayerController.file(file)
@@ -511,6 +517,44 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   void onCountDownForCueCard(String strCount) {
     widget.simulatorTestProvider.setStrCountDown(strCount);
     widget.simulatorTestProvider.setStrCountCueCard(strCount);
+  }
+
+  @override
+  void onFileNotFound() {
+    _showCheckNetworkDialog();
+  }
+
+  void _showCheckNetworkDialog() async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomAlertDialog(
+          title: Utils.instance().multiLanguage(StringConstants.warning_title),
+          description: Utils.instance()
+              .multiLanguage(StringConstants.network_error_message),
+          okButtonTitle: StringConstants.ok_button_title,
+          cancelButtonTitle: Utils.instance()
+              .multiLanguage(StringConstants.cancel_button_title),
+          borderRadius: 8,
+          hasCloseButton: false,
+          okButtonTapped: () {
+            widget.simulatorTestPresenter.tryAgainToDownload();
+            Navigator.of(context).pop();
+          },
+          cancelButtonTapped: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
+
+  void _onDownloadAgainCompleted() {
+    PlayListModel playListModel = widget.simulatorTestProvider.currentPlay;
+    _presenter!.playingQuestion(
+        playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+    widget.simulatorTestProvider.setDownloadAgain(false);
+    widget.simulatorTestProvider.setDownloadAgainSuccess(false);
   }
 
   @override

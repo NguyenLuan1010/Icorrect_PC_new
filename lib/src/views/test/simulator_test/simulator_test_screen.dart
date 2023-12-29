@@ -98,8 +98,8 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       if (kDebugMode) {
         print("DEBUG: NO INTERNET === $isOffline");
       }
-      if(isOffline){
-        Future.delayed(Duration.zero,(){
+      if (isOffline) {
+        Future.delayed(Duration.zero, () {
           _showCheckNetworkDialog();
         });
       }
@@ -597,37 +597,41 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     }
   }
 
+  bool _isNetworkDialogShowing = false;
   void _showCheckNetworkDialog() async {
-    bool okButtonTapped = false;
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomAlertDialog(
-          title: Utils.instance().multiLanguage(StringConstants.warning_title),
-          description: Utils.instance()
-              .multiLanguage(StringConstants.network_error_message),
-          okButtonTitle: StringConstants.ok_button_title,
-          cancelButtonTitle: Utils.instance()
-              .multiLanguage(StringConstants.cancel_button_title),
-          borderRadius: 8,
-          hasCloseButton: false,
-          okButtonTapped: () {
-            okButtonTapped = true;
-            _simulatorTestPresenter!.tryAgainToDownload();
-          },
-          cancelButtonTapped: () {
-            Navigator.of(context).pop();
-          },
-        );
-      },
-    );
+    if (!_isNetworkDialogShowing) {
+      bool okButtonTapped = false;
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CustomAlertDialog(
+            title:
+                Utils.instance().multiLanguage(StringConstants.warning_title),
+            description: Utils.instance()
+                .multiLanguage(StringConstants.network_error_message),
+            okButtonTitle: StringConstants.ok_button_title,
+            cancelButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.cancel_button_title),
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              okButtonTapped = true;
+              _simulatorTestPresenter!.tryAgainToDownload();
+            },
+            cancelButtonTapped: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
 
-    if (okButtonTapped) {
-      _authWidgetProvider!.setRefresh(_isExam);
-      Navigator.of(context).pop();
+      if (okButtonTapped) {
+        _authWidgetProvider!.setRefresh(_isExam);
+        Navigator.of(context).pop();
+      }
+      _isNetworkDialogShowing = true;
     }
   }
-
 
   @override
   void onDownloadFailure(AlertInfo info) {
@@ -653,6 +657,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
     if (index == total) {
       //Auto start to do test
+      _simulatorTestProvider!.setDownloadAgainSuccess(true);
       _checkPermission();
     }
   }
@@ -778,6 +783,8 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   }
 
   void updateStatusForReDownload() {
+    _simulatorTestProvider!.setDownloadAgain(true);
+    _simulatorTestProvider!.setDownloadAgainSuccess(false);
     _simulatorTestProvider!.setNeedDownloadAgain(false);
     _simulatorTestProvider!.setStartNowStatus(false);
     _simulatorTestProvider!.setDownloadProgressingStatus(true);

@@ -65,6 +65,23 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+  bool _isDownloadAgainSuccess = false;
+  bool _isDownloadAgain = false;
+  bool get isDownloadAgainSuccess => _isDownloadAgainSuccess;
+  bool get isDownloadAgain => _isDownloadAgain;
+  void setDownloadAgain(bool isDownloadAgain) {
+    _isDownloadAgain = isDownloadAgain;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+  void setDownloadAgainSuccess(bool isSuccess) {
+    _isDownloadAgainSuccess = isSuccess;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   //=========================== Downloading video info==========================
   int _total = 0;
 
@@ -749,7 +766,6 @@ class SimulatorTestProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   VideoPlayerController? _videoPlayerController;
 

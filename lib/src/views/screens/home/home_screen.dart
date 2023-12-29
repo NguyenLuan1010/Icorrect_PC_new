@@ -12,7 +12,6 @@ import 'package:icorrect_pc/src/models/homework_models/new_api_135/activities_mo
 import 'package:icorrect_pc/src/models/user_data_models/user_data_model.dart';
 import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
-import 'package:icorrect_pc/src/utils/navigations.dart';
 import 'package:icorrect_pc/src/views/widgets/grid_view_widget.dart';
 import 'package:icorrect_pc/src/views/widgets/simulator_test_widgets/download_progressing_widget.dart';
 
@@ -24,6 +23,7 @@ import '../../../models/homework_models/new_api_135/new_class_model.dart';
 import '../../../models/log_models/log_model.dart';
 import '../../../presenters/home_presenter.dart';
 import '../../../providers/camera_preview_provider.dart';
+import '../../../utils/Navigations.dart';
 import '../../../utils/utils.dart';
 import '../../dialogs/circle_loading.dart';
 import '../../dialogs/custom_alert_dialog.dart';

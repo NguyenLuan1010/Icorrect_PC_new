@@ -47,14 +47,12 @@ class Navigations {
       int? testOption,
       List<int>? topicsId,
       int? isPredict}) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => SimulatorTestScreen(
-                homeWorkModel: activitiesModel,
-                testOption: testOption,
-                topicsId: topicsId,
-                isPredict: isPredict)));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => SimulatorTestScreen(
+            homeWorkModel: activitiesModel,
+            testOption: testOption,
+            topicsId: topicsId,
+            isPredict: isPredict)));
   }
 
   void goToMyTest(BuildContext context, ActivitiesModel activitiesModel) {

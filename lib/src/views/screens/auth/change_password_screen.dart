@@ -92,7 +92,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                     child: Text(
                         Utils.instance().multiLanguage(
                             StringConstants.save_change_button_title),
-                        style: const TextStyle(fontSize: 17))),
+                        style: const TextStyle(
+                            fontSize: 17, color: Colors.white))),
               ),
             ),
             const SizedBox(height: 10),
