@@ -52,7 +52,7 @@ class HomeWorkPresenter {
       }
 
       _view!.onUpdateCurrentUserInfo(currentUser);
- 
+
       String email = currentUser.userInfoModel.email;
       String status = Status.allHomework.get.toString();
 
@@ -96,10 +96,11 @@ class HomeWorkPresenter {
             message: onError.toString(),
             status: LogEvent.failed,
           );
-          if(kDebugMode){
+          if (kDebugMode) {
             print("DEBUG:onGetListHomeworkError - ${onError.toString()} ");
           }
-          _view!.onGetListHomeworkError('${Utils.instance().multiLanguage(StringConstants.network_error_message)}. \nError Detail: ${onError.toString()}');
+          _view!.onGetListHomeworkError(Utils.instance()
+              .multiLanguage(StringConstants.network_error_message));
         },
       );
     } on TimeoutException {

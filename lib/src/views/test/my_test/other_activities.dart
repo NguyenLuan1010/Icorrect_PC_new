@@ -75,10 +75,9 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
             border: Border.all(color: Colors.black, width: 2)),
         child: Consumer<MyTestProvider>(builder: (context, provider, child) {
           if (provider.otherLightHomeWorks.isNotEmpty) {
-            return Center(
-                child: (w < SizeLayout.OthersScreenTabletSize)
-                    ? _buildOthersTabletLayout(provider.otherLightHomeWorks)
-                    : _buildOthersDesktopLayout(provider.otherLightHomeWorks));
+            return (w < SizeLayout.OthersScreenTabletSize)
+                ? _buildOthersTabletLayout(provider.otherLightHomeWorks)
+                : _buildOthersDesktopLayout(provider.otherLightHomeWorks);
           } else {
             return NothingWidget.init().buildNothingWidget(
                 Utils.instance()
@@ -173,7 +172,8 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: w/6,
+                        width: _getSizeTextResponse(
+                            Utils.instance().scoreReponse(results)['score']),
                         child: Text(results.activityResult!.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -205,6 +205,19 @@ class _OtherHomeWorksState extends State<OtherHomeWorks>
             ],
           )),
     );
+  }
+
+  double _getSizeTextResponse(String status) {
+    if (w < SizeLayout.OthersScreenTabletSize) {
+      return w / 2.5;
+    } else {
+      if (status ==
+          Utils.instance().multiLanguage(StringConstants.not_evaluated)) {
+        return w / 5 - 10;
+      } else {
+        return w / 4;
+      }
+    }
   }
 
   @override

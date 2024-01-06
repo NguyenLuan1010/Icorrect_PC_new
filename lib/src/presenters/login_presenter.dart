@@ -62,8 +62,8 @@ class LoginPresenter {
         _view!.onLoginError(authModel.status);
       } else {
         if (authModel.message.isNotEmpty) {
-          _view!.onLoginError(Utils.instance().multiLanguage(Utils.instance()
-              .multiLanguage(StringConstants.network_error_message)));
+          _view!.onLoginError(Utils.instance()
+              .multiLanguage(StringConstants.network_error_message));
           //Add log
           Utils.instance().prepareLogData(
             log: log,
@@ -95,7 +95,8 @@ class LoginPresenter {
           status: LogEvent.failed,
         );
       } else {
-        _view!.onLoginError(StringConstants.network_error_message);
+        _view!.onLoginError(Utils.instance()
+            .multiLanguage(StringConstants.network_error_message));
         //Add log
         Utils.instance().prepareLogData(
           log: log,

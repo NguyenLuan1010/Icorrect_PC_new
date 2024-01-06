@@ -170,10 +170,17 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
 
   _getTabs() {
     return [
-      Tab(
-          text: Utils.instance()
-              .multiLanguage(StringConstants.test_detail_title)),
-      Tab(text: Utils.instance().multiLanguage(StringConstants.corrections)),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.test_detail_title)),
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance().multiLanguage(StringConstants.corrections)),
+      ),
     ];
   }
 
@@ -312,8 +319,7 @@ class _OtherStudentTestScreenState extends State<OtherStudentTestScreen>
           title: Utils.instance().multiLanguage(StringConstants.dialog_title),
           description: Utils.instance()
               .multiLanguage(StringConstants.network_error_message),
-          okButtonTitle:
-              StringConstants.ok_button_title,
+          okButtonTitle: StringConstants.ok_button_title,
           cancelButtonTitle: null,
           borderRadius: 8,
           hasCloseButton: false,

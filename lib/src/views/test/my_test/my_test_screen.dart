@@ -136,7 +136,7 @@ class _MyTestScreenState extends State<MyTestScreen>
     return _buildMyTestScreen();
   }
 
-  Widget _buildMyTestScreen() {   
+  Widget _buildMyTestScreen() {
     return Scaffold(
         body: Container(
       padding: const EdgeInsets.all(20),
@@ -207,38 +207,42 @@ class _MyTestScreenState extends State<MyTestScreen>
   _getTabs() {
     var tabs = [
       Container(
-          child: Tab(
-              text: Utils.instance()
-                  .multiLanguage(StringConstants.test_detail_title)),
-          padding: const EdgeInsets.symmetric(horizontal: 20)),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.test_detail_title)),
+      ),
     ];
     if (widget.homeWork.activityAnswer != null) {
       if (widget.homeWork.activityAnswer!.hasTeacherResponse()) {
         tabs.add(Container(
-            child: Tab(
-                text: Utils.instance()
-                    .multiLanguage(StringConstants.response_title)),
-            padding: const EdgeInsets.symmetric(horizontal: 20)));
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Tab(
+              text: Utils.instance()
+                  .multiLanguage(StringConstants.response_title)),
+        ));
       }
     }
     tabs.addAll([
       Container(
-          child: Tab(
-              text: Utils.instance()
-                  .multiLanguage(StringConstants.highlight_title)),
-          padding: const EdgeInsets.symmetric(horizontal: 20)),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.highlight_title)),
+      ),
       Container(
-          child: Tab(
-              text:
-                  Utils.instance().multiLanguage(StringConstants.others_list)),
-          padding: const EdgeInsets.symmetric(horizontal: 20))
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance().multiLanguage(StringConstants.others_list)),
+      )
     ]);
     if (widget.homeWork.haveAIResponse()) {
       tabs.add(Container(
-          child: Tab(
-              text: Utils.instance()
-                  .multiLanguage(StringConstants.ai_response_title)),
-          padding: const EdgeInsets.symmetric(horizontal: 10)));
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.ai_response_title)),
+      ));
     }
     return tabs;
   }

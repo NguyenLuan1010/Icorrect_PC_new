@@ -597,6 +597,7 @@ class AlertClass {
 }
 
 class StringConstants {
+  static const String video_not_found_message = 'No follow-up video data found.Please check your network connection and try again';
   static const String download_test_fail_title = 'Fail to load your test';
   static const String download_test_fail_message =
       "Can not download video. Please try again!";
@@ -957,7 +958,7 @@ class StringConstants {
   static const String data_downloaded_error_message =
       "A part of data has not downloaded properly. Please check your internet connection and try again.";
   static const String network_error_message =
-      "An error occur. Please check your connection!";
+      "An error occur. Please check your connection";
   static const String submit_test_error_messge =
       "An error occur, please try again later!";
   static const String common_error_message =

@@ -153,7 +153,8 @@ class SimulatorTestPresenter {
           message: onError.toString(),
           status: LogEvent.failed,
         );
-        _view!.onGetTestDetailError(onError.toString());
+        _view!.onGetTestDetailError(Utils.instance()
+            .multiLanguage(StringConstants.network_error_message));
       },
     );
   }
@@ -372,6 +373,7 @@ class SimulatorTestPresenter {
               String url = downloadFileEP(fileNameForDownload);
 
               if (dio == null) {
+                _view!.onDownloadFailure(AlertClass.downloadVideoErrorAlert);
                 return;
               }
 

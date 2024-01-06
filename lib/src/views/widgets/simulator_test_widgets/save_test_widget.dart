@@ -55,7 +55,7 @@ class SaveTheTestWidget extends StatelessWidget {
                   style: ButtonCustom.init().buttonPurple20(),
                   child: Text(
                     _getTitleButton(simulatorTestProvider),
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               )

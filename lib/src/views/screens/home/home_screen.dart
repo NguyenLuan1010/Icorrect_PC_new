@@ -350,14 +350,13 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         margin: const EdgeInsets.only(top: 10, bottom: 10),
         padding: const EdgeInsets.only(bottom: 20),
         child: (provider.activitiesFilter.isNotEmpty)
-            ? Center(
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: provider.activitiesFilter.length,
-                    itemBuilder: (context, index) {
-                      return _questionItem(
-                          provider.activitiesFilter.elementAt(index));
-                    }))
+            ? ListView.builder(
+                shrinkWrap: true,
+                itemCount: provider.activitiesFilter.length,
+                itemBuilder: (context, index) {
+                  return _questionItem(
+                      provider.activitiesFilter.elementAt(index));
+                })
             : NothingWidget.init().buildNothingWidget(
                 Utils.instance()
                     .multiLanguage(StringConstants.nothing_your_homework),
@@ -424,7 +423,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(
-                          width: w / 4.5,
+                          width: _getSizeTextResponse(),
                           child: Row(
                             children: [
                               (homeWork.isExam())
@@ -438,7 +437,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                                           fontWeight: FontWeight.bold))
                                   : Container(),
                               SizedBox(
-                                width: w / 4.5,
+                                width: _getSizeTextResponse(),
                                 child: Text(homeWork.activityName.toString(),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 2,
@@ -493,14 +492,6 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                       child: ElevatedButton(
                         onPressed: () async {
                           _onClickStartTest(homeWork);
-                          //Add action log
-                          LogModel actionLog = await Utils.instance()
-                              .prepareToCreateLog(context,
-                                  action: LogEvent.actionClickOnHomeworkItem);
-                          actionLog.addData(
-                              key: StringConstants.k_activity_id,
-                              value: homeWork.activityId.toString());
-                          Utils.instance().addLog(actionLog, LogEvent.none);
                         },
                         style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(
@@ -521,16 +512,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
                       width: 100,
                       child: ElevatedButton(
                           onPressed: () async {
-                            Navigations.instance()
-                                .goToMyTest(context, homeWork);
-                            //Add action log
-                            LogModel actionLog = await Utils.instance()
-                                .prepareToCreateLog(context,
-                                    action: LogEvent.actionClickOnHomeworkItem);
-                            actionLog.addData(
-                                key: StringConstants.k_activity_id,
-                                value: homeWork.activityId.toString());
-                            Utils.instance().addLog(actionLog, LogEvent.none);
+                            _onClickMyTest(homeWork);
                           },
                           style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all<Color>(
@@ -551,6 +533,14 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
         )
       ],
     );
+  }
+
+  double _getSizeTextResponse() {
+    if (w < SizeLayout.HomeScreenTabletSize) {
+      return w / 3;
+    } else {
+      return w / 4 - 80;
+    }
   }
 
   String _statusOfActivity(ActivitiesModel activitiesModel) {
@@ -574,7 +564,7 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
     }
   }
 
-  void _onClickStartTest(ActivitiesModel homeWork) {
+  Future<void> _onClickStartTest(ActivitiesModel homeWork) async {
     if (homeWork.activityStatus == Status.loadedTest.get) {
       showDialog(
         context: context,
@@ -600,8 +590,50 @@ class _HomeWorksWidgetState extends State<HomeWorksWidget>
       // CameraService.instance()
       //     .initializeCamera(provider: _cameraPreviewProvider!);
     }
-    Navigations.instance()
-        .goToSimulatorTestRoom(context, activitiesModel: homeWork);
+
+    Utils.instance().checkInternetConnection().then((isConnected) async {
+      if (isConnected) {
+        Navigations.instance()
+            .goToSimulatorTestRoom(context, activitiesModel: homeWork);
+
+        //Add action log
+        LogModel actionLog = await Utils.instance().prepareToCreateLog(context,
+            action: LogEvent.actionClickOnHomeworkItem);
+        actionLog.addData(
+            key: StringConstants.k_activity_id,
+            value: homeWork.activityId.toString());
+        Utils.instance().addLog(actionLog, LogEvent.none);
+      } else {
+        _handleConnectionError();
+      }
+    });
+  }
+
+  Future<void> _onClickMyTest(ActivitiesModel homeWork) async {
+    Utils.instance().checkInternetConnection().then((isConnected) async {
+      if (isConnected) {
+        Navigations.instance().goToMyTest(context, homeWork);
+        //Add action log
+        LogModel actionLog = await Utils.instance().prepareToCreateLog(context,
+            action: LogEvent.actionClickOnHomeworkItem);
+        actionLog.addData(
+            key: StringConstants.k_activity_id,
+            value: homeWork.activityId.toString());
+        Utils.instance().addLog(actionLog, LogEvent.none);
+      } else {
+        _handleConnectionError();
+      }
+    });
+  }
+
+  void _handleConnectionError() {
+    //Show connect error here
+    if (kDebugMode) {
+      print("DEBUG: Connect error here!");
+    }
+    Utils.instance().showConnectionErrorDialog(context);
+
+    Utils.instance().addConnectionErrorLog(context);
   }
 
   @override

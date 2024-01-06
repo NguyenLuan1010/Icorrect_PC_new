@@ -4,7 +4,6 @@ import '../../../core/app_colors.dart';
 import '../../data_source/constants.dart';
 import '../../models/ui_models/alert_info.dart';
 
-
 abstract class ActionAlertListener {
   void onAlertExit(String keyInfo);
   void onAlertNextStep(String keyInfo);
@@ -26,7 +25,7 @@ class AlertsDialog {
       child: Container(
         width: 450,
         height: 300,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
         child: Stack(
           children: [
             Container(

@@ -4,6 +4,7 @@ import 'package:icorrect_pc/src/models/practice_model/ielts_topic_model.dart';
 import 'package:icorrect_pc/src/presenters/ielts_topics_list_presenter.dart';
 import 'package:icorrect_pc/src/providers/practice_screen_provider.dart';
 import 'package:icorrect_pc/src/utils/navigations.dart';
+import 'package:icorrect_pc/src/views/widgets/grid_view_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -173,19 +174,13 @@ class _EachPartScreenState extends State<EachPartScreen>
                 topic: topics.elementAt(index),
               );
             })
-        : GridView.builder(
-            itemCount: topics.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 5,
-              crossAxisSpacing: 30,
-            ),
-            itemBuilder: (context, index) {
+        : MyGridView(
+            data: topics.toList(),
+            itemWidget: (dataModel, index) {
               return _buildCheckTopicBtn(
                 topic: topics.elementAt(index),
               );
-            },
-          );
+            });
   }
 
   Widget _topicsPlaceholder() {
@@ -241,7 +236,7 @@ class _EachPartScreenState extends State<EachPartScreen>
     return Consumer<PracticeScreenProvider>(
         builder: (context, appState, child) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(bottom: 20),
         child: GestureDetector(
           onTap: () {
             var topicsSelected = _getTopicsSelectedList();
@@ -263,7 +258,7 @@ class _EachPartScreenState extends State<EachPartScreen>
                       color: AppColors.defaultPurpleColor),
               const SizedBox(width: 5),
               SizedBox(
-                  width: 250,
+                  width: w / 7,
                   child: Text(
                     topic.title.toUpperCase(),
                     style: const TextStyle(

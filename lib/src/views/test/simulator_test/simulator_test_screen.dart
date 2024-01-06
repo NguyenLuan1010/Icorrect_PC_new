@@ -76,6 +76,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   StreamSubscription? connection;
   bool isOffline = false;
   bool _isExam = false;
+  bool _dialogNotShowing = true;
 
   @override
   void initState() {
@@ -98,10 +99,18 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
       if (kDebugMode) {
         print("DEBUG: NO INTERNET === $isOffline");
       }
-      if (isOffline) {
-        Future.delayed(Duration.zero, () {
-          _showCheckNetworkDialog();
-        });
+
+      if (isOffline && _simulatorTestProvider!.isDownloadProgressing) {
+        _handleConnectionError();
+        return;
+      }
+      if (_canRedownload()) {
+        _dialogNotShowing = true;
+        // _simulatorTestProvider!.resetAll();
+
+        // _getTestDetail();
+        _simulatorTestPresenter!.tryAgainToDownload();
+        return;
       }
     });
 
@@ -114,9 +123,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
         Provider.of<SimulatorTestProvider>(context, listen: false);
     _cameraPreviewProvider =
         Provider.of<CameraPreviewProvider>(context, listen: false);
-    Future.delayed(Duration.zero, () {
-      _simulatorTestProvider!.resetAll();
-    });
+
     _authWidgetProvider =
         Provider.of<AuthWidgetProvider>(context, listen: false);
     _simulatorTestPresenter = SimulatorTestPresenter(this);
@@ -337,38 +344,59 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   }
 
   Future _onSubmitTest() async {
-    _loading!.show(context);
+    Utils.instance().checkInternetConnection().then((isConnected) {
+      if (isConnected) {
+        _loading!.show(context);
 
-    String activityId = "";
-    if (widget.homeWorkModel != null) {
-      activityId = widget.homeWorkModel!.activityId.toString();
-    }
-    if (_simulatorTestProvider!.reanswersList.isNotEmpty) {
-      _simulatorTestPresenter!.submitTest(
-          context: context,
-          testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
-          activityId: activityId,
-          questions: _simulatorTestProvider!.reanswersList,
-          isExam: _isExam,
-          isUpdate: true,
-          logAction: _simulatorTestProvider!.logActions);
-    } else {
-      String pathVideo = _simulatorTestPresenter!
-          .randomVideoRecordExam(_simulatorTestProvider!.videosRecorded);
-      if (kDebugMode) {
-        print("RECORDING_VIDEO : Video Recording saved at: $pathVideo");
+        String activityId = "";
+        if (widget.homeWorkModel != null) {
+          activityId = widget.homeWorkModel!.activityId.toString();
+        }
+        if (_simulatorTestProvider!.reanswersList.isNotEmpty) {
+          _simulatorTestPresenter!.submitTest(
+              context: context,
+              testId:
+                  _simulatorTestProvider!.currentTestDetail.testId.toString(),
+              activityId: activityId,
+              questions: _simulatorTestProvider!.reanswersList,
+              isExam: _isExam,
+              isUpdate: true,
+              logAction: _simulatorTestProvider!.logActions);
+        } else {
+          String pathVideo = _simulatorTestPresenter!
+              .randomVideoRecordExam(_simulatorTestProvider!.videosRecorded);
+          if (kDebugMode) {
+            print("RECORDING_VIDEO : Video Recording saved at: $pathVideo");
+          }
+          _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.submitting);
+          _simulatorTestPresenter!.submitTest(
+              context: context,
+              testId:
+                  _simulatorTestProvider!.currentTestDetail.testId.toString(),
+              activityId: activityId,
+              questions: _simulatorTestProvider!.questionList,
+              isExam: _isExam,
+              isUpdate: false,
+              videoConfirmFile:
+                  File(pathVideo).existsSync() ? File(pathVideo) : null,
+              logAction: _simulatorTestProvider!.logActions);
+        }
+      } else {
+        _handleConnectionError();
       }
-      _simulatorTestProvider!.updateSubmitStatus(SubmitStatus.submitting);
-      _simulatorTestPresenter!.submitTest(
-          context: context,
-          testId: _simulatorTestProvider!.currentTestDetail.testId.toString(),
-          activityId: activityId,
-          questions: _simulatorTestProvider!.questionList,
-          isExam: _isExam,
-          isUpdate: false,
-          videoConfirmFile:
-              File(pathVideo).existsSync() ? File(pathVideo) : null,
-          logAction: _simulatorTestProvider!.logActions);
+    });
+  }
+
+  void _handleConnectionError() {
+    //Show connect error here
+    if (kDebugMode) {
+      print("DEBUG: Connect error here!");
+    }
+    if (_dialogNotShowing) {
+      Utils.instance().showConnectionErrorDialog(context);
+
+      Utils.instance().addConnectionErrorLog(context);
+      _dialogNotShowing = false;
     }
   }
 
@@ -494,13 +522,23 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   _getTabs() {
     return [
-      Tab(
-          text: Utils.instance()
-              .multiLanguage(StringConstants.test_detail_title)),
-      Tab(
-          text:
-              Utils.instance().multiLanguage(StringConstants.highlight_title)),
-      Tab(text: Utils.instance().multiLanguage(StringConstants.others_list)),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.test_detail_title)),
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance()
+                .multiLanguage(StringConstants.highlight_title)),
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Tab(
+            text: Utils.instance().multiLanguage(StringConstants.others_list)),
+      ),
     ];
   }
 
@@ -521,12 +559,16 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   }
 
   void _checkPermission() async {
-    if (_microPermission == null) {
-      await _initializePermission();
-    }
+    if (isOffline) {
+      _handleConnectionError();
+    } else {
+      if (_microPermission == null) {
+        await _initializePermission();
+      }
 
-    if (mounted) {
-      _requestPermission(_microPermission!, context);
+      if (mounted) {
+        _requestPermission(_microPermission!, context);
+      }
     }
   }
 
@@ -560,6 +602,7 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   void _getTestDetail() async {
     await _simulatorTestPresenter!.initializeData();
+
     if (widget.homeWorkModel != null) {
       _simulatorTestPresenter!.getTestDetailByHomework(
           context, widget.homeWorkModel!.activityId.toString());
@@ -597,39 +640,47 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     }
   }
 
-  bool _isNetworkDialogShowing = false;
   void _showCheckNetworkDialog() async {
-    if (!_isNetworkDialogShowing) {
-      bool okButtonTapped = false;
-      await showDialog(
+    if (_dialogNotShowing) {
+      showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return CustomAlertDialog(
-            title:
-                Utils.instance().multiLanguage(StringConstants.warning_title),
+            title: Utils.instance().multiLanguage(StringConstants.dialog_title),
             description: Utils.instance()
                 .multiLanguage(StringConstants.network_error_message),
-            okButtonTitle: StringConstants.ok_button_title,
+            okButtonTitle:
+                Utils.instance().multiLanguage(StringConstants.ok_button_title),
             cancelButtonTitle: Utils.instance()
-                .multiLanguage(StringConstants.cancel_button_title),
+                .multiLanguage(StringConstants.exit_button_title),
             borderRadius: 8,
             hasCloseButton: false,
             okButtonTapped: () {
-              okButtonTapped = true;
-              _simulatorTestPresenter!.tryAgainToDownload();
+              _dialogNotShowing = true;
+              Utils.instance().checkInternetConnection().then((isConnected) {
+                if (isConnected) {
+                  Navigator.of(context).pop();
+                  String? activityId;
+                  if (widget.homeWorkModel != null) {
+                    activityId = widget.homeWorkModel!.activityId.toString();
+                  }
+                  _simulatorTestPresenter!
+                      .reDownloadFiles(context, activityId: activityId);
+                } else {
+                  _showCheckNetworkDialog();
+                }
+              });
             },
             cancelButtonTapped: () {
+              _dialogNotShowing = true;
+              Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
           );
         },
       );
-
-      if (okButtonTapped) {
-        _authWidgetProvider!.setRefresh(_isExam);
-        Navigator.of(context).pop();
-      }
-      _isNetworkDialogShowing = true;
+      _dialogNotShowing = false;
     }
   }
 
@@ -637,8 +688,26 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   void onDownloadFailure(AlertInfo info) {
     showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
-          return MessageDialog(context: context, message: info.description);
+          return CustomAlertDialog(
+            title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+            description: info.description,
+            okButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.try_again_button_title),
+            cancelButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.exit_button_title),
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              _simulatorTestPresenter!.tryAgainToDownload();
+              Navigator.of(context).pop();
+            },
+            cancelButtonTapped: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          );
         });
   }
 
@@ -651,13 +720,15 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
     _simulatorTestProvider!.setActivityType(testDetail.activityType);
 
     //Enable Start Testing Button
-    if (index >= 5) {
+    if (index >= 5 && !_simulatorTestProvider!.isDownloadAgain) {
       _simulatorTestProvider!.setStartNowStatus(true);
     }
 
     if (index == total) {
       //Auto start to do test
-      _simulatorTestProvider!.setDownloadAgainSuccess(true);
+      if (_simulatorTestProvider!.isDownloadAgain) {
+        _simulatorTestProvider!.setDownloadAgainSuccess(true);
+      }
       _checkPermission();
     }
   }
@@ -673,8 +744,27 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   void onGetTestDetailError(String message) {
     showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
-          return MessageDialog(context: context, message: message);
+          return CustomAlertDialog(
+            title: Utils.instance().multiLanguage(StringConstants.dialog_title),
+            description: message,
+            okButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.try_again_button_title),
+            cancelButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.exit_button_title),
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              _simulatorTestProvider!.resetAll();
+              _getTestDetail();
+              Navigator.of(context).pop();
+            },
+            cancelButtonTapped: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          );
         });
   }
 
@@ -713,9 +803,19 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
 
   @override
   void onReDownload() {
-    _simulatorTestProvider!.setNeedDownloadAgain(true);
-    _simulatorTestProvider!.setDownloadProgressingStatus(false);
-    _simulatorTestProvider!.setGettingTestDetailStatus(false);
+    if (isOffline) {
+      _showCheckNetworkDialog();
+    } else {
+      if (_simulatorTestProvider!.doingStatus == DoingStatus.doing) {
+        _simulatorTestProvider!.setNeedDownloadAgain(false);
+      } else {
+        _simulatorTestProvider!.setNeedDownloadAgain(true);
+      }
+      _simulatorTestProvider!.setStartNowStatus(false);
+      _simulatorTestProvider!.setDownloadAgain(true);
+      _simulatorTestProvider!.setDownloadProgressingStatus(true);
+      _simulatorTestProvider!.setGettingTestDetailStatus(false);
+    }
   }
 
   @override
@@ -783,11 +883,17 @@ class _SimulatorTestScreenState extends State<SimulatorTestScreen>
   }
 
   void updateStatusForReDownload() {
-    _simulatorTestProvider!.setDownloadAgain(true);
-    _simulatorTestProvider!.setDownloadAgainSuccess(false);
     _simulatorTestProvider!.setNeedDownloadAgain(false);
+    _simulatorTestProvider!.setDownloadAgain(true);
     _simulatorTestProvider!.setStartNowStatus(false);
     _simulatorTestProvider!.setDownloadProgressingStatus(true);
+  }
+
+  bool _canRedownload() {
+    return !isOffline &&
+        _simulatorTestProvider!.downloadingIndex <
+            _simulatorTestProvider!.total &&
+        _simulatorTestProvider!.isDownloadProgressing;
   }
 
   @override

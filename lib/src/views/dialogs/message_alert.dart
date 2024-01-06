@@ -26,7 +26,7 @@ class MessageDialog extends Dialog {
     double h = MediaQuery.of(context).size.width;
     return Container(
       width: (w < SizeLayout.MyTestScreenSize) ? w : w / 3,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       child: Wrap(
         children: [
           Column(

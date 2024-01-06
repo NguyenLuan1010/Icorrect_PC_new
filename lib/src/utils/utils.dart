@@ -11,6 +11,7 @@ import 'package:icorrect_pc/src/providers/auth_widget_provider.dart';
 import 'package:icorrect_pc/src/providers/home_provider.dart';
 import 'package:icorrect_pc/src/providers/main_widget_provider.dart';
 import 'package:icorrect_pc/src/views/dialogs/custom_alert_dialog.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -813,9 +814,11 @@ class Utils {
     return MediaQuery.of(context).size.height;
   }
 
-  void showConnectionErrorDialog(BuildContext context) async {
+  void showConnectionErrorDialog(BuildContext context,
+      {Function? onClick}) async {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return CustomAlertDialog(
           title: Utils.instance().multiLanguage(StringConstants.dialog_title),
@@ -827,6 +830,9 @@ class Utils {
           hasCloseButton: false,
           okButtonTapped: () {
             Navigator.of(context).pop();
+            if (onClick != null) {
+              onClick();
+            }
           },
           cancelButtonTapped: null,
         );
@@ -1117,5 +1123,9 @@ class Utils {
       }
     }
     return true;
+  }
+
+  Future<bool> checkInternetConnection() async {
+    return await InternetConnectionChecker().hasConnection;
   }
 }

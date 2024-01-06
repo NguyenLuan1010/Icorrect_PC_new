@@ -87,9 +87,9 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   DateTime? _logStartTime;
   DateTime? _logEndTime;
-  //type : 1 out app: play video  , 2 out app: record answer, 3 out app: takenote
-  int _typeOfActionLog = 0; //Default
+
   bool _isExam = false;
+  bool _dialogNotShowing = true;
 
   @override
   void initState() {
@@ -127,6 +127,11 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       }
 
       if (widget.simulatorTestProvider.submitStatus != SubmitStatus.success) {
+        if (!widget.simulatorTestProvider.isDownloadAgain &&
+            widget.simulatorTestProvider.doingStatus != DoingStatus.doing) {
+          widget.simulatorTestProvider.setVisibleSaveTheTest(false);
+          widget.simulatorTestProvider.setStartTest(false);
+        }
         widget.simulatorTestProvider.setCanReanswer(false);
         widget.simulatorTestProvider.setPlayList(playLists);
         if (widget.simulatorTestProvider.reanswersList.isNotEmpty) {
@@ -154,7 +159,12 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (kDebugMode) {
       print('DEBUG: Window on pause');
     }
-    _onWindowBlur();
+    _onOutStateWhenTesting();
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    _onOutStateWhenTesting();
   }
 
   Future _onWindowActive() async {
@@ -171,7 +181,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       var jsonData = {
         "question_id": currentPlayList.questionId.toString(),
         "question_text": currentPlayList.questionContent,
-        "type": _typeOfActionLog,
+        "type": widget.simulatorTestProvider.typeOfActionLog,
         "time": second
       };
 
@@ -181,8 +191,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     }
   }
 
-  Future _onWindowBlur() async {
-    //Create start time to save log
+  void _onOutStateWhenTesting() {
     if (_isExam) {
       _logStartTime = DateTime.now();
       if (kDebugMode) {
@@ -192,15 +201,15 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
       if (_videoPlayerController != null) {
         bool isPlaying = _videoPlayerController!.value.isPlaying;
         if (isPlaying) {
-          _typeOfActionLog = 1;
+          widget.simulatorTestProvider.setTypeOfActionLog(1);
         }
       }
 
       if (widget.simulatorTestProvider.visibleRecord) {
-        _typeOfActionLog = 2;
+        widget.simulatorTestProvider.setTypeOfActionLog(2);
       }
       if (null != _countDown && widget.simulatorTestProvider.isVisibleCueCard) {
-        _typeOfActionLog = 3;
+        widget.simulatorTestProvider.setTypeOfActionLog(3);
       }
     }
   }
@@ -240,10 +249,11 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     w = MediaQuery.of(context).size.width;
     h = MediaQuery.of(context).size.height;
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
-      if (provider.isDownloadAgain &&
-          provider.isDownloadAgainSuccess &&
+      if (provider.isDownloadAgainSuccess &&
           provider.doingStatus == DoingStatus.doing) {
-        _onDownloadAgainCompleted();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _onDownloadAgainCompleted();
+        });
       }
       return (w < SizeLayout.MyTestScreenSize)
           ? _buildTestRoomTabletLayout()
@@ -462,21 +472,21 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     if (kDebugMode) {
       print("DEBUG: File video : ${file.path}");
     }
-    _videoPlayerController = VideoPlayerController.file(file)
-      ..initialize().then((value) {
-        _videoPlayerController!.value.isPlaying
-            ? _videoPlayerController!.pause()
-            : _videoPlayerController!.play();
-        setState(() {});
-      });
+    _videoPlayerController = VideoPlayerController.file(file);
+
+    _videoPlayerController!.setPlaybackSpeed(_getSpeedVideo());
+    _videoPlayerController!.initialize().then((value) {
+      _videoPlayerController!.value.isPlaying
+          ? _videoPlayerController!.pause()
+          : _videoPlayerController!.play();
+      setState(() {});
+    });
 
     //   Map<String, dynamic> info = {
     //   StringConstants.k_file_id: file.id.toString(),
     //   StringConstants.k_file_url: file.path,
     // };
-    // _createLog(action: LogEvent.actionPlayVideoQuestion, data: info);
-
-    _videoPlayerController!.setPlaybackSpeed(_getSpeedVideo());
+    // _createLog(action: LogEvent.actionPlayVideoQuestion, data: info)
 
     widget.simulatorTestProvider.setPlayController(_videoPlayerController!);
     widget.simulatorTestProvider.videoPlayController.addListener(() {
@@ -525,34 +535,74 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   void _showCheckNetworkDialog() async {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CustomAlertDialog(
-          title: Utils.instance().multiLanguage(StringConstants.warning_title),
-          description: Utils.instance()
-              .multiLanguage(StringConstants.network_error_message),
-          okButtonTitle: StringConstants.ok_button_title,
-          cancelButtonTitle: Utils.instance()
-              .multiLanguage(StringConstants.cancel_button_title),
-          borderRadius: 8,
-          hasCloseButton: false,
-          okButtonTapped: () {
-            widget.simulatorTestPresenter.tryAgainToDownload();
-            Navigator.of(context).pop();
-          },
-          cancelButtonTapped: () {
-            Navigator.of(context).pop();
-          },
-        );
-      },
-    );
+    if (_dialogNotShowing) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return CustomAlertDialog(
+            title:
+                Utils.instance().multiLanguage(StringConstants.warning_title),
+            description: Utils.instance()
+                .multiLanguage(StringConstants.video_not_found_message),
+            okButtonTitle: StringConstants.ok_button_title,
+            cancelButtonTitle: Utils.instance()
+                .multiLanguage(StringConstants.exit_button_title),
+            borderRadius: 8,
+            hasCloseButton: false,
+            okButtonTapped: () {
+              _dialogNotShowing = true;
+              Utils.instance().checkInternetConnection().then((isConnected) {
+                if (isConnected) {
+                  widget.simulatorTestPresenter.tryAgainToDownload();
+                } else {
+                  _showCheckNetworkDialog();
+                }
+              });
+            },
+            cancelButtonTapped: () {
+              _dialogNotShowing = true;
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
+      _dialogNotShowing = false;
+    }
   }
 
   void _onDownloadAgainCompleted() {
-    PlayListModel playListModel = widget.simulatorTestProvider.currentPlay;
-    _presenter!.playingQuestion(
-        playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+    widget.simulatorTestProvider.setVisibleRecord(false);
+    widget.simulatorTestProvider.setVisibleCueCard(false);
+    if (null != _countDown) {
+      _countDown!.cancel();
+    }
+    // PlayListModel playListModel = widget.simulatorTestProvider.currentPlay;
+
+    // _presenter!.playingQuestion(
+    //     playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+
+    int indexPlay = widget.simulatorTestProvider.indexCurrentPlay;
+    widget.simulatorTestProvider.setIndexCurrentPlay(indexPlay);
+
+    PlayListModel playListModel =
+        widget.simulatorTestProvider.playList[indexPlay];
+
+    widget.simulatorTestProvider.setRepeatTimes(0);
+    if (playListModel.questionContent == PlayListType.introduce.name) {
+      _presenter!.playingIntroduce(playListModel.fileIntro);
+    } else if (playListModel.questionContent ==
+        PlayListType.endOfTakeNote.name) {
+      _presenter!.playingEndOfTakeNote(playListModel.endOfTakeNote);
+    } else if (playListModel.questionContent == PlayListType.endOfTest.name) {
+      _presenter!.playingEndOfTest(playListModel.endOfTest);
+    } else {
+      _presenter!.playingQuestion(
+          playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+    }
+    widget.simulatorTestProvider.setCurrentPlay(playListModel);
+
     widget.simulatorTestProvider.setDownloadAgain(false);
     widget.simulatorTestProvider.setDownloadAgainSuccess(false);
   }
@@ -785,50 +835,75 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   }
 
   void _submitExamAction(String pathVideo) {
-    widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.submitting);
-    _loading!.show(context);
+    Utils.instance().checkInternetConnection().then((isConnected) {
+      if (isConnected) {
+        widget.simulatorTestProvider
+            .updateSubmitStatus(SubmitStatus.submitting);
+        _loading!.show(context);
 
-    String activityId = "";
-    if (widget.activitiesModel != null) {
-      activityId = widget.activitiesModel!.activityId.toString();
-    }
+        String activityId = "";
+        if (widget.activitiesModel != null) {
+          activityId = widget.activitiesModel!.activityId.toString();
+        }
 
-    _presenter!.submitMyTest(
-        context: context,
-        testId: widget.testDetailModel.testId.toString(),
-        activityId: activityId,
-        // questionsList: widget.simulatorTestProvider.questionList,
-        questionsList: widget.simulatorTestProvider.questionList,
-        isExam: _isExam,
-        isUpdate: false,
-        videoConfirmFile: File(pathVideo).existsSync() ? File(pathVideo) : null,
-        logAction: widget.simulatorTestProvider.logActions);
+        _presenter!.submitMyTest(
+            context: context,
+            testId: widget.testDetailModel.testId.toString(),
+            activityId: activityId,
+            // questionsList: widget.simulatorTestProvider.questionList,
+            questionsList: widget.simulatorTestProvider.questionList,
+            isExam: _isExam,
+            isUpdate: false,
+            videoConfirmFile:
+                File(pathVideo).existsSync() ? File(pathVideo) : null,
+            logAction: widget.simulatorTestProvider.logActions);
+      } else {
+        if (kDebugMode) {
+          print("DEBUG: Connect error here!");
+        }
+        Utils.instance().showConnectionErrorDialog(context);
+
+        Utils.instance().addConnectionErrorLog(context);
+      }
+    });
   }
 
   void _startSubmitAction() {
-    _loading!.show(context);
-    String activityId = "";
-    if (widget.activitiesModel != null) {
-      activityId = widget.activitiesModel!.activityId.toString();
-    }
-    if (widget.simulatorTestProvider.reanswersList.isNotEmpty) {
-      _presenter!.submitMyTest(
-          context: context,
-          testId: widget.testDetailModel.testId.toString(),
-          activityId: activityId,
-          questionsList: widget.simulatorTestProvider.reanswersList,
-          isUpdate: true,
-          isExam: _isExam);
-    } else {
-      _presenter!.submitMyTest(
-          context: context,
-          testId: widget.testDetailModel.testId.toString(),
-          activityId: activityId,
-          questionsList: widget.simulatorTestProvider.questionList,
-          isUpdate: false,
-          isExam: _isExam);
-      widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.submitting);
-    }
+    Utils.instance().checkInternetConnection().then((isConnected) {
+      if (isConnected) {
+        _loading!.show(context);
+        String activityId = "";
+        if (widget.activitiesModel != null) {
+          activityId = widget.activitiesModel!.activityId.toString();
+        }
+        if (widget.simulatorTestProvider.reanswersList.isNotEmpty) {
+          _presenter!.submitMyTest(
+              context: context,
+              testId: widget.testDetailModel.testId.toString(),
+              activityId: activityId,
+              questionsList: widget.simulatorTestProvider.reanswersList,
+              isUpdate: true,
+              isExam: _isExam);
+        } else {
+          _presenter!.submitMyTest(
+              context: context,
+              testId: widget.testDetailModel.testId.toString(),
+              activityId: activityId,
+              questionsList: widget.simulatorTestProvider.questionList,
+              isUpdate: false,
+              isExam: _isExam);
+          widget.simulatorTestProvider
+              .updateSubmitStatus(SubmitStatus.submitting);
+        }
+      } else {
+        if (kDebugMode) {
+          print("DEBUG: Connect error here!");
+        }
+        Utils.instance().showConnectionErrorDialog(context);
+
+        Utils.instance().addConnectionErrorLog(context);
+      }
+    });
   }
 
   Future<void> _recordAnswer() async {
@@ -992,6 +1067,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
   void submitAnswerFail(AlertInfo alertInfo) {
     Utils.instance().sendLog();
     widget.simulatorTestProvider.updateSubmitStatus(SubmitStatus.fail);
+    widget.simulatorTestProvider.setVisibleSaveTheTest(true);
     _loading!.hide();
     showDialog(
         context: context,
@@ -1009,7 +1085,8 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
         context: context,
         builder: (context) {
           return MessageDialog(
-              context: context, message: alertInfo.description);
+              context: context,
+              message:alertInfo.description);
         });
     if (mounted) {
       widget.simulatorTestProvider.clearReasnwersList();

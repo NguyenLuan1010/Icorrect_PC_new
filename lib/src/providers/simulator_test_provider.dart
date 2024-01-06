@@ -75,6 +75,7 @@ class SimulatorTestProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
   void setDownloadAgainSuccess(bool isSuccess) {
     _isDownloadAgainSuccess = isSuccess;
     if (!isDisposed) {
@@ -500,6 +501,16 @@ class SimulatorTestProvider extends ChangeNotifier {
     }
   }
 
+  //type : 1 out app: play video  , 2 out app: record answer, 3 out app: takenote
+  int _typeOfActionLog = 0;
+  int get typeOfActionLog => _typeOfActionLog;
+  void setTypeOfActionLog(int type) {
+    _typeOfActionLog = type;
+    if (!isDisposed) {
+      notifyListeners();
+    }
+  }
+
   bool _canReanswer = false;
 
   bool get canReanswer => _canReanswer;
@@ -807,6 +818,8 @@ class SimulatorTestProvider extends ChangeNotifier {
 
   void resetAll() {
     _logActions.clear();
+    _isDownloadAgain = false;
+    _isDownloadAgainSuccess = false;
     _needDownloadAgain = false;
     _isLoadingVideo = false;
     _answerList.clear();
@@ -864,5 +877,8 @@ class SimulatorTestProvider extends ChangeNotifier {
     clearQuestionList();
     resetTopicsList();
     resetTopicsQueue();
+    if (!isDisposed) {
+      notifyListeners();
+    }
   }
 }
