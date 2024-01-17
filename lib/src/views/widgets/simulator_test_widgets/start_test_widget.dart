@@ -13,39 +13,42 @@ class StartTestWidget extends StatelessWidget {
   Function onClickStartTest;
   StartTestWidget({super.key, required this.onClickStartTest});
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Consumer<SimulatorTestProvider>(builder: (context, provider, child) {
-      return Visibility(
-          visible: !provider.isStartTest,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                AppAssets.img_start,
-                width: 150,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  provider.setStartTest(true);
-                  onClickStartTest();
-                },
-                style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(AppColors.purpleBlue),
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13)))),
-                child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                        Utils.instance()
-                            .multiLanguage(StringConstants.start_test_title),
-                        style: const TextStyle(fontSize: 17,color: Colors.white))),
-              )
-            ],
-          ));
+      return (provider.doingStatus == DoingStatus.none)
+          ? Visibility(
+              visible: !provider.isStartTest,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    AppAssets.img_start,
+                    width: 150,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      provider.setStartTest(true);
+                      onClickStartTest();
+                    },
+                    style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            AppColors.purpleBlue),
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13)))),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                            Utils.instance().multiLanguage(
+                                StringConstants.start_test_title),
+                            style: const TextStyle(
+                                fontSize: 17, color: Colors.white))),
+                  )
+                ],
+              ))
+          : const SizedBox(width: 0);
     });
   }
 }

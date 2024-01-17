@@ -191,6 +191,7 @@ Widget navbarItems(
                       Utils.instance().clearCurrentUser();
                       Utils.instance().setAccessToken('');
                       Navigations.instance().goToAuthWidget(context);
+                      
                     });
               });
         },

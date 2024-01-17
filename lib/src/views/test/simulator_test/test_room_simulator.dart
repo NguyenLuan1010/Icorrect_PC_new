@@ -295,89 +295,90 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
 
   Widget _buildTestRoomTabletLayout() {
     return SizedBox(
-      width: w,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SizedBox(
-                width: w,
-                height: h / 2,
+        width: w,
+        child: Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: w,
+                  height: h / 2,
+                  child: Container(
+                    width: w,
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(5)),
+                        border: Border.all(color: Colors.black, width: 2),
+                        image: const DecorationImage(
+                            image: AssetImage(AppAssets.bg_test_room),
+                            fit: BoxFit.cover)),
+                    child: SizedBox(
+                      width: w / 3,
+                      child: VideoSimulatorWidget(onVideoEnd: () {
+                        _onVideoEnd();
+                      }),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    width: w,
+                    height: h / 2.5,
+                    child: Stack(
+                      children: [
+                        // widget.activitiesModel.isExam()
+                        //     ? _buildQuestionAndCameraPreview()
+                        //     : _buildQuestionList(),
+                        _buildQuestionList(),
+                        _buildImageFrame()
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+            if (widget.simulatorTestProvider.submitStatus !=
+                SubmitStatus.success)
+              Card(
+                elevation: 3,
                 child: Container(
                   width: w,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      border: Border.all(color: Colors.black, width: 2),
-                      image: const DecorationImage(
-                          image: AssetImage(AppAssets.bg_test_room),
-                          fit: BoxFit.cover)),
-                  child: SizedBox(
-                    width: w / 3,
-                    child: VideoSimulatorWidget(onVideoEnd: () {
-                      _onVideoEnd();
-                    }),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SizedBox(
-                  width: w,
-                  height: h / 2.5,
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10)),
+                  alignment: Alignment.bottomCenter,
                   child: Stack(
                     children: [
-                      // widget.activitiesModel.isExam()
-                      //     ? _buildQuestionAndCameraPreview()
-                      //     : _buildQuestionList(),
-                      _buildQuestionList(),
-                      _buildImageFrame()
+                      StartTestWidget(onClickStartTest: () {
+                        _onClickStartTest();
+                      }),
+                      SaveTheTestWidget(() {
+                        _startSubmitAction();
+                      }),
+                      TestRecordWidget(
+                        finishAnswer: (questionTopicModel) {
+                          _onFinishAnswer();
+                        },
+                        repeatQuestion: (questionTopicModel) {
+                          _onClickRepeatAnswer();
+                        },
+                        simulatorTestProvider: widget.simulatorTestProvider,
+                      ),
+                      const CueCardWidget(),
                     ],
                   ),
                 ),
               )
-            ],
-          ),
-          if (widget.simulatorTestProvider.submitStatus != SubmitStatus.success)
-            Card(
-              elevation: 3,
-              child: Container(
-                width: w,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)),
-                alignment: Alignment.bottomCenter,
-                child: Stack(
-                  children: [
-                    StartTestWidget(onClickStartTest: () {
-                      _onClickStartTest();
-                    }),
-                    SaveTheTestWidget(() {
-                      _startSubmitAction();
-                    }),
-                    TestRecordWidget(
-                      finishAnswer: (questionTopicModel) {
-                        _onFinishAnswer();
-                      },
-                      repeatQuestion: (questionTopicModel) {
-                        _onClickRepeatAnswer();
-                      },
-                      simulatorTestProvider: widget.simulatorTestProvider,
-                    ),
-                    const CueCardWidget(),
-                  ],
-                ),
-              ),
-            )
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   Widget _buildSimulatorVideo() {
@@ -701,8 +702,10 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
     // widget.simulatorTestProvider.questionList.add(repeatQuestion);
     widget.simulatorTestProvider.questionList.add(repeatQuestion);
 
-    _presenter!.playingQuestion(
-        playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _presenter!.playingQuestion(
+          playListModel.fileQuestionNormal, playListModel.fileQuestionSlow);
+    });
   }
 
   void _startCountDownRecord() {
@@ -1085,8 +1088,7 @@ class _TestRoomSimulatorState extends State<TestRoomSimulator>
         context: context,
         builder: (context) {
           return MessageDialog(
-              context: context,
-              message:alertInfo.description);
+              context: context, message: alertInfo.description);
         });
     if (mounted) {
       widget.simulatorTestProvider.clearReasnwersList();

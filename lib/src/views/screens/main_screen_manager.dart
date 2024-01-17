@@ -38,6 +38,9 @@ class _MainWidgetState extends State<MainWidget> {
   void initState() {
     super.initState();
     _provider = Provider.of<MainWidgetProvider>(context, listen: false);
+    Future.delayed(Duration.zero, () {
+      _provider.setCurrentScreen(const HomeWorksWidget());
+    });
   }
 
   @override

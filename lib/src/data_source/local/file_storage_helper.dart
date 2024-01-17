@@ -8,11 +8,6 @@ import '../constants.dart';
 
 class FileStorageHelper {
   static Future<String> getExternalDocumentPath() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      await Permission.storage.request();
-    }
-
     Directory directory = Directory('');
     directory = await getApplicationDocumentsDirectory();
 
@@ -29,6 +24,9 @@ class FileStorageHelper {
     // return directory;
 
     final directory = await getApplicationSupportDirectory();
+    if (!directory.existsSync()) {
+      directory.createSync();
+    }
     return directory.path;
   }
 
@@ -54,6 +52,9 @@ class FileStorageHelper {
     }
 
     Directory hideDirectory = Directory(filePath);
+    if (!hideDirectory.existsSync()) {
+      hideDirectory.createSync();
+    }
     return hideDirectory.path;
   }
 
@@ -79,12 +80,16 @@ class FileStorageHelper {
     }
 
     Directory hideDirectory = Directory(filePath);
+    if (!hideDirectory.existsSync()) {
+      hideDirectory.createSync();
+    }
     return hideDirectory.path;
   }
 
   static Future<File> writeVideo(
       String bytes, String name, MediaType mediaType) async {
     final path = await getFolderPath(mediaType, null);
+
     File file = File('$path\\$name');
     if (kDebugMode) {
       print('DEBUG: SAVE VIDEO FILE: $path\\$name');
